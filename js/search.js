@@ -20,10 +20,7 @@ async function searchHandbook(searchParam, year, size, callback)
             "accept-language": "en-US,en;q=0.9",
             "content-type": "application/json;charset=UTF-8",
             "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "Referer": "https://handbook.murdoch.edu.au/search",
-            "Referrer-Policy": "strict-origin-when-cross-origin"
+            "sec-fetch-mode": "cors"
         },
         // Actual search query.
         // body does not contain an actual JSON object, just a JSON string. Here, it is written as a JSON
@@ -164,10 +161,7 @@ async function fetchItem(version, code, callback)
             "accept": "application/json, text/plain, */*",
             "accept-language": "en-US,en;q=0.9",
             "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "Referer": "https://handbook.murdoch.edu.au/results/" + version + "/" + code,
-            "Referrer-Policy": "strict-origin-when-cross-origin"
+            "sec-fetch-mode": "cors"
         },
         "body": null,
         "method": "GET"
