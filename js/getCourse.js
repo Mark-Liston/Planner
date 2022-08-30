@@ -140,8 +140,8 @@ async function searchHandbook(searchParam, year, contentType, size)
 
 /**
  * Searches through a JSON array for an item that the checkMatch function deems a match.
- * @param {*} arr JSON array to search.
- * @param {*} checkMatch Callback that returns whether current item in array matches target.
+ * @param {Array} arr JSON array to search.
+ * @param {Function} checkMatch Callback that returns whether current item in array matches target.
  * @returns Index of matching array item.
  */
 function searchJSONArr(arr, checkMatch)
@@ -255,6 +255,7 @@ async function collectPrerequisites(arr)
         {
             if (unit.contentlets.length > 0)
             {
+                console.log(unit.contentlets[0].code);
                 thing.push(unit.contentlets[0].code);
             }
         }
