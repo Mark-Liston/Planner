@@ -4,7 +4,7 @@ import rls from "readline-sync";
 async function searchHandbook(searchParam, year, contentType, size)
 {
     let result = null;
-    await fetch("https://handbook.murdoch.edu.au/api/es/search",
+    result = await fetch("https://handbook.murdoch.edu.au/api/es/search",
     {
         // Request boilerplate.
         "headers":
@@ -134,7 +134,9 @@ async function searchHandbook(searchParam, year, contentType, size)
         }),
         "method": "POST"
     // Extracts JSON from response then sets result to that data.
-    }).then(response => response.json()).then(data => result = data);
+    });
+    console.log(result);
+    result = result.json();
     return result;
 }
 
@@ -185,7 +187,7 @@ async function getDegree(searchDegree)
 async function fetchItem(contentType, version, code)
 {
     let item = null;
-    await fetch("https://handbook.murdoch.edu.au/api/content/render/false/query/+contentType:" + contentType + "%20+" + contentType + ".version:" + version + "%20+" + contentType + ".code:" + code + "%20+deleted:false%20+working:true%20+live:true%20+languageId:1%20/orderBy/modDate%20desc",
+    let result = await fetch("https://handbook.murdoch.edu.au/api/content/render/false/query/+contentType:" + contentType + "%20+" + contentType + ".version:" + version + "%20+" + contentType + ".code:" + code + "%20+deleted:false%20+working:true%20+live:true%20+languageId:1%20/orderBy/modDate%20desc",
     {
         // Request boilerplate.
         "headers":
@@ -198,7 +200,11 @@ async function fetchItem(contentType, version, code)
         "body": null,
         "method": "GET"
     // Extracts JSON from response then sets item to that data.
-    }).then(response => response.json()).then(data => item = data);
+    });
+//    console.log(result);
+//    console.log("\n-----------------------------------------\n");
+    item = result.json();
+    //.then(response => response.json()).then(data => item = data);
     return item;
 }
 
@@ -241,6 +247,7 @@ function removeDuplicates(arr)
 }
 
 let thing = [];
+/*
 async function collectPrerequisites(arr)
 {
     let prerequisites = [];
@@ -304,6 +311,45 @@ async function collectPrerequisites(arr)
     {
         await collectPrerequisites(prerequisites);
     }
+}
+*/
+let count = 0;
+const worker = next_ => async() =>
+{
+    let next;
+    while((next = next_()))
+    {
+        console.log((await fetchItem("murdoch_psubject", next.version, next.code)).contentlets[0].code);
+        ++count;
+    }
+}
+const CONCURRENT_WORKERS = 3;
+async function collectPrerequisites(arr)
+{
+    count = 0;
+    let arr2 = [];
+    for (let i = 0; i < arr.length; ++i)
+    {
+        arr2[i] = arr[i];
+    }
+    const workers = [];
+    for (let i = 0; i < CONCURRENT_WORKERS; ++i)
+    {
+        const w = worker(arr2.pop.bind(arr2));
+        workers.push(w(arr2));
+    }
+
+    await Promise.all(workers);
+    console.log(count);
+//    let count = 0;
+//    let contents = [];
+//    contents = await Promise.allSettled(new Array(18).fill(arr).map(async function(unit)
+//    {
+//        await fetchItem("murdoch_psubject", unit.version, unit.code);
+//        console.log("count: " + ++count);
+//        contents.push(await fetchItem("murdoch_psubject", unit.version, unit.code));
+//    }));
+    //console.log(contents);
 }
 
 let index = 0;
@@ -370,15 +416,26 @@ if (degree != null)
     electiveUnits = removeDuplicates(electiveUnits);
     mandatoryUnits = removeDuplicates(mandatoryUnits);
 
-    await collectPrerequisites(electiveUnits);
-    thing = Array.from([...new Set(thing)]);
-    await collectPrerequisites(mandatoryUnits);
-    thing = Array.from([...new Set(thing)]);
-    console.log("\nUnits in course:");
-    for (let item of thing)
+    for (let j = 1;true; ++j)
     {
-        console.log(item);
+        console.log((await fetchItem("murdoch_psubject", "14", "ICT283")).contentlets[0].code);
+        console.log("loop: " + j);
     }
+//    for (let j = 0; j < 20; ++j)
+//    {
+//        await collectPrerequisites(mandatoryUnits);
+//        console.log("loop: " + j);
+//    }
+
+//    await collectPrerequisites(electiveUnits);
+//    thing = Array.from([...new Set(thing)]);
+//    await collectPrerequisites(mandatoryUnits);
+//    thing = Array.from([...new Set(thing)]);
+//    console.log("\nUnits in course:");
+//    for (let item of thing)
+//    {
+//        console.log(item);
+//    }
 }
 
 else
