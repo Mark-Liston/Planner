@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<title>Planner</title>
+		
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="js/getUnits.js"></script>
+	</head>
+
+	<body>
+        <h1>Input Course Details</h2>
+        <form enctype="multipart/form-data" id="courseDetailsForm">
+            <label for="degreeInput">Degree:</label>
+            <input type="text" id="degreeInput" name="degreeInput"/><br/>
+
+            <label for="optionInput">Major/co-major/minor:</label>
+            <input type="text" id="optionInput" name="optionInput"/><br/>
+
+            <button type="submit" id="submitCourse" name="submitCourse">Submit Course</button>
+        </form>
+
+        <span id="errorMsg" hidden="hidden" style="color: red"></span>
+        <span id="errorMsg" hidden="hidden">Loading...</span>
+	</body>
+</html>
