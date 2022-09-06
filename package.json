@@ -1,7 +1,5 @@
 {
-    "type": "module",
-    "dependencies": {
-        "node-fetch": "^3.2.10",
-        "readline-sync": "^1.4.10"
-    }
+  "dependencies": {
+    "formidable": "^2.0.1"
+  }
 }
