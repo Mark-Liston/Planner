@@ -2,8 +2,11 @@
 
 "use strict";
 
+let scrape = require("./scrape.js");
+
 var fs = require("fs");
 var formidable = require("formidable");
+var sqlite = require("sqlite3").verbose();
 // var url = require("url");
 var http = require("http");
 
@@ -96,26 +99,39 @@ function reqSubmit(request, response)
     {
         console.log("parsing done");
 
-       // // Gets data from file for specified year.
-       // downloadFile(field.year, function(data, error)
-       // {
-       //     if (error)
-       //     {
-       //         console.log(error);
-       //         response.writeHead(400, {"Content-Type":"text/plain"});
-       //         response.end("Error 400: Invalid form submission!");
-       //     }
+        (async function()
+        {
+            console.log(await scrape.getDegree("B1390"));
+        })();
 
-       //     else
-       //     {
-       //         // Extracts relevant measures from weather data, aggregated by month.
-       //         parseWeatherData(data, field.measurement, function(weatherData)
-       //         {
-       //             response.writeHead(200, {"Content-Type": "application/json"});
-       //             response.end(JSON.stringify(weatherData));
-       //         });
-       //     }
-       // });
+        response.writeHead(200, {"Content-Type": "text/html"});
+        response.end("hey");
+
+//        let db = new sqlite.Database("database/Planner.db", sqlite.OPEN_READWRITE, function(error)
+//        {
+//            if (error)
+//            {
+//                console.error(error.message);
+//            }
+//
+//            else
+//            {
+//                console.log("Connected to the Planner database.");
+//            }
+//        });
+//
+//        db.close(function(error)
+//        {
+//            if (error)
+//            {
+//                console.error(error.message);
+//            }
+//
+//            else
+//            {
+//                console.log("Closed the database connection.");
+//            }
+//        });
     });
 }
 
