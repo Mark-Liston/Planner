@@ -2,11 +2,10 @@
 
 "use strict";
 
-let scrape = require("./scrape.js");
+let database = require("./database.js");
 
 var fs = require("fs");
 var formidable = require("formidable");
-var sqlite = require("sqlite3").verbose();
 // var url = require("url");
 var http = require("http");
 
@@ -99,39 +98,15 @@ function reqSubmit(request, response)
     {
         console.log("parsing done");
 
-        (async function()
-        {
-            console.log(await scrape.getDegree(field.optionInput));
-        })();
+        database.getDegree(field.optionInput);
+        //(async function()
+        //{
+        //    console.log(await scrape.getDegree(field.optionInput));
+        //})();
 
         response.writeHead(200, {"Content-Type": "text/html"});
         response.end("hey");
 
-//        let db = new sqlite.Database("database/Planner.db", sqlite.OPEN_READWRITE, function(error)
-//        {
-//            if (error)
-//            {
-//                console.error(error.message);
-//            }
-//
-//            else
-//            {
-//                console.log("Connected to the Planner database.");
-//            }
-//        });
-//
-//        db.close(function(error)
-//        {
-//            if (error)
-//            {
-//                console.error(error.message);
-//            }
-//
-//            else
-//            {
-//                console.log("Closed the database connection.");
-//            }
-//        });
     });
 }
 

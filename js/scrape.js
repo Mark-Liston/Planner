@@ -2,7 +2,6 @@
 
 "use strict";
 
-//import fetch from "node-fetch";
 let fetch = require("node-fetch");
 
 async function searchHandbook(searchParam, year, contentType, size)
