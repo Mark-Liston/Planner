@@ -101,7 +101,7 @@ function reqSubmit(request, response)
 
         (async function()
         {
-            console.log(await scrape.getDegree("B1390"));
+            console.log(await scrape.getDegree(field.optionInput));
         })();
 
         response.writeHead(200, {"Content-Type": "text/html"});
