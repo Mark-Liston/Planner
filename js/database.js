@@ -34,7 +34,7 @@ async function getDegree(searchDegree)
             " WHERE code = ? AND" +
             " retrievedOn > date(?, '-6 month')" +
             " ORDER BY retrievedOn ASC";
-    db.all(qry, [searchDegree, getDate()], function(error, rows)
+    db.all(qry, [searchDegree, getDate()], async function(error, rows)
     {
         if (error)
         {
@@ -45,30 +45,34 @@ async function getDegree(searchDegree)
         {
             if (rows.length == 0)
             {
-                (async function()
+                qry = "INSERT INTO Degree (code, retrievedOn, data)" +
+                    " VALUES(?, ?, ?)";
+                let degree = await scrape.singleSearch(searchDegree, new Date().getFullYear(), ["murdoch_pcourse"]);
+                console.log(JSON.parse(degree.data));
+                db.run(qry, [searchDegree, getDate(), JSON.stringify(degree)], function(error)
                 {
-                    console.log(await scrape.singleSearch(searchDegree, new Date().getFullYear(), ["murdoch_pcourse"]));
-                    console.log(await scrape.searchHandbook("MJ-", new Date().getFullYear(), ["murdasdf"], 20));
-                })();
+                    if (error)
+                    {
+                        return console.error(error.message);
+                    }
+                });
             }
-            for (let row of rows)
+
+            //console.log(rows[0].data);
+        }
+
+        db.close(function(error)
+        {
+            if (error)
             {
-                console.log(row.code + "    " + row.retrievedOn);
+                console.error(error.message);
             }
-        }
-    });
 
-    db.close(function(error)
-    {
-        if (error)
-        {
-            console.error(error.message);
-        }
-
-        else
-        {
-            console.log("Closed the database connection.");
-        }
+            else
+            {
+                console.log("Closed the database connection.");
+            }
+        });
     });
 }
 
