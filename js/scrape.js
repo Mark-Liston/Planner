@@ -4,10 +4,19 @@
 
 let fetch = require("node-fetch");
 
+/**
+ * 
+ * @param {String} searchParam String normally in search box that is searched for.
+ * @param {Date} year Year that items must be available.
+ * @param {Array} contentType Type of items to search for. Any combination of:
+ * "murdoch_psubject", "murdoch_pcourse", "murdoch_paos".
+ * @param {Number} size Number of results to return.
+ * @returns JSON object contained search results.
+ */
 async function searchHandbook(searchParam, year, contentType, size)
 {
-    let result = null;
-    result = await fetch("https://handbook.murdoch.edu.au/api/es/search",
+    let response = null;
+    response = await fetch("https://handbook.murdoch.edu.au/api/es/search",
     {
         // Request boilerplate.
         "headers":
@@ -42,6 +51,7 @@ async function searchHandbook(searchParam, year, contentType, size)
                                 "query": searchParam,
                                 "type":"phrase_prefix",
                                 "max_expansions":20,
+                                // Fields to check the search box input against.
                                 "fields":
                                 [
                                     "*.code^10",
@@ -136,13 +146,24 @@ async function searchHandbook(searchParam, year, contentType, size)
             }
         }),
         "method": "POST"
-    // Extracts JSON from response then sets result to that data.
     });
-    console.log(result);
-    result = result.json();
-    return result;
+
+    if (response.ok)
+    {
+        response = (await response.json()).contentlets;
+    }
+
+    return response;
 }
 
+/**
+ * Performs linear search on given array using provided callback to check equlity.
+ * Evaluating equality using a callback means JSON arrays can be searched based
+ * on the fields of the objects in the array.
+ * @param {Array} arr Array to be searched.
+ * @param {Function} checkMatch Callback function that evaluates equality of current item.
+ * @returns -1 if the search was unsuccessful, otherwise the index of the found item.
+ */
 function searchJSONArr(arr, checkMatch)
 {
     let targetIndex = -1;
@@ -156,22 +177,24 @@ function searchJSONArr(arr, checkMatch)
     return targetIndex;
 }
 
-async function getDegree(searchDegree)
+async function singleSearch(searchParam, year, contentType)
 {
-    let degree = null;
-    let data = await searchHandbook(searchDegree, new Date().getFullYear(), ["murdoch_pcourse"], 20);
-    // Searches for degree matching search input.
-    let degreeIndex = searchJSONArr(data.contentlets, function(entry)
+    let item = null;
+    let data = await searchHandbook(searchParam, year, contentType, 20);
+    // Searches for item matching search input.
+    let index = searchJSONArr(data, function(entry)
     {
-        return entry.code.toUpperCase() == searchDegree.toUpperCase(); 
+        return entry.code.toUpperCase() == searchParam.toUpperCase(); 
     });
 
-    // If degree matching search input is found.
-    if (degreeIndex != -1)
+    // If item matching search input is found.
+    if (index != -1)
     {
-        degree = data.contentlets[degreeIndex];
+        item = data[index];
     }
-    return degree;
+    
+    return item;
 }
 
-exports.getDegree = getDegree;
+exports.searchHandbook = searchHandbook;
+exports.singleSearch = singleSearch;

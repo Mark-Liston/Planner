@@ -26,7 +26,6 @@ async function getDegree(searchDegree)
             console.log("Connected to the Planner database.");
         }
     });
-    console.log(getDate());
     
     // Gets any degrees from the last 6 months with a matching code.
     // Degrees are updated every 6 months.
@@ -46,7 +45,11 @@ async function getDegree(searchDegree)
         {
             if (rows.length == 0)
             {
-
+                (async function()
+                {
+                    console.log(await scrape.singleSearch(searchDegree, new Date().getFullYear(), ["murdoch_pcourse"]));
+                    console.log(await scrape.searchHandbook("MJ-", new Date().getFullYear(), ["murdasdf"], 20));
+                })();
             }
             for (let row of rows)
             {
