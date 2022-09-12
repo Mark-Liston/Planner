@@ -3,6 +3,7 @@
 "use strict";
 
 const scrape = require("./scrape.js");
+const coursePlan = require("./coursePlan.js");
 const sqlite = require("sqlite3").verbose();
 
 const dbPath = "database/Planner.db";
@@ -13,89 +14,115 @@ function getDate()
     return new Date().toISOString().slice(0, -14)
 }
 
-function cacheSearch(searchParam, type)
+// TODO: Modularise this function further.
+function cacheSearch(type, searchParams)
 {
     return new Promise(function(resolve, reject)
     {
-        let table = "";
-        let searchType = "";
-        switch (type.toUpperCase())
+        // Can only perform search if code is provided.
+        if (searchParams["code"])
         {
-            case "DEGREE":
-                table = "Degree";
-                searchType = ["murdoch_pcourse"];
-                break;
-            case "MAJOR":
-                table = "Major";
-                searchType = ["murdoch_paos"];
-                break;
-            default:
-                break;
-        }
-
-        let item = null;
-        let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
-        {
-            if (error)
+            let table = "";
+            let searchType = "";
+            switch (type.toUpperCase())
             {
-                console.error(error.message);
-            }
-        });
-        
-        // Gets any items from the last 6 months with a matching code.
-        // Items are updated every 6 months.
-        let qry = "SELECT *" +
-                " FROM " + table +
-                " WHERE code = ? AND" +
-                " retrievedOn > date(?, '-6 month')" +
-                " ORDER BY retrievedOn ASC";
-        db.all(qry, [searchParam.toUpperCase(), getDate()], async function(error, rows)
-        {
-            if (error)
-            {
-                console.error(error.message);
+                case "DEGREE":
+                    table = "Degree";
+                    searchType = ["murdoch_pcourse"];
+                    break;
+                case "MAJOR":
+                    table = "Major";
+                    searchType = ["murdoch_paos"];
+                    break;
+                case "UNIT":
+                    table = "Unit";
+                    searchType = ["murdoch_psubject"];
+                    break;
+                default:
+                    break;
             }
 
-            else
-            {
-                // If there is no matching item in the database from the last 6 months.
-                if (rows.length == 0)
-                {
-                    // Scrape item from handbook and insert it into database if found.
-                    item = await scrape.singleSearch(searchParam,
-                                                    new Date().getFullYear(),
-                                                    searchType);
-                    if (item != null)
-                    {
-                        qry = "INSERT INTO " + table + " (code, retrievedOn, data)" +
-                            " VALUES(?, ?, ?)";
-                        db.run(qry, [item.code.toUpperCase(), getDate(), JSON.stringify(item)], function(error)
-                        {
-                            if (error)
-                            {
-                                console.error(error.message);
-                            }
-                        });
-                    }
-                }
-
-                // If the item already exists in the database.
-                else
-                {
-                    item = JSON.parse(rows[0].data);
-                }
-            }
-
-            db.close(function(error)
+            let item = null;
+            let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
             {
                 if (error)
                 {
                     console.error(error.message);
                 }
             });
+            
+            // Gets any items from the last 6 months with a matching code.
+            // Items are updated every 6 months.
+            let qry = "SELECT *" +
+                    " FROM " + table +
+                    " WHERE code = ? AND" +
+                    " retrievedOn > date(?, '-6 month')" +
+                    " ORDER BY retrievedOn ASC";
+            db.all(qry, [searchParams.code.toUpperCase(), getDate()], async function(error, rows)
+            {
+                if (error)
+                {
+                    console.error(error.message);
+                }
 
-            resolve(item);
-        });
+                else
+                {
+                    // If there is no matching item in the database from the last 6 months.
+                    if (rows.length == 0)
+                    {
+                        // If both the version and the code are given, fetch the
+                        // item directly.
+                        if (searchParams["version"] && searchParams["code"])
+                        {
+                            item = await scrape.fetchItem(searchType,
+                                                        searchParams.version,
+                                                        searchParams.code);
+                        }
+                        else
+                        {
+                            // Scrape item from handbook and insert it into database if found.
+                            item = await scrape.singleSearch(searchParams.code,
+                                                            new Date().getFullYear(),
+                                                            searchType);
+                        }
+
+                        if (item != null)
+                        {
+                            qry = "INSERT INTO " + table + " (code, retrievedOn, data)" +
+                                " VALUES(?, ?, ?)";
+                            db.run(qry, [item.code, getDate(), JSON.stringify(item)], function(error)
+                            {
+                                if (error)
+                                {
+                                    console.error(error.message);
+                                }
+                            });
+                        }
+                    }
+
+                    // If the item already exists in the database.
+                    else
+                    {
+                        item = JSON.parse(rows[0].data);
+                    }
+                }
+
+                db.close(function(error)
+                {
+                    if (error)
+                    {
+                        console.error(error.message);
+                    }
+                });
+
+                resolve(item);
+            });
+        }
+
+        else
+        {
+            reject("Cannot search without code.");
+        }
     });
 }
 
@@ -103,10 +130,21 @@ function getDegree(searchDegree)
 {
     return new Promise(function(resolve, reject)
     {
-        cacheSearch(searchDegree, "degree").then(function(degree)
+        cacheSearch("degree", {"code": searchDegree}).then(function(degree)
         {
             if (degree != null)
             {
+                //console.log(JSON.parse(degree.CurriculumStructure).container);
+
+                let units = coursePlan.getDegreeUnits(degree);
+
+                // console.log(units);
+                // for (let unit of units.mandatoryUnits)
+                // {
+                //     collectPrerequisites(unit.version, unit.code);
+                // }
+                // console.log("done");
+
                 resolve(degree);
             }
             else
@@ -152,10 +190,12 @@ async function getMajor(searchMajor, degree)
         if (degreeHasMajor(degree, searchMajor))
         {
             // Resolve with details of major.
-            cacheSearch(searchMajor, "major").then(function(major)
+            cacheSearch("major", {"code": searchMajor}).then(function(major)
             {
                 if (major != null)
                 {
+                    collectPrerequisites("14", "ICT283");
+
                     resolve(major);
                 }
                 else
@@ -167,6 +207,46 @@ async function getMajor(searchMajor, degree)
         else
         {
             reject("Degree does not contain input major.");
+        }
+    });
+}
+
+function collectPrerequisites(version, code)
+{
+    cacheSearch("unit", {"version": version, "code": code}).then(function(unit)
+    {
+        if (unit != null)
+        {
+            let requisites = JSON.parse(unit.data).requisites;
+            let prerequisites = [];
+            if (requisites.length > 0)
+            {
+                // Loops through all kinds of requisites (prerequisites, exclusions).
+                for (let req of requisites)
+                {
+                    if (req.requisite_type.label.toUpperCase() == "PREREQUISITE")
+                    {
+                        if (req.containers[0].containers.length > 0)
+                        {
+                            for (let splitReqItem of req.containers[0].containers)
+                            {
+                                // Adds individual prerequisites to prerequisite array.
+                                for (let reqItem of splitReqItem.relationships)
+                                {
+                                    prerequisites.push({"version": reqItem.academic_item_version_name, "code": reqItem.academic_item_code});
+                                }
+                            }
+                        }
+                        // Adds individual prerequisites to prerequisite array.
+                        for (let reqItem of req.containers[0].relationships)
+                        {
+                            prerequisites.push({"version": reqItem.academic_item_version_name, "code": reqItem.academic_item_code});
+                        }
+                    }
+                }
+            }
+
+            console.log(prerequisites);
         }
     });
 }

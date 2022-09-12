@@ -157,6 +157,39 @@ async function searchHandbook(searchParam, year, contentType, size)
 }
 
 /**
+ * Fetches handbook entry for item with given type, version, and code.
+ * @param {String} contentType Type of items to search for. Any combination of:
+ * "murdoch_psubject", "murdoch_pcourse", "murdoch_paos".
+ * @param {String} version Version number.
+ * @param {String} code Item's code e.g., ICT283, MJ-CMSC, MN-NETS.
+ * @returns Entry for item retrieved from handbook.
+ */
+async function fetchItem(contentType, version, code)
+{
+    let response = null;
+    response = await fetch("https://handbook.murdoch.edu.au/api/content/render/false/query/+contentType:" + contentType + "%20+" + contentType + ".version:" + version + "%20+" + contentType + ".code:" + code + "%20+deleted:false%20+working:true%20+live:true%20+languageId:1%20/orderBy/modDate%20desc",
+    {
+        // Request boilerplate.
+        "headers":
+        {
+            "accept": "application/json, text/plain, */*",
+            "accept-language": "en-US,en;q=0.9",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors"
+        },
+        "body": null,
+        "method": "GET"
+    });
+
+    if (response.ok)
+    {
+        response = (await response.json()).contentlets[0];
+    }
+    
+    return response;
+}
+
+/**
  * Performs linear search on given array using provided callback to check equlity.
  * Evaluating equality using a callback means JSON arrays can be searched based
  * on the fields of the objects in the array.
@@ -197,5 +230,6 @@ async function singleSearch(searchParam, year, contentType)
 }
 
 exports.searchHandbook = searchHandbook;
+exports.fetchItem = fetchItem;
 exports.searchJSONArr = searchJSONArr;
 exports.singleSearch = singleSearch;

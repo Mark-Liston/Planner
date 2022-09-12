@@ -107,7 +107,8 @@ function reqSubmit(request, response)
                 .then(major =>
                 {
                     response.writeHead(200, {"Content-Type": "text/plain"});
-                    response.end(JSON.stringify(major));
+                    //response.end(JSON.stringify(major));
+                    response.end("success");
                 })
                 .catch(errorMsg =>
                 {
