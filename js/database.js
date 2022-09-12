@@ -49,7 +49,7 @@ function cacheSearch(searchParam, type)
                 " WHERE code = ? AND" +
                 " retrievedOn > date(?, '-6 month')" +
                 " ORDER BY retrievedOn ASC";
-        db.all(qry, [searchParam, getDate()], async function(error, rows)
+        db.all(qry, [searchParam.toUpperCase(), getDate()], async function(error, rows)
         {
             if (error)
             {
@@ -69,7 +69,7 @@ function cacheSearch(searchParam, type)
                     {
                         qry = "INSERT INTO " + table + " (code, retrievedOn, data)" +
                             " VALUES(?, ?, ?)";
-                        db.run(qry, [item.code, getDate(), JSON.stringify(item)], function(error)
+                        db.run(qry, [item.code.toUpperCase(), getDate(), JSON.stringify(item)], function(error)
                         {
                             if (error)
                             {
@@ -94,7 +94,6 @@ function cacheSearch(searchParam, type)
                 }
             });
 
-            //callback(item);
             resolve(item);
         });
     });
@@ -112,42 +111,64 @@ function getDegree(searchDegree)
             }
             else
             {
-                reject("no degree");
+                reject("No matching degree could be found.");
             }
         });
     });
+}
+
+function degreeHasMajor(degree, searchMajor)
+{
+    let result = false;
+    let degreeStructure = JSON.parse(degree.CurriculumStructure).container;
+
+    // Finds index of element containing all the majors in a degree.
+    let index = scrape.searchJSONArr(degreeStructure, function(entry)
+    {
+        return entry.title.toUpperCase() == "MAJOR";
+    });
+    if (index != -1)
+    {
+        let majors = degreeStructure[index].relationship;
+
+        // Searches for major matching search input.
+        index = scrape.searchJSONArr(majors, function(entry)
+        {
+            return entry.academic_item_code.toUpperCase() == searchMajor.toUpperCase();
+        });
+        if (index != -1)
+        {
+            result = true;
+        }
+    }
+
+    return result;
 }
 
 async function getMajor(searchMajor, degree)
 {
     return new Promise(function(resolve, reject)
     {
-        resolve(degree);
+        if (degreeHasMajor(degree, searchMajor))
+        {
+            // Resolve with details of major.
+            cacheSearch(searchMajor, "major").then(function(major)
+            {
+                if (major != null)
+                {
+                    resolve(major);
+                }
+                else
+                {
+                    reject("No matching major could be found.");
+                }
+            });
+        }
+        else
+        {
+            reject("Degree does not contain input major.");
+        }
     });
-
-    // let major = null;
-    // let degreeStructure = JSON.parse(degree.CurriculumStructure).container;
-
-    // // Gets all the majors in a degree.
-    // let index = scrape.searchJSONArr(degreeStructure, function(entry)
-    // {
-    //     return entry.title.toUpperCase() == "MAJOR";
-    // });
-    // if (index != -1)
-    // {
-    //     let majors = degreeStructure[index].relationship;
-
-    //     // Searches for major matching search input.
-    //     index = searchJSONArr(majors, function(entry)
-    //     {
-    //         return entry.academic_item_code.toUpperCase() == searchMajor.toUpperCase();
-    //     });
-    //     if (index != -1)
-    //     {
-    //         // Fetches handbook entry for major.
-    //         let major = await fetchItem("murdoch_paos", majors[index].academic_item_version_name, majors[index].academic_item_code);
-    //     }
-    // }
 }
 
 exports.getDegree = getDegree;

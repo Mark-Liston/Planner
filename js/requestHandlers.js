@@ -12,7 +12,7 @@ var formidable = require("formidable");
 function send404(response)
 {
     response.writeHead(404, {"Content-Type":"text/plain"});
-    response.end("Error 404: Resource not found!");
+    response.end("Error 404: Resource not found.");
 }
 
 // Sends HTML file to client.
@@ -104,12 +104,16 @@ function reqSubmit(request, response)
         {
             database.getDegree(field.degreeInput)
                 .then(degree => database.getMajor(field.majorInput, degree))
-                .then(degree =>
+                .then(major =>
                 {
-                    response.writeHead(200, {"Content-Type": "text/html"});
-                    response.end(JSON.stringify(degree));
+                    response.writeHead(200, {"Content-Type": "text/plain"});
+                    response.end(JSON.stringify(major));
                 })
-                .catch(errorMsg => console.log(errorMsg));
+                .catch(errorMsg =>
+                {
+                    response.writeHead(404, {"Content-Type": "text/plain"});
+                    response.end(errorMsg);
+                });
         }
     });
 }

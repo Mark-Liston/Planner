@@ -33,14 +33,14 @@ function submitCourse()
         contentType: false,
         processData: false,
         data: formData,
-        success: function(result)
+        success: function(response)
         {
             $("#loading").hide();
-            console.log(result);
+            console.log(response);
         },
-        error: function(result)
+        error: function(response)
         {
-            $("#errorMsg").text("A course matching those details could not be retrieved.");
+            $("#errorMsg").text("Error: " + response.responseText);
             $("#errorMsg").show();
             $("#loading").hide();
         }
