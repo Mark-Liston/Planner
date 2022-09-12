@@ -3,7 +3,8 @@ $(document).ready(function()
     $("#submitCourse").on("click", function()
     {
         event.preventDefault();
-        if ($("#degreeInput").val() != "" && $("#optionInput").val() != "")
+        if ($("#degreeInput").val() != "" &&
+            $("#majorInput").val() != "")
         {
             $("#errorMsg").hide();
             submitCourse();
@@ -12,7 +13,7 @@ $(document).ready(function()
         else
         {
             $("#errorMsg").show();
-            $("#errorMsg").text("Input is required");
+            $("#errorMsg").text("Degree and major input is required");
         }
     });
 });

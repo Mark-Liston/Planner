@@ -197,4 +197,5 @@ async function singleSearch(searchParam, year, contentType)
 }
 
 exports.searchHandbook = searchHandbook;
+exports.searchJSONArr = searchJSONArr;
 exports.singleSearch = singleSearch;

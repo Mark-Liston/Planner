@@ -7,7 +7,7 @@ let database = require("./database.js");
 var fs = require("fs");
 var formidable = require("formidable");
 // var url = require("url");
-var http = require("http");
+// var http = require("http");
 
 function send404(response)
 {
@@ -95,11 +95,22 @@ function reqSubmit(request, response)
     let form = new formidable.IncomingForm();
     form.parse(request, async function(error, field)
     {
-        database.getDegree(field.optionInput, function(degree)
+        if (error)
         {
-            response.writeHead(200, {'Content-Type': 'application/json'});
-            response.end(JSON.stringify(degree));
-        });
+            console.error(error.message);
+        }
+
+        else
+        {
+            database.getDegree(field.degreeInput)
+                .then(degree => database.getMajor(field.majorInput, degree))
+                .then(degree =>
+                {
+                    response.writeHead(200, {"Content-Type": "text/html"});
+                    response.end(JSON.stringify(degree));
+                })
+                .catch(errorMsg => console.log(errorMsg));
+        }
     });
 }
 
