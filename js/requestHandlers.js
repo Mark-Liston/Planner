@@ -91,22 +91,15 @@ function reqScript(request, response)
 function reqSubmit(request, response)
 {
     console.log("Request handler 'submit' was called.");
-    console.log("... about to parse ...");
 
     let form = new formidable.IncomingForm();
-    form.parse(request, function(error, field)
+    form.parse(request, async function(error, field)
     {
-        console.log("parsing done");
-
-        database.getDegree(field.optionInput);
-        //(async function()
-        //{
-        //    console.log(await scrape.getDegree(field.optionInput));
-        //})();
-
-        response.writeHead(200, {"Content-Type": "text/html"});
-        response.end("hey");
-
+        database.getDegree(field.optionInput, function(degree)
+        {
+            response.writeHead(200, {'Content-Type': 'application/json'});
+            response.end(JSON.stringify(degree));
+        });
     });
 }
 

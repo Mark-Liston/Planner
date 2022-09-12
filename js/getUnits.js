@@ -35,6 +35,7 @@ function submitCourse()
         success: function(result)
         {
             $("#loading").hide();
+            console.log(result);
         },
         error: function(result)
         {

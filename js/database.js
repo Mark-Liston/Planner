@@ -12,18 +12,15 @@ function getDate()
     return new Date().toISOString().slice(0, -14)
 }
 
-async function getDegree(searchDegree)
+async function getDegree(searchDegree, callback)
 {
+    let degree = null;
+
     let db = new sqlite.Database("database/Planner.db", sqlite.OPEN_READWRITE, function(error)
     {
         if (error)
         {
             console.error(error.message);
-        }
-    
-        else
-        {
-            console.log("Connected to the Planner database.");
         }
     });
     
@@ -43,22 +40,30 @@ async function getDegree(searchDegree)
 
         else
         {
+            // If there is no matching degree in the database from the last 6 months.
             if (rows.length == 0)
             {
-                qry = "INSERT INTO Degree (code, retrievedOn, data)" +
-                    " VALUES(?, ?, ?)";
-                let degree = await scrape.singleSearch(searchDegree, new Date().getFullYear(), ["murdoch_pcourse"]);
-                console.log(JSON.parse(degree.data));
-                db.run(qry, [searchDegree, getDate(), JSON.stringify(degree)], function(error)
+                // Scrape degree from handbook and insert it into database if found.
+                degree = await scrape.singleSearch(searchDegree, new Date().getFullYear(), ["murdoch_pcourse"]);
+                if (degree != null)
                 {
-                    if (error)
+                    qry = "INSERT INTO Degree (code, retrievedOn, data)" +
+                        " VALUES(?, ?, ?)";
+                    db.run(qry, [searchDegree, getDate(), JSON.stringify(degree)], function(error)
                     {
-                        return console.error(error.message);
-                    }
-                });
+                        if (error)
+                        {
+                            console.error(error.message);
+                        }
+                    });
+                }
             }
 
-            //console.log(rows[0].data);
+            // If the degree already exists in the database.
+            else
+            {
+                degree = JSON.parse(rows[0].data);
+            }
         }
 
         db.close(function(error)
@@ -67,12 +72,9 @@ async function getDegree(searchDegree)
             {
                 console.error(error.message);
             }
-
-            else
-            {
-                console.log("Closed the database connection.");
-            }
         });
+
+        callback(degree);
     });
 }
 
