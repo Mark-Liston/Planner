@@ -8,33 +8,32 @@ function extractUnits(arr, units)
 {
     for (let entry of arr)
     {
-        let groupName = entry.title;
-        units[groupName] = [];
+        let temp = [];
+        let electiveUnits = [];
+        let mandatoryUnits = [];
+
         for (let unit of entry.relationship)
         {
             // Stores whether unit is elective or mandatory and whether it is AND or OR.
             let necessity = unit.parent_connector;
             if (necessity.label.toUpperCase() == "OPTIONAL")
             {
-                if (!units[groupName].electiveUnits)
-                {
-                    units[groupName].electiveUnits = [];
-                }
-                units[groupName].electiveUnits.push({"version": unit.academic_item_version_name,
+                electiveUnits.push({"version": unit.academic_item_version_name,
                                     "code": unit.academic_item_code,
                                     "operator": necessity.value});
             }
             else if (necessity.label.toUpperCase() == "MANDATORY")
             {
-                if (!units[groupName].mandatoryUnits)
-                {
-                    units[groupName].mandatoryUnits = [];
-                }
-                units[groupName].mandatoryUnits.push({"version": unit.academic_item_version_name,
+                mandatoryUnits.push({"version": unit.academic_item_version_name,
                                     "code": unit.academic_item_code,
                                     "operator": necessity.value});
             }
         }
+
+        temp.push({"Elective": electiveUnits});
+        temp.push({"Mandatory": mandatoryUnits});
+        let groupName = entry.title;
+        units.push({groupName: temp});
     }
 }
 
@@ -56,11 +55,9 @@ function getDegreeUnits(degree)
         if (index != -1)
         {
             let spine = degreeStructure[index].container;
-            if (!units["Spine"])
-            {
-                units["Spine"] = [];
-            }
-            extractUnits(spine, units["Spine"]);
+            let temp = [];
+            extractUnits(spine, temp);
+            units.push({"Spine": temp});
         }
 
         // Extracts course core of degree.
@@ -71,11 +68,9 @@ function getDegreeUnits(degree)
         if (index != -1)
         {
             let courseCore = degreeStructure[index].container;
-            if (!units["CourseCore"])
-            {
-                units["CourseCore"] = [];
-            }
-            extractUnits(courseCore, units["CourseCore"]);
+            let temp = [];
+            extractUnits(courseCore, temp);
+            units.push({"CourseCore": temp});
         }
     }
 
@@ -100,42 +95,10 @@ function getMajorUnits(major)
         if (index != -1)
         {
             let major = degreeStructure[index].container;
-            if (!units["Major"])
-            {
-                units["Major"] = [];
-            }
-            extractUnits(major, units["Major"]);
+            let temp = [];
+            extractUnits(major, temp);
+            units.push({"Major": temp});
         }
-
-        // // Extracts spine of degree.
-        // let index = scrape.searchJSONArr(degreeStructure, function(entry)
-        // {
-        //     return entry.title.toUpperCase() == "SPINE";
-        // });
-        // if (index != -1)
-        // {
-        //     let spine = degreeStructure[index].container;
-        //     if (!units["Spine"])
-        //     {
-        //         units["Spine"] = [];
-        //     }
-        //     extractUnits(spine, units["Spine"]);
-        // }
-
-        // // Extracts course core of degree.
-        // index = scrape.searchJSONArr(degreeStructure, function(entry)
-        // {
-        //     return entry.title.toUpperCase() == "COURSE CORE";
-        // });
-        // if (index != -1)
-        // {
-        //     let courseCore = degreeStructure[index].container;
-        //     if (!units["CourseCore"])
-        //     {
-        //         units["CourseCore"] = [];
-        //     }
-        //     extractUnits(courseCore, units["CourseCore"]);
-        // }
     }
 
     return units;

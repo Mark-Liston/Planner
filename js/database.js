@@ -189,13 +189,14 @@ async function getMajor(searchMajor, degree)
             {
                 if (major != null)
                 {
-                    let obj = 
+                    // TEMP ///////////////////
+                    let units = 
                     {
                         "Degree": coursePlan.getDegreeUnits(degree),
                         "Major": coursePlan.getMajorUnits(major)
                     };
-
-                    resolve(util.inspect(obj, false, null, true));
+                    resolve(units);
+                    ///////////////////////////
                 }
                 else
                 {
