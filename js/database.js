@@ -4,7 +4,9 @@
 
 const scrape = require("./scrape.js");
 const coursePlan = require("./coursePlan.js");
+
 const sqlite = require("sqlite3").verbose();
+const util = require("util");
 
 const dbPath = "database/Planner.db";
 
@@ -134,17 +136,9 @@ function getDegree(searchDegree)
         {
             if (degree != null)
             {
-                //console.log(JSON.parse(degree.CurriculumStructure).container);
-
-                //console.log(degree);
-
                 let units = coursePlan.getDegreeUnits(degree);
-
-                //console.log(units);
-                for (let unit of units.mandatoryUnits)
-                {
-                    collectPrerequisites(unit.version, unit.code);
-                }
+                console.log("Degree's units:");
+                console.log(util.inspect(units, false, null, true));
 
                 resolve(degree);
             }
@@ -199,6 +193,10 @@ async function getMajor(searchMajor, degree)
             {
                 if (major != null)
                 {
+                    let units = coursePlan.getMajorUnits(major);
+                    console.log("Major's units:");
+                    console.log(util.inspect(units, false, null, true));
+
                     resolve(major);
                 }
                 else
