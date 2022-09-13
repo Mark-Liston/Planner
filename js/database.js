@@ -136,10 +136,6 @@ function getDegree(searchDegree)
         {
             if (degree != null)
             {
-                let units = coursePlan.getDegreeUnits(degree);
-                console.log("Degree's units:");
-                console.log(util.inspect(units, false, null, true));
-
                 resolve(degree);
             }
             else
@@ -193,11 +189,13 @@ async function getMajor(searchMajor, degree)
             {
                 if (major != null)
                 {
-                    let units = coursePlan.getMajorUnits(major);
-                    console.log("Major's units:");
-                    console.log(util.inspect(units, false, null, true));
+                    let obj = 
+                    {
+                        "Degree": coursePlan.getDegreeUnits(degree),
+                        "Major": coursePlan.getMajorUnits(major)
+                    };
 
-                    resolve(major);
+                    resolve(util.inspect(obj, false, null, true));
                 }
                 else
                 {

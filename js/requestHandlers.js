@@ -104,11 +104,12 @@ function reqSubmit(request, response)
         {
             database.getDegree(field.degreeInput)
                 .then(degree => database.getMajor(field.majorInput, degree))
-                .then(major =>
+                .then(structure =>
                 {
                     response.writeHead(200, {"Content-Type": "text/plain"});
                     //response.end(JSON.stringify(major));
-                    response.end("success");
+                    //console.log(structure);
+                    response.end(structure);
                 })
                 .catch(errorMsg =>
                 {

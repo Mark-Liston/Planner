@@ -36,10 +36,37 @@ function submitCourse()
         success: function(response)
         {
             $("#loading").hide();
+
+            // let data =
+            // "<table>" +
+            //     "<tr>" +
+            //         "<th>Degree</th>" +
+            //     "</tr>" +
+
+            //     "<tr>" +
+            //         "<th>Spine</th>" +
+            //         "<th>Course Core</th>" +
+            //     "</tr>";
+
+            
+
+            // data += "</table>" +
+            // "<br/>" +
+            // "<table>" +
+            //     "<tr>" +
+            //         "<th>Major</th>" +
+            //     "</tr>" +
+            // "</table>";
+
+            // $("#display").html(data);
+            // $("#display table, th, td").css("border", "1px solid");
+            // $("#display").show();
             console.log(response);
         },
         error: function(response)
         {
+            $("display").hide();
+
             $("#errorMsg").text("Error: " + response.responseText);
             $("#errorMsg").show();
             $("#loading").hide();
