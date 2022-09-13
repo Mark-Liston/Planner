@@ -39,6 +39,15 @@ nav{
 	padding: 5px;
 }
 
+.btn-primary{
+	background-color: #e0242d;
+	border-color: black;
+}
+
+.btn-primary:hover{
+	background-color: #91171d;
+}
+
 h1{
 	font-family: Ginger;
 	text-align: center;
