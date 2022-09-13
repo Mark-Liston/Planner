@@ -28,29 +28,35 @@ function extractUnits(arr, units)
 
 function getDegreeUnits(degree)
 {
-    let degreeStructure = JSON.parse(degree.CurriculumStructure).container;
-    let units = {"electiveUnits": [], "mandatoryUnits": []};
+    let units = null;
 
-    // Extracts spine of degree.
-    let index = scrape.searchJSONArr(degreeStructure, function(entry)
+    // Checks if degree has a curriculum structure.
+    if (degree["CurriculumStructure"])
     {
-        return entry.title.toUpperCase() == "SPINE";
-    });
-    if (index != -1)
-    {
-        let spine = degreeStructure[index].container;
-        extractUnits(spine, units);
-    }
+        let degreeStructure = JSON.parse(degree.CurriculumStructure).container;
+        units = {"electiveUnits": [], "mandatoryUnits": []};
 
-    // Extracts course core of degree.
-    index = scrape.searchJSONArr(degreeStructure, function(entry)
-    {
-        return entry.title.toUpperCase() == "COURSE CORE";
-    });
-    if (index != -1)
-    {
-        let courseCore = degreeStructure[index].container;
-        extractUnits(courseCore, units);
+        // Extracts spine of degree.
+        let index = scrape.searchJSONArr(degreeStructure, function(entry)
+        {
+            return entry.title.toUpperCase() == "SPINE";
+        });
+        if (index != -1)
+        {
+            let spine = degreeStructure[index].container;
+            extractUnits(spine, units);
+        }
+
+        // Extracts course core of degree.
+        index = scrape.searchJSONArr(degreeStructure, function(entry)
+        {
+            return entry.title.toUpperCase() == "COURSE CORE";
+        });
+        if (index != -1)
+        {
+            let courseCore = degreeStructure[index].container;
+            extractUnits(courseCore, units);
+        }
     }
 
     return units;

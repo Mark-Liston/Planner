@@ -136,14 +136,15 @@ function getDegree(searchDegree)
             {
                 //console.log(JSON.parse(degree.CurriculumStructure).container);
 
+                //console.log(degree);
+
                 let units = coursePlan.getDegreeUnits(degree);
 
-                // console.log(units);
-                // for (let unit of units.mandatoryUnits)
-                // {
-                //     collectPrerequisites(unit.version, unit.code);
-                // }
-                // console.log("done");
+                //console.log(units);
+                for (let unit of units.mandatoryUnits)
+                {
+                    collectPrerequisites(unit.version, unit.code);
+                }
 
                 resolve(degree);
             }
@@ -158,25 +159,29 @@ function getDegree(searchDegree)
 function degreeHasMajor(degree, searchMajor)
 {
     let result = false;
-    let degreeStructure = JSON.parse(degree.CurriculumStructure).container;
-
-    // Finds index of element containing all the majors in a degree.
-    let index = scrape.searchJSONArr(degreeStructure, function(entry)
+    // Checks if degree has a curriculum structure.
+    if (degree["CurriculumStructure"])
     {
-        return entry.title.toUpperCase() == "MAJOR";
-    });
-    if (index != -1)
-    {
-        let majors = degreeStructure[index].relationship;
+        let degreeStructure = JSON.parse(degree.CurriculumStructure).container;
 
-        // Searches for major matching search input.
-        index = scrape.searchJSONArr(majors, function(entry)
+        // Finds index of element containing all the majors in a degree.
+        let index = scrape.searchJSONArr(degreeStructure, function(entry)
         {
-            return entry.academic_item_code.toUpperCase() == searchMajor.toUpperCase();
+            return entry.title.toUpperCase() == "MAJOR";
         });
         if (index != -1)
         {
-            result = true;
+            let majors = degreeStructure[index].relationship;
+
+            // Searches for major matching search input.
+            index = scrape.searchJSONArr(majors, function(entry)
+            {
+                return entry.academic_item_code.toUpperCase() == searchMajor.toUpperCase();
+            });
+            if (index != -1)
+            {
+                result = true;
+            }
         }
     }
 
@@ -194,8 +199,6 @@ async function getMajor(searchMajor, degree)
             {
                 if (major != null)
                 {
-                    collectPrerequisites("14", "ICT283");
-
                     resolve(major);
                 }
                 else
@@ -215,6 +218,7 @@ function collectPrerequisites(version, code)
 {
     cacheSearch("unit", {"version": version, "code": code}).then(function(unit)
     {
+        console.log(code);
         if (unit != null)
         {
             let requisites = JSON.parse(unit.data).requisites;

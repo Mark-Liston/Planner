@@ -113,7 +113,7 @@ function reqSubmit(request, response)
                 .catch(errorMsg =>
                 {
                     response.writeHead(404, {"Content-Type": "text/plain"});
-                    response.end(errorMsg);
+                    response.end(errorMsg.toString());
                 });
         }
     });
