@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Course Planner</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+
+	<script src="main.js"></script>
+    <script src="getUnits.js"></script>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<!--Nav Menu-->
+	<nav class="navbar navbar-expand-md">
+		<div class="container-fluid">
+			<img src="images/logo.png" class="img-fluid logo" width="250"></img>
+
+			<!--Account Drop down-->
+			<div id="profile-dropdown" class="dropdown">
+				<button class="btn btn-secondary dropdown-toggle" type="button" id="profile-button" data-bs-toggle="dropdown" aria-expanded="false">
+					<img id="icon" src="images/Default Profile Icon.png" alt="">
+					Guest
+					<span id="caret"></span>
+				</button>
+				<ul class="dropdown-menu dropdown-menu-lg-end">
+					<li><a href="" class="dropdown-item">Login</a></li>
+					<li><a href="" class="dropdown-item">Help</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<!-- Body-->
+
+	<div class="container content">
+		<!-- Landing page for the website -->
+		<article id="landing" class="page">
+			<h1>Welcome to the Course Planner!</h1>
+			<h2>Please choose to generate a new plan <br/>or login to see your existing plan</h2>
+			<div class="container subcontent d-grid gap-2 mx-auto">
+
+				<button type="button" class="btn btn-primary btn-lg" onclick="MakeNewPlan()">Create New Plan</button>
+				<button type="button" class="btn btn-primary btn-lg">Login</button>
+
+			</div>
+		</article>
+		<!-- For creating a temporary course plan -->
+		<article id="search" class="page">
+			<h1>Let's get some of that course info</h1>
+			<h2>Please enter your course code and details</h2>
+			<div class="container subcontent">
+				<p class="text-center">Please enter your course info here below,<br/>
+				This website will help retreive your course details and display them
+				</p>
+				<form enctype="multipart/form-data" id="StudyDetails" class="row g-3">
+                    <label for="studentIDInput">Student ID:</label>
+                    <input type="text" id="studentIDInput" name="studentIDInput" class="form-control" placeholder="e.g. 23858265">
+					
+                    <label for="degreeInput">Course/Degree code:</label>
+                    <input type="text" id="degreeInput" name="degreeInput" class="form-control" placeholder="e.g. B1356">
+                
+                    <label for="majorInput">Major:</label>
+                    <input type="text" id="majorInput" name="majorInput" class="form-control" placeholder="e.g. MJ-3625">
+
+					<!-- For dynamic addition of additional subjects being studied -->
+					<div class="container col-auto">
+						<h3 class="text-center"> Additional Majors/Minors</h3>
+						<p class="text-center">If you have any other additional Majors or Minors add them here!</p>
+						<div class="subcontent">
+							<div id="ExtraStudy">
+								<!-- Data will be retreived from this not by ID, but by the class "ExtraMajor" and must be iterated over for all inputs -->
+								<div class="row entry">
+									<div class="col-10">
+										<input type="text" class="ExtraMajor form-control " placeholder="e.g. CJ-432">
+									</div>
+									<button type="button" class="btn btn-outline-danger col-auto" onclick="RemoveStudy(this)">X</button>
+								</div>
+							</div>
+							<div class="text-center">
+								<br>
+								<button id="AddStudyBtn" type="button" class="btn btn-primary" onclick="AddStudy()">+</button>
+								<br>
+							</div>
+						</div>
+					</div>
+
+					<button type="submit" id="submitCourse" class="btn btn-primary">Go!</button>
+				</form>
+			</div>
+		</article>
+		<article id="results" class="page">
+			<h1>Here is your course outline!</h1>
+			<h2>Take a screenshot if you need</h2>
+			<div class="container subcontent">
+				<p class="text-center">Get to it Kyle and Mark!
+				</p>
+			</div>
+		</article>
+	</div>
+
+
+</body>
+</html>
