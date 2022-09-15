@@ -6,7 +6,7 @@ let database = require("./database.js");
 
 var fs = require("fs");
 var formidable = require("formidable");
-// var url = require("url");
+let util = require("util");
 // var http = require("http");
 
 function send404(response)
@@ -167,8 +167,8 @@ function reqSubmit(request, response)
                 .then(degree => database.getMajor(field.majorInput, degree))
                 .then(structure =>
                 {
+                    //console.log(util.inspect(structure, false, null, true));
                     response.writeHead(200, {"Content-Type": "text/plain"});
-                    //response.end(JSON.stringify(major));
                     response.end(JSON.stringify(structure));
                 })
                 .catch(errorMsg =>

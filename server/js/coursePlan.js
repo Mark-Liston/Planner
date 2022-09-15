@@ -33,7 +33,9 @@ function extractUnits(arr, units)
         temp.push({"Elective": electiveUnits});
         temp.push({"Mandatory": mandatoryUnits});
         let groupName = entry.title;
-        units.push({groupName: temp});
+        let obj = {};
+        obj[groupName] = temp;
+        units.push(obj);
     }
 }
 

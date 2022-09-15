@@ -6,7 +6,6 @@ const scrape = require("./scrape.js");
 const coursePlan = require("./coursePlan.js");
 
 const sqlite = require("sqlite3").verbose();
-const util = require("util");
 
 const dbPath = "database/Planner.db";
 
