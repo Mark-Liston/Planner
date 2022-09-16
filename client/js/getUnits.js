@@ -21,8 +21,6 @@ function submitCourse()
         },
         error: function(response)
         {
-            // $("display").hide();
-
             // $("#errorMsg").text("Error: " + response.responseText);
             // $("#errorMsg").show();
             // $("#loading").hide();

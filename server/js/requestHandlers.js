@@ -167,7 +167,7 @@ function reqSubmit(request, response)
                 .then(degree => database.getMajor(field.majorInput, degree))
                 .then(structure =>
                 {
-                    //console.log(util.inspect(structure, false, null, true));
+                    console.log(util.inspect(structure, false, null, true));
                     response.writeHead(200, {"Content-Type": "text/plain"});
                     response.end(JSON.stringify(structure));
                 })

@@ -20,14 +20,23 @@ function extractUnits(arr, units)
             {
                 electiveUnits.push({"version": unit.academic_item_version_name,
                                     "code": unit.academic_item_code,
+                                    "name": unit.academic_item_name,
+                                    "cp": unit.academic_item_credit_points,
                                     "operator": necessity.value});
             }
             else if (necessity.label.toUpperCase() == "MANDATORY")
             {
                 mandatoryUnits.push({"version": unit.academic_item_version_name,
                                     "code": unit.academic_item_code,
+                                    "name": unit.academic_item_name,
+                                    "cp": unit.academic_item_credit_points,
                                     "operator": necessity.value});
             }
+
+            // if (unit.academic_item_code == "ICT283")
+            // {
+            //     console.log(unit);
+            // }
         }
 
         temp.push({"Elective": electiveUnits});

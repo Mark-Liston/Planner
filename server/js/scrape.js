@@ -148,7 +148,12 @@ async function searchHandbook(searchParam, year, contentType, size)
         "method": "POST"
     });
 
-    if (response.ok)
+    if (Object.keys(response).length == 0)
+    {
+        response = null;
+    }
+    
+    else if (response.ok)
     {
         response = (await response.json()).contentlets;
     }
