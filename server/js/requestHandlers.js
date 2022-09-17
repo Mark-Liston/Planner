@@ -82,7 +82,7 @@ function reqScript(request, response)
         {
             console.log("Request handler 'script' was called.");
 
-            response.writeHead(200, {"Content-Type": "text/html"});
+            response.writeHead(200, {"Content-Type": "text/javascript"});
             response.end(js);
         }
     });
@@ -167,7 +167,7 @@ function reqSubmit(request, response)
                 .then(degree => database.getMajor(field.majorInput, degree))
                 .then(structure =>
                 {
-                    console.log(util.inspect(structure, false, null, true));
+                    //console.log(util.inspect(structure, false, null, true));
                     response.writeHead(200, {"Content-Type": "text/plain"});
                     response.end(JSON.stringify(structure));
                 })

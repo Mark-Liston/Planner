@@ -16,8 +16,22 @@ function submitCourse()
         success: function(response)
         {
             //$("#loading").hide();
+            let coursePlan = JSON.parse(response);
+            console.log(coursePlan);
+            let cont = true;
+            if (coursePlan["message"])
+            {
+                if (confirm(coursePlan.message + "\n" +
+                    "Would you like to generate a course plan anyway?") == false)
+                {
+                    cont = false;
+                }
+            }
 
-            console.log(JSON.parse(response));
+            if (cont)
+            {
+                console.log("continue");
+            }
         },
         error: function(response)
         {

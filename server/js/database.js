@@ -181,32 +181,128 @@ async function getMajor(searchMajor, degree)
 {
     return new Promise(function(resolve, reject)
     {
-        if (degreeHasMajor(degree, searchMajor))
+        // Resolve with details of major.
+        cacheSearch("major", {"code": searchMajor}).then(function(major)
         {
-            // Resolve with details of major.
-            cacheSearch("major", {"code": searchMajor}).then(function(major)
+            if (major != null)
             {
-                if (major != null)
+                console.log(JSON.parse(degree.CurriculumStructure));
+                let structure = JSON.parse(degree.CurriculumStructure);
+                let plan =
                 {
-                    // TEMP ///////////////////
-                    let units = 
-                    {
-                        "Degree": coursePlan.getDegreeUnits(degree),
-                        "Major": coursePlan.getMajorUnits(major)
-                    };
-                    resolve(units);
-                    ///////////////////////////
-                }
-                else
+                    "student_id": 0,
+                    "student_name": "",
+                    "degree_code": degree.code, 
+                    "credit_points":  Number(structure.credit_points),
+                    "options":
+                    [
+                        {
+                            "type": "major",
+                            "items":
+                            [
+                                {
+                                    "code": "MJ-CMSC",
+                                    "credit_points": 0
+                                },
+                                {
+                                    "code": "MJ-MWAD",
+                                    "credit_points": 0
+                                }
+                            ]
+                        },
+                        {
+                            "type": "co-major",
+                            "items": [{}]
+                        },
+                        {
+                            "type": "minor",
+                            "items": [{}]
+                        },
+                        {
+                            "type": "elective",
+                            "quantity": 0,
+                            "credit_points": 0
+                        }
+                    ],
+                    "study_load": 12,
+                    "completed_credit_points": 0,
+                    "planned_credit_points": 0,
+                    "completed_units":
+                    [
+                        {
+                            "code": "ICT283",
+                            "grade": 69
+                        },
+                        {
+                            "code": "ICT375"
+                        }
+                    ],
+                    "planned_units": [{}],
+                    "schedule":
+                    [
+                        {
+                            "year": 2023,
+                            "semesters":
+                            [
+                                {
+                                    "semester": 1,
+                                    "credit_points": 0,
+                                    "units":
+                                    [
+                                        {
+                                            "type": "undecided",
+                                            "necessity": "elective",
+                                            "credit_points": 0,
+                                            "units": [{}]
+                                        },
+                                        {
+                                            "type": "decided",
+                                            "necessity": "elective",
+                                            "credit_points": 3,
+                                            "code": "ICT285"
+                                        },
+                                        {
+                                            "type": "decided",
+                                            "necessity": "mandatory",
+                                            "credit_points": 3,
+                                            "code": "ICT283"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "semester": 2,
+                                    "credit_points": 0,
+                                    "units": [{}]
+                                }
+                            ]
+                        },
+                        {
+                            "year": 2024,
+                            "semesters": [{}]
+                        }
+                    ]
+                };
+                console.log(JSON.stringify(plan, 2, "  "));
+
+                // TEMP ///////////////////
+                let units = 
                 {
-                    reject("No matching major could be found.");
+                    "Degree": coursePlan.getDegreeUnits(degree),
+                    "Major": coursePlan.getMajorUnits(major)
+                };
+                
+                if (!degreeHasMajor(degree, searchMajor))
+                {
+                    units.message = "Degree does not contain major";
                 }
-            });
-        }
-        else
-        {
-            reject("Degree does not contain input major.");
-        }
+                resolve(units);
+                ///////////////////////////
+            }
+            else
+            {
+                reject("No matching major could be found.");
+            }
+        });
     });
 }
 
