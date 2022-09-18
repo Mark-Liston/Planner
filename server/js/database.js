@@ -4,6 +4,7 @@
 
 const scrape = require("./scrape.js");
 const coursePlan = require("./coursePlan.js");
+const planDef = require("./planDef.js");
 
 const sqlite = require("sqlite3").verbose();
 
@@ -186,103 +187,11 @@ async function getMajor(searchMajor, degree)
         {
             if (major != null)
             {
-                console.log(JSON.parse(degree.CurriculumStructure));
+                //console.log(JSON.parse(degree.CurriculumStructure));
                 let structure = JSON.parse(degree.CurriculumStructure);
-                let plan =
-                {
-                    "student_id": 0,
-                    "student_name": "",
-                    "degree_code": degree.code, 
-                    "credit_points":  Number(structure.credit_points),
-                    "options":
-                    [
-                        {
-                            "type": "major",
-                            "items":
-                            [
-                                {
-                                    "code": "MJ-CMSC",
-                                    "credit_points": 0
-                                },
-                                {
-                                    "code": "MJ-MWAD",
-                                    "credit_points": 0
-                                }
-                            ]
-                        },
-                        {
-                            "type": "co-major",
-                            "items": [{}]
-                        },
-                        {
-                            "type": "minor",
-                            "items": [{}]
-                        },
-                        {
-                            "type": "elective",
-                            "quantity": 0,
-                            "credit_points": 0
-                        }
-                    ],
-                    "study_load": 12,
-                    "completed_credit_points": 0,
-                    "planned_credit_points": 0,
-                    "completed_units":
-                    [
-                        {
-                            "code": "ICT283",
-                            "grade": 69
-                        },
-                        {
-                            "code": "ICT375"
-                        }
-                    ],
-                    "planned_units": [{}],
-                    "schedule":
-                    [
-                        {
-                            "year": 2023,
-                            "semesters":
-                            [
-                                {
-                                    "semester": 1,
-                                    "credit_points": 0,
-                                    "units":
-                                    [
-                                        {
-                                            "type": "undecided",
-                                            "necessity": "elective",
-                                            "credit_points": 0,
-                                            "units": [{}]
-                                        },
-                                        {
-                                            "type": "decided",
-                                            "necessity": "elective",
-                                            "credit_points": 3,
-                                            "code": "ICT285"
-                                        },
-                                        {
-                                            "type": "decided",
-                                            "necessity": "mandatory",
-                                            "credit_points": 3,
-                                            "code": "ICT283"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "semester": 2,
-                                    "credit_points": 0,
-                                    "units": [{}]
-                                }
-                            ]
-                        },
-                        {
-                            "year": 2024,
-                            "semesters": [{}]
-                        }
-                    ]
-                };
-                console.log(JSON.stringify(plan, 2, "  "));
+
+                let plan = new planDef.Plan();
+                console.log(plan);
 
                 // TEMP ///////////////////
                 let units = 
