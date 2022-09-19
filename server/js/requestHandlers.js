@@ -3,6 +3,7 @@
 "use strict";
 
 let database = require("./database.js");
+const coursePlan = require("./coursePlan.js");
 
 var fs = require("fs");
 var formidable = require("formidable");
@@ -163,6 +164,7 @@ function reqSubmit(request, response)
 
         else
         {
+            coursePlan.generatePlan(field);
             database.getDegree(field.degreeInput)
                 .then(degree => database.getMajor(field.majorInput, degree))
                 .then(structure =>

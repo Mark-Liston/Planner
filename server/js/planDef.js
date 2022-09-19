@@ -19,14 +19,23 @@ class Plan
 
 class Option
 {
+    type = "";
+    items = [];
 }
 
 class OptionItem
 {
+    code = "";
+    name = "";
+    credit_points = 0;
 }
 
 class CompletedUnit
 {
+    code = "";
+    name = "";
+    credit_points = 0;
+    grade = 0;
 }
 
 class Unit
@@ -53,10 +62,15 @@ class ShallowUnit
 
 class Year
 {
+    year = 0;
+    semesters = [];
 }
 
 class Semester
 {
+    semester = 0;
+    credit_points = 0;
+    units = [];
 }
 
 class UnitSelection

@@ -4,6 +4,7 @@
 
 const scrape = require("./scrape.js");
 const planDef = require("./planDef.js"); 
+const database = require("./database.js");
 
 const util = require("util");
 
@@ -178,10 +179,124 @@ function getMajorUnits(major)
     return units;
 }
 
+function concatArray(arr1, arr2)
+{
+    for (let entry of arr2)
+    {
+        arr1.push(entry);
+    }
+}
+
+// Subtracts all the elements in arr1 that are present in arr2.
+function subtractArray(arr1, arr2)
+{
+    return arr1;
+}
+
+function fillUnits(units)
+{
+    // Initialises objects to be used repeatedly.
+    let requisites = null;
+    let label = "";
+
+    for (let unit of units)
+    {
+        if (unit["code"])
+        {
+            database.cacheSearch("unit", {"code": unit.code}).then(function(unitData)
+            {
+                if (unitData != null)
+                {
+                    if (unitData.code == "ICT283")
+                    {
+                        console.log(unitData);
+                    }
+
+                    requisites = JSON.parse(unitData.data).requisites;
+                    if (requisites.length > 0)
+                    {
+                        // Loops through all kinds of requisites (prerequisites, exclusions).
+                        for (let req of requisites)
+                        {
+                            label = req.requisite_type.label.toUpperCase();
+                            if (label == "PREREQUISITE")
+                            {
+                                
+                            }
+
+                            else if (label == "EXCLUSION")
+                            {
+
+                            }
+                        }
+                    }
+                }
+            })
+            .catch(errorMsg => console.log(errorMsg));
+        }
+    }
+}
+
 function generatePlan(input)
 {
+    let plan = new planDef.Plan();
+    plan.student_id = input.studentIDInput;
+    plan.student_name = "placeholdername"; // Add field for student name.
+    plan.degree_code = input.degreeInput;
+    plan.study_load = 12; // Add field for study load.
+    plan.completed_credit_points = 0;
+    plan.completed_units = []; // Add completed units input.
+    
+    database.getDegree(input.degreeInput)
+        .then(function(degree)
+        {
+            //console.log(degree);
+            plan.credit_points = Number(JSON.parse(degree.CurriculumStructure).credit_points);
+            plan.planned_units = getDegreeUnits(degree);
+            //console.log(plan);
 
+            if (input.majorInput != "")
+            {
+                // TODO: Remove any duplicates from units in option items.
+
+                database.getMajor(input.majorInput, degree)
+                    .then(function(major)
+                    {
+                        // TODO: Change to only make major element if it doesn't
+                        // already exist. If it does exist, access option
+                        // element with type == 'major'.
+                        let majorOption = new planDef.Option();
+                        majorOption.type = "major";
+
+                        let major1 = new planDef.OptionItem();
+                        major1.code = major.code;
+                        major1.name = major.title;
+                        major1.credit_points = Number(JSON.parse(major.CurriculumStructure).credit_points);
+
+                        concatArray(plan.planned_units, getMajorUnits(major));
+                        //plan.planned_units = plan.planned_units.concat(getMajorUnits(major));
+
+                        majorOption.items.push(major1);
+                        plan.options.push(majorOption);
+                    })
+                    .catch(errorMsg => console.log(errorMsg.toString()));
+            }
+
+            // TODO: Subtract completed units from planned units.
+            plan.planned_units = subtractArray(plan.planned_units, plan.completed_units);
+
+            fillUnits(plan.planned_units);
+
+            for (let thing of plan.planned_units)
+            {
+                console.log(thing.code);
+            }
+            return plan;
+        })
+        //.then(thing => console.log(plan))//console.log(util.inspect(plan, false, null, true)))
+        .catch(errorMsg => console.log(errorMsg.toString()));
 }
 
 exports.getDegreeUnits = getDegreeUnits;
 exports.getMajorUnits = getMajorUnits;
+exports.generatePlan = generatePlan;

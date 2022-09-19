@@ -187,25 +187,12 @@ async function getMajor(searchMajor, degree)
         {
             if (major != null)
             {
-                //console.log(JSON.parse(degree.CurriculumStructure));
-                let structure = JSON.parse(degree.CurriculumStructure);
-
-                let plan = new planDef.Plan();
-                console.log(plan);
-
-                // TEMP ///////////////////
-                let units = 
-                {
-                    "Degree": coursePlan.getDegreeUnits(degree),
-                    "Major": coursePlan.getMajorUnits(major)
-                };
-                
                 if (!degreeHasMajor(degree, searchMajor))
                 {
-                    units.message = "Degree does not contain major";
+                    major.message = "Degree does not contain major";
                 }
-                resolve(units);
-                ///////////////////////////
+                
+                resolve(major);
             }
             else
             {
@@ -258,3 +245,4 @@ function collectPrerequisites(version, code)
 
 exports.getDegree = getDegree;
 exports.getMajor = getMajor;
+exports.cacheSearch = cacheSearch;
