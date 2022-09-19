@@ -7,6 +7,12 @@ const planDef = require("./planDef.js");
 
 const util = require("util");
 
+/**
+ * Checks whether array is consistent i.e., whether all items in array are
+ * identical.
+ * @param {Array} arr Array to evaluate the consistency of.
+ * @return null if array is consistent. First inconsistent entry in array.
+ */
 function isArrayConsistent(arr)
 {
     let returnVal = null;
@@ -22,27 +28,67 @@ function isArrayConsistent(arr)
     return returnVal;
 }
 
-function extractUnits(arr, units)//electiveUnits, mandatoryUnits)
+function generateElectives(units, entry, electives, creditPoints)
 {
-    let things = [];
+    let elective = new planDef.UnitSelection();
+    elective.type = "undecided"; // Shows that user hasn't decided on which unit to do to satisfy the elective.
+    elective.necessity = "elective";
+    elective.credit_points = creditPoints[0];
+    elective.units = electives; // All the units/options to choose from for the elective.
+
+    // Number of options for the elective.
+    let numOfUnits = Math.floor(entry.credit_points / creditPoints[0]);
+    // If all array elements are the same = null.
+    // If any array elements are different = first inconsistent element.
+    let inconsistency = isArrayConsistent(creditPoints);
+    if (inconsistency != null)
+    {
+        // Determines whether there may be more or fewer elective units
+        // available for the container.
+        // An example of where this would apply is if most of the options for
+        // the elective
+        let adverb = "more";
+        if (inconsistency > elective.credit_points)
+        {
+            adverb = "fewer";
+        }
+        elective.notes.push("The parent group of this unit requires " +
+            entry.credit_points + " credit points. This has been " +
+            "divided into "  +
+            numOfUnits + " units. However, some units provide more " +
+            "than " +
+            elective.credit_points + " credit points. This may allow for " +
+            adverb + " units to be selected.");
+    }
+    // Clones elective for as many electives in the current entry.
+    for (let i = 0; i < numOfUnits; ++i)
+    {
+        units.push(JSON.parse(JSON.stringify(elective)));
+    }
+}
+
+function extractUnits(arr)
+{
+    let units = [];
+    
     for (let entry of arr)
     {
-        let createElective = false;
-        let creditPoints = [];
+        // Whether the entry is made up of electives.
+        let electivesExist = false;
+        // If entry is made up of electives, this stores the optional units
+        // for that elective.
         let electives = [];
+        // Stores the credit points for each entry in electives[].
+        let creditPoints = [];
 
         for (let unit of entry.relationship)
         {
-            // Stores whether unit is elective or mandatory and whether it is AND or OR.
+            // Stores whether unit is elective or mandatory.
             let necessity = unit.parent_connector;
             if (necessity.label.toUpperCase() == "OPTIONAL")
             {
                 creditPoints.push(unit.academic_item_credit_points);
-                createElective = true;
-                if (!units.hasOwnProperty("elective_units"))
-                {
-                    units.elective_units = [];
-                }
+                electivesExist = true;
 
                 let shallowUnit = new planDef.ShallowUnit();
                 shallowUnit.code = unit.academic_item_code;
@@ -53,11 +99,6 @@ function extractUnits(arr, units)//electiveUnits, mandatoryUnits)
             }
             else if (necessity.label.toUpperCase() == "MANDATORY")
             {
-                if (!units.hasOwnProperty("mandatory_units"))
-                {
-                    units.mandatory_units = [];
-                }
-
                 let mandatoryUnit = new planDef.Unit();
                 mandatoryUnit.type = "decided";
                 mandatoryUnit.necessity = "mandatory";
@@ -65,48 +106,16 @@ function extractUnits(arr, units)//electiveUnits, mandatoryUnits)
                 mandatoryUnit.code = unit.academic_item_code;
                 mandatoryUnit.title = unit.academic_item_name;
 
-                things.push(mandatoryUnit);
+                units.push(mandatoryUnit);
             }
         }
-        if (createElective)
+        // If entry contained electives, they are organised and pushed to units.
+        if (electivesExist)
         {
-            let elective = new planDef.UnitSelection();
-            elective.type = "undecided";
-            elective.necessity = "elective";
-            elective.credit_points = creditPoints[0];
-            elective.units = electives;
-
-            // Number of options for the elective.
-            let numOfUnits = Math.floor(entry.credit_points / creditPoints[0]);
-            // If all array elements are the same = null.
-            // If any array elements are different = first inconsistent element.
-            let inconsistency = isArrayConsistent(creditPoints);
-            if (inconsistency != null)
-            {
-                let adverb = "more";
-                if (inconsistency > elective.credit_points)
-                {
-                    adverb = "fewer";
-                }
-                elective.notes.push("The parent group of this unit requires " +
-                    entry.credit_points + " credit points. This has been " +
-                    "divided into "  +
-                    numOfUnits + " units. However, some units provide more " +
-                    "than " +
-                    elective.credit_points + " credit points. This may allow for " +
-                    adverb + " units to be selected.");
-            }
-            // Clones elective for as many electives in the current entry.
-            for (let i = 0; i < numOfUnits; ++i)
-            {
-                things.push(JSON.parse(JSON.stringify(elective)));
-            }
+            generateElectives(units, entry, electives, creditPoints);
         }
     }
-    for (let i = 0; i < things.length; ++i)
-    {
-        console.log(things[i].code + "      " + things[i].credit_points);
-    }
+    return units;
 }
 
 function getDegreeUnits(degree)
@@ -127,8 +136,7 @@ function getDegreeUnits(degree)
         if (index != -1)
         {
             let spine = degreeStructure[index].container;
-            //console.log(spine[0]);
-            extractUnits(spine, units);// electiveUnits, mandatoryUnits);
+            units = extractUnits(spine);
         }
 
         // Extracts course core of degree.
@@ -139,7 +147,7 @@ function getDegreeUnits(degree)
         if (index != -1)
         {
             let courseCore = degreeStructure[index].container;
-            extractUnits(courseCore, units);//electiveUnits, mandatoryUnits);
+            units = extractUnits(courseCore);
         }
     }
 
@@ -163,11 +171,16 @@ function getMajorUnits(major)
         if (index != -1)
         {
             let major = degreeStructure[index].container;
-            extractUnits(major, units);
+            units = extractUnits(major);
         }
     }
 
     return units;
+}
+
+function generatePlan(input)
+{
+
 }
 
 exports.getDegreeUnits = getDegreeUnits;
