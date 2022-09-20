@@ -148,7 +148,7 @@ function getDegreeUnits(degree)
         if (index != -1)
         {
             let courseCore = degreeStructure[index].container;
-            units = extractUnits(courseCore);
+            units = concatArray(units, extractUnits(courseCore));
         }
     }
 
@@ -185,6 +185,7 @@ function concatArray(arr1, arr2)
     {
         arr1.push(entry);
     }
+    return arr1;
 }
 
 // Subtracts all the elements in arr1 that are present in arr2.
@@ -195,106 +196,180 @@ function subtractArray(arr1, arr2)
 
 function fillUnits(units)
 {
-    // Initialises objects to be used repeatedly.
-    let requisites = null;
-    let label = "";
-
-    for (let unit of units)
+    return new Promise(function(resolve, reject)
     {
-        if (unit["code"])
+        // Initialises objects to be used repeatedly.
+        let requisites = null;
+        let label = "";
+
+        for (let unit of units)
         {
-            database.cacheSearch("unit", {"code": unit.code}).then(function(unitData)
+            if (unit["code"])
             {
-                if (unitData != null)
+                //database.cacheSearch("unit", {"code": unit.code}).then(function(unitData)
+                //{
+                //    if (unitData != null)
+                //    {
+                //        console.log("wot");
+                //        //if (unitData.code == "ICT283")
+                //        //{
+                //        //    console.log(unitData);
+                //        //}
+
+                //        unit.semester = "2";
+                //        //requisites = JSON.parse(unitData.data).requisites;
+                //        //if (requisites.length > 0)
+                //        //{
+                //        //    // Loops through all kinds of requisites (prerequisites, exclusions).
+                //        //    for (let req of requisites)
+                //        //    {
+                //        //        label = req.requisite_type.label.toUpperCase();
+                //        //        if (label == "PREREQUISITE")
+                //        //        {
+                //        //            
+                //        //        }
+
+                //        //        else if (label == "EXCLUSION")
+                //        //        {
+                //        //            for (let exclusion of req.containers[0].relationships)
+                //        //            {
+                //        //                let excUnit = new planDef.ShallowUnit();
+                //        //                excUnit.code = exclusion.academic_item_code;
+                //        //                excUnit.credit_points = exclusion.academic_item_credit_points;
+
+                //        //                unit.exclusions.push(excUnit);
+                //        //            }
+                //        //            //if (unitData.code == "ICT302")
+                //        //            //{
+                //        //            //    
+                //        //            //    console.log(req.containers[0]);
+                //        //            //}
+                //        //        }
+                //        //    }
+                //        //}
+                //    }
+                //})
+                //.catch(errorMsg => console.log(errorMsg));
+
+                database.getUnit(unit.code)
+                .then(function(unitData)
                 {
-                    if (unitData.code == "ICT283")
-                    {
-                        console.log(unitData);
-                    }
-
-                    requisites = JSON.parse(unitData.data).requisites;
-                    if (requisites.length > 0)
-                    {
-                        // Loops through all kinds of requisites (prerequisites, exclusions).
-                        for (let req of requisites)
-                        {
-                            label = req.requisite_type.label.toUpperCase();
-                            if (label == "PREREQUISITE")
-                            {
-                                
-                            }
-
-                            else if (label == "EXCLUSION")
-                            {
-
-                            }
-                        }
-                    }
-                }
-            })
-            .catch(errorMsg => console.log(errorMsg));
+                    console.log("hoo");
+                    unit.semester = "2";
+                });
+            }
         }
-    }
+        console.log(units);
+        resolve(units);
+    });
 }
 
 function generatePlan(input)
 {
-    let plan = new planDef.Plan();
-    plan.student_id = input.studentIDInput;
-    plan.student_name = "placeholdername"; // Add field for student name.
-    plan.degree_code = input.degreeInput;
-    plan.study_load = 12; // Add field for study load.
-    plan.completed_credit_points = 0;
-    plan.completed_units = []; // Add completed units input.
-    
-    database.getDegree(input.degreeInput)
-        .then(function(degree)
-        {
-            //console.log(degree);
-            plan.credit_points = Number(JSON.parse(degree.CurriculumStructure).credit_points);
-            plan.planned_units = getDegreeUnits(degree);
-            //console.log(plan);
-
-            if (input.majorInput != "")
+    return new Promise(function(resolve, reject)
+    {
+        let plan = new planDef.Plan();
+        plan.student_id = input.studentIDInput;
+        plan.student_name = "placeholdername"; // Add field for student name.
+        plan.degree_code = input.degreeInput;
+        plan.study_load = 12; // Add field for study load.
+        plan.completed_credit_points = 0;
+        plan.completed_units = []; // Add completed units input.
+        
+        database.getDegree(input.degreeInput)
+            .then(function(degree)
             {
-                // TODO: Remove any duplicates from units in option items.
+                //console.log(degree);
+                plan.credit_points = Number(JSON.parse(degree.CurriculumStructure).credit_points);
+                plan.planned_units = getDegreeUnits(degree);
 
-                database.getMajor(input.majorInput, degree)
-                    .then(function(major)
+                return new Promise(function(resolve, reject)
+                {
+                    if (input.majorInput != "")
                     {
-                        // TODO: Change to only make major element if it doesn't
-                        // already exist. If it does exist, access option
-                        // element with type == 'major'.
-                        let majorOption = new planDef.Option();
-                        majorOption.type = "major";
+                        // TODO: Remove any duplicates from units in option items.
 
-                        let major1 = new planDef.OptionItem();
-                        major1.code = major.code;
-                        major1.name = major.title;
-                        major1.credit_points = Number(JSON.parse(major.CurriculumStructure).credit_points);
+                        database.getMajor(input.majorInput, degree)
+                            .then(function(major)
+                            {
+                                // TODO: Change to only make major element if it doesn't
+                                // already exist. If it does exist, access option
+                                // element with type == 'major'.
+                                let majorOption = new planDef.Option();
+                                majorOption.type = "major";
 
-                        concatArray(plan.planned_units, getMajorUnits(major));
-                        //plan.planned_units = plan.planned_units.concat(getMajorUnits(major));
+                                let major1 = new planDef.OptionItem();
+                                major1.code = major.code;
+                                major1.name = major.title;
+                                major1.credit_points = Number(JSON.parse(major.CurriculumStructure).credit_points);
 
-                        majorOption.items.push(major1);
-                        plan.options.push(majorOption);
-                    })
-                    .catch(errorMsg => console.log(errorMsg.toString()));
-            }
+                                //concatArray(plan.planned_units, getMajorUnits(major));
+                                plan.planned_units = concatArray(plan.planned_units, getMajorUnits(major));
+                                //console.log(plan.planned_units);
 
-            // TODO: Subtract completed units from planned units.
-            plan.planned_units = subtractArray(plan.planned_units, plan.completed_units);
+                                majorOption.items.push(major1);
+                                plan.options.push(majorOption);
+                                resolve(plan);
+                            })
+                            .catch(errorMsg => console.log(errorMsg.toString()));
+                    }
+                })
+                .then(function(newPlan)
+                {
+                    plan = newPlan;
+                    // TODO: Subtract completed units from planned units.
+                    plan.planned_units = subtractArray(plan.planned_units, plan.completed_units);
 
-            fillUnits(plan.planned_units);
+                    //fillUnits(plan.planned_units)
+                    //    .then(function(fullUnits)
+                    //    {
+                    //        plan.planned_units = fullUnits;
 
-            for (let thing of plan.planned_units)
-            {
-                console.log(thing.code);
-            }
-            return plan;
-        })
-        //.then(thing => console.log(plan))//console.log(util.inspect(plan, false, null, true)))
-        .catch(errorMsg => console.log(errorMsg.toString()));
+                    //        console.log(plan);
+                    //        resolve(plan);
+                    //    });
+
+                    let temp = plan.planned_units;
+                    let currentYear = 2022;
+                    while (temp.length != 0/* && currentYear != 2025*/)
+                    {
+                        let year = new planDef.Year();
+                        year.year = ++currentYear;
+                        while (year.semesters.length < 2 && temp.length != 0)
+                        {
+                            let semester = new planDef.Semester();
+                            semester.semester = year.semesters.length + 1;
+
+                            // TODO: Make this work with remaining CP in semester.
+                            let semCP = plan.study_load;
+                            while (semCP != 0 && temp.length != 0)
+                            {
+                                let popUnit = temp.shift();
+                                semester.units.push(popUnit);
+                                semCP -= Number(popUnit.credit_points);
+
+                                semester.credit_points += Number(popUnit.credit_points);
+                            }
+                            //console.log(semester);
+                            year.semesters.push(semester);
+                        }
+                        plan.schedule.push(year);
+                    }
+
+                    console.log(util.inspect(plan, false, null, true));
+                    resolve(plan);
+
+                    //for (let thing of plan.planned_units)
+                    //{
+                    //    console.log(thing.code);
+                    //}
+                    //console.log(plan);
+                    //resolve(plan);
+                });
+            })
+            //.then(thing => console.log(plan))//console.log(util.inspect(plan, false, null, true)))
+            .catch(errorMsg => reject(errorMsg.toString()));
+    });
 }
 
 exports.getDegreeUnits = getDegreeUnits;

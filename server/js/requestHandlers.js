@@ -164,12 +164,9 @@ function reqSubmit(request, response)
 
         else
         {
-            coursePlan.generatePlan(field);
-            database.getDegree(field.degreeInput)
-                .then(degree => database.getMajor(field.majorInput, degree))
-                .then(structure =>
+            coursePlan.generatePlan(field)
+                .then(function(plan)
                 {
-                    //console.log(util.inspect(structure, false, null, true));
                     response.writeHead(200, {"Content-Type": "text/plain"});
                     response.end(JSON.stringify(structure));
                 })
@@ -178,6 +175,21 @@ function reqSubmit(request, response)
                     response.writeHead(404, {"Content-Type": "text/plain"});
                     response.end(errorMsg.toString());
                 });
+
+            //console.log(coursePlan.generatePlan(field));
+            //database.getDegree(field.degreeInput)
+            //    .then(degree => database.getMajor(field.majorInput, degree))
+            //    .then(structure =>
+            //    {
+            //        //console.log(util.inspect(structure, false, null, true));
+            //        response.writeHead(200, {"Content-Type": "text/plain"});
+            //        response.end(JSON.stringify(structure));
+            //    })
+            //    .catch(errorMsg =>
+            //    {
+            //        response.writeHead(404, {"Content-Type": "text/plain"});
+            //        response.end(errorMsg.toString());
+            //    });
         }
     });
 }

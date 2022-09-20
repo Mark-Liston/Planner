@@ -146,6 +146,24 @@ function getDegree(searchDegree)
     });
 }
 
+function getUnit(searchUnit)
+{
+    return new Promise(function(resolve, reject)
+    {
+        cacheSearch("unit", {"code": searchUnit}).then(function(unit)
+        {
+            if (unit != null)
+            {
+                resolve(unit);
+            }
+            else
+            {
+                reject("No matching unit could be found.");
+            }
+        });
+    });
+}
+
 function degreeHasMajor(degree, searchMajor)
 {
     let result = false;
@@ -244,5 +262,6 @@ function collectPrerequisites(version, code)
 }
 
 exports.getDegree = getDegree;
+exports.getUnit = getUnit;
 exports.getMajor = getMajor;
 exports.cacheSearch = cacheSearch;
