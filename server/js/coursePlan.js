@@ -194,6 +194,64 @@ function subtractArray(arr1, arr2)
     return arr1;
 }
 
+function getOptions(input, plan, degree)
+{
+    return new Promise(function(resolve, reject)
+    {
+        let func = [];
+
+        if (input.majorInput != "")
+        {
+            // TODO: Remove any duplicates from units in option items.
+
+            func.push(new Promise(function(resolve, reject)
+            {
+                database.getMajor(input.majorInput, degree)
+                .then(function(major)
+                {
+                    // TODO: Change to only make major element if it doesn't
+                    // already exist. If it does exist, access option
+                    // element with type == 'major'.
+                    let majorOption = new planDef.Option();
+                    majorOption.type = "major";
+
+                    let major1 = new planDef.OptionItem();
+                    major1.code = major.code;
+                    major1.name = major.title;
+                    major1.credit_points = Number(JSON.parse(major.CurriculumStructure).credit_points);
+
+                    //concatArray(plan.planned_units, getMajorUnits(major));
+                    plan.planned_units = concatArray(plan.planned_units, getMajorUnits(major));
+                    //console.log(plan.planned_units);
+
+                    majorOption.items.push(major1);
+                    plan.options.push(majorOption);
+                    resolve();
+                })
+                .catch(function(errorMsg)
+                {
+                    reject(errorMsg.toString());
+                });
+            }));
+        }
+
+        if (true)
+        //if (input.major2Input != "")
+        {
+            func.push(new Promise(function (resolve, reject)
+            {
+                console.log("after");
+                resolve();
+            }));
+        }
+
+        Promise.all(func).then(function()
+        {
+            resolve();
+        });
+    });
+}
+
 function fillUnits(units)
 {
     return new Promise(function(resolve, reject)
@@ -283,89 +341,60 @@ function generatePlan(input)
                 plan.credit_points = Number(JSON.parse(degree.CurriculumStructure).credit_points);
                 plan.planned_units = getDegreeUnits(degree);
 
-                return new Promise(function(resolve, reject)
-                {
-                    if (input.majorInput != "")
+                getOptions(input, plan, degree)
+                    .then(function()
                     {
-                        // TODO: Remove any duplicates from units in option items.
+                        console.log(plan);
+                    });
 
-                        database.getMajor(input.majorInput, degree)
-                            .then(function(major)
-                            {
-                                // TODO: Change to only make major element if it doesn't
-                                // already exist. If it does exist, access option
-                                // element with type == 'major'.
-                                let majorOption = new planDef.Option();
-                                majorOption.type = "major";
+                //    // TODO: Subtract completed units from planned units.
+                //    plan.planned_units = subtractArray(plan.planned_units, plan.completed_units);
 
-                                let major1 = new planDef.OptionItem();
-                                major1.code = major.code;
-                                major1.name = major.title;
-                                major1.credit_points = Number(JSON.parse(major.CurriculumStructure).credit_points);
+                //    //fillUnits(plan.planned_units)
+                //    //    .then(function(fullUnits)
+                //    //    {
+                //    //        plan.planned_units = fullUnits;
 
-                                //concatArray(plan.planned_units, getMajorUnits(major));
-                                plan.planned_units = concatArray(plan.planned_units, getMajorUnits(major));
-                                //console.log(plan.planned_units);
+                //    //        console.log(plan);
+                //    //        resolve(plan);
+                //    //    });
 
-                                majorOption.items.push(major1);
-                                plan.options.push(majorOption);
-                                resolve(plan);
-                            })
-                            .catch(errorMsg => console.log(errorMsg.toString()));
-                    }
-                })
-                .then(function(newPlan)
-                {
-                    plan = newPlan;
-                    // TODO: Subtract completed units from planned units.
-                    plan.planned_units = subtractArray(plan.planned_units, plan.completed_units);
+                //    let temp = plan.planned_units;
+                //    let currentYear = 2022;
+                //    while (temp.length != 0/* && currentYear != 2025*/)
+                //    {
+                //        let year = new planDef.Year();
+                //        year.year = ++currentYear;
+                //        while (year.semesters.length < 2 && temp.length != 0)
+                //        {
+                //            let semester = new planDef.Semester();
+                //            semester.semester = year.semesters.length + 1;
 
-                    //fillUnits(plan.planned_units)
-                    //    .then(function(fullUnits)
-                    //    {
-                    //        plan.planned_units = fullUnits;
+                //            // TODO: Make this work with remaining CP in semester.
+                //            let semCP = plan.study_load;
+                //            while (semCP != 0 && temp.length != 0)
+                //            {
+                //                let popUnit = temp.shift();
+                //                semester.units.push(popUnit);
+                //                semCP -= Number(popUnit.credit_points);
 
-                    //        console.log(plan);
-                    //        resolve(plan);
-                    //    });
+                //                semester.credit_points += Number(popUnit.credit_points);
+                //            }
+                //            //console.log(semester);
+                //            year.semesters.push(semester);
+                //        }
+                //        plan.schedule.push(year);
+                //    }
 
-                    let temp = plan.planned_units;
-                    let currentYear = 2022;
-                    while (temp.length != 0/* && currentYear != 2025*/)
-                    {
-                        let year = new planDef.Year();
-                        year.year = ++currentYear;
-                        while (year.semesters.length < 2 && temp.length != 0)
-                        {
-                            let semester = new planDef.Semester();
-                            semester.semester = year.semesters.length + 1;
+                //    console.log(util.inspect(plan, false, null, true));
+                //    resolve(plan);
 
-                            // TODO: Make this work with remaining CP in semester.
-                            let semCP = plan.study_load;
-                            while (semCP != 0 && temp.length != 0)
-                            {
-                                let popUnit = temp.shift();
-                                semester.units.push(popUnit);
-                                semCP -= Number(popUnit.credit_points);
-
-                                semester.credit_points += Number(popUnit.credit_points);
-                            }
-                            //console.log(semester);
-                            year.semesters.push(semester);
-                        }
-                        plan.schedule.push(year);
-                    }
-
-                    console.log(util.inspect(plan, false, null, true));
-                    resolve(plan);
-
-                    //for (let thing of plan.planned_units)
-                    //{
-                    //    console.log(thing.code);
-                    //}
-                    //console.log(plan);
-                    //resolve(plan);
-                });
+                //    //for (let thing of plan.planned_units)
+                //    //{
+                //    //    console.log(thing.code);
+                //    //}
+                //    //console.log(plan);
+                //    //resolve(plan);
             })
             //.then(thing => console.log(plan))//console.log(util.inspect(plan, false, null, true)))
             .catch(errorMsg => reject(errorMsg.toString()));
