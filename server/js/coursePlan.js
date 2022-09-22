@@ -289,6 +289,46 @@ function getSemesters(offerings)
     return semester;
 }
 
+function generateRequisite(requisiteData)
+{
+    let requisiteUnit = new planDef.ShallowUnit();
+    requisiteUnit.code = requisiteData.academic_item_code;
+    requisiteUnit.name = requisiteData.academic_item_name;
+    requisiteUnit.credit_points = requisiteData.academic_item_credit_points;
+
+    return requisiteUnit;
+}
+
+// Gets prerequisites, including 1 level of nested prerequisites.
+function getPrerequisite(requisite)
+{
+    let prereqNodes = requisite.containers[0];
+    let prereq = new planDef.PrerequisiteNode();
+    prereq.operator = prereqNodes.parent_connector.value;
+
+    // Loops through all sub-prerequisites, nested within 1 level.
+    for (let subContainer of prereqNodes.containers)
+    {
+        // Gets all units within sub-prerequisite.
+        let nodeContainer = new planDef.PrerequisiteNode();
+        nodeContainer.operator = subContainer.parent_connector.value;
+        for (let prereqData of subContainer.relationships)
+        {
+            nodeContainer.items.push(generateRequisite(prereqData));
+        }
+        prereq.items.push(nodeContainer);
+    }
+
+    // Loops through all surface prerequisites i.e., units not nested within
+    // another prerequisite container.
+    for (let node of prereqNodes.relationships)
+    {
+        prereq.items.push(generateRequisite(node));
+    }
+
+    return prereq;
+}
+
 function getRequisites(unit, unitData)
 {
     let requisites = JSON.parse(unitData.data).requisites;
@@ -300,49 +340,16 @@ function getRequisites(unit, unitData)
                 let label = req.requisite_type.label.toUpperCase();
                 if (label == "PREREQUISITE")
                 {
-                    let prereqNodes = req.containers[0];
-                    let prereq = new planDef.PrerequisiteNode();
-                    prereq.operator = prereqNodes.parent_connector.value;
-
-                    for (let subContainer of prereqNodes.containers)
-                    {
-                        let nodeContainer = new planDef.PrerequisiteNode();
-                        nodeContainer.operator = subContainer.parent_connector.value;
-                        for (let prereqData of subContainer.relationships)
-                        {
-                            let prereqUnit = new planDef.ShallowUnit();
-                            prereqUnit.code = prereqData.academic_item_code;
-                            prereqUnit.name = prereqData.academic_item_name;
-                            prereqUnit.credit_points = prereqData.academic_item_credit_points;
-
-                            nodeContainer.items.push(prereqUnit);
-                        }
-                        prereq.items.push(nodeContainer);
-                    }
-                    for (let node of prereqNodes.relationships)
-                    {
-
-                        let prereqUnit = new planDef.ShallowUnit();
-                        prereqUnit.code = node.academic_item_code;
-                        prereqUnit.name = node.academic_item_name;
-                        prereqUnit.credit_points = node.academic_item_credit_points;
-
-                        prereq.items.push(prereqUnit);
-                    }
-
-                    unit.prerequisites.push(prereq);
+                    // Adds all prerequisites to unit.
+                    unit.prerequisites.push(getPrerequisite(req));
                 }
 
                 else if (label == "EXCLUSION")
                 {
+                    // Adds all exclusions to unit.
                     for (let exclusion of req.containers[0].relationships)
                     {
-                        let excUnit = new planDef.ShallowUnit();
-                        excUnit.code = exclusion.academic_item_code;
-                        excUnit.name = exclusion.academic_item_name;
-                        excUnit.credit_points = exclusion.academic_item_credit_points;
-
-                        unit.exclusions.push(excUnit);
+                        unit.exclusions.push(generateRequisite(exclusion));
                     }
                 }
         }
@@ -365,24 +372,24 @@ function fillUnits(units)
                 func.push(new Promise(function(resolve, reject)
                 {
                     database.getUnit(unit.code)
-                        .then(function(unitData)
+                    .then(function(unitData)
+                    {
+                        if (unitData != null)
                         {
-                            if (unitData != null)
+                            let offerings = JSON.parse(unitData.data).unit_offering;
+                            unit.semester = getSemesters(offerings);
+
+                            // Adds all enrolment rules to the unit's 'notes' field.
+                            for (let rule of JSON.parse(unitData.data).enrolment_rules)
                             {
-                                let offerings = JSON.parse(unitData.data).unit_offering;
-                                unit.semester = getSemesters(offerings);
-
-                                // Adds all enrolment rules to the unit's 'notes' field.
-                                for (let rule of JSON.parse(unitData.data).enrolment_rules)
-                                {
-                                    unit.notes.push(rule.description);
-                                }
-
-                                getRequisites(unit, unitData);
-
-                                resolve();
+                                unit.notes.push(rule.description);
                             }
-                        });
+
+                            getRequisites(unit, unitData);
+
+                            resolve();
+                        }
+                    });
                 }));
             }
         }
@@ -416,66 +423,66 @@ function generatePlan(input)
         plan.completed_credit_points = aggregateCP(plan.completed_units);
         
         database.getDegree(input.degreeInput)
-            .then(function(degree)
+        .then(function(degree)
+        {
+            plan.degree_code = degree.code;
+            plan.credit_points = Number(JSON.parse(degree.CurriculumStructure).credit_points);
+            plan.planned_units = getDegreeUnits(degree);
+            
+            getOptions(input, plan, degree)
+            .then(function()
             {
-                plan.degree_code = degree.code;
-                plan.credit_points = Number(JSON.parse(degree.CurriculumStructure).credit_points);
-                plan.planned_units = getDegreeUnits(degree);
-                
-                getOptions(input, plan, degree)
-                    .then(function()
-                    {
-                        // TODO: Subtract completed units from planned units.
-                        plan.planned_units = subtractArray(plan.planned_units, plan.completed_units);
-                        return fillUnits(plan.planned_units);
-                    })
-                    .then(function()
-                    {
-                        plan.planned_credit_points = aggregateCP(plan.planned_units);
-                        //console.log(plan);
-                        //console.log(util.inspect(plan.planned_units, false, null, true));
-                        resolve(plan);
-                    });
-
-                //    let temp = plan.planned_units;
-                //    let currentYear = 2022;
-                //    while (temp.length != 0/* && currentYear != 2025*/)
-                //    {
-                //        let year = new planDef.Year();
-                //        year.year = ++currentYear;
-                //        while (year.semesters.length < 2 && temp.length != 0)
-                //        {
-                //            let semester = new planDef.Semester();
-                //            semester.semester = year.semesters.length + 1;
-
-                //            // TODO: Make this work with remaining CP in semester.
-                //            let semCP = plan.study_load;
-                //            while (semCP != 0 && temp.length != 0)
-                //            {
-                //                let popUnit = temp.shift();
-                //                semester.units.push(popUnit);
-                //                semCP -= Number(popUnit.credit_points);
-
-                //                semester.credit_points += Number(popUnit.credit_points);
-                //            }
-                //            //console.log(semester);
-                //            year.semesters.push(semester);
-                //        }
-                //        plan.schedule.push(year);
-                //    }
-
-                //    console.log(util.inspect(plan, false, null, true));
-                //    resolve(plan);
-
-                //    //for (let thing of plan.planned_units)
-                //    //{
-                //    //    console.log(thing.code);
-                //    //}
-                //    //console.log(plan);
-                //    //resolve(plan);
+                // TODO: Subtract completed units from planned units.
+                plan.planned_units = subtractArray(plan.planned_units, plan.completed_units);
+                return fillUnits(plan.planned_units);
             })
-            //.then(thing => console.log(plan))//console.log(util.inspect(plan, false, null, true)))
-            .catch(errorMsg => reject(errorMsg.toString()));
+            .then(function()
+            {
+                plan.planned_credit_points = aggregateCP(plan.planned_units);
+                //console.log(plan);
+                //console.log(util.inspect(plan.planned_units, false, null, true));
+                resolve(plan);
+            });
+
+        //    let temp = plan.planned_units;
+        //    let currentYear = 2022;
+        //    while (temp.length != 0/* && currentYear != 2025*/)
+        //    {
+        //        let year = new planDef.Year();
+        //        year.year = ++currentYear;
+        //        while (year.semesters.length < 2 && temp.length != 0)
+        //        {
+        //            let semester = new planDef.Semester();
+        //            semester.semester = year.semesters.length + 1;
+
+        //            // TODO: Make this work with remaining CP in semester.
+        //            let semCP = plan.study_load;
+        //            while (semCP != 0 && temp.length != 0)
+        //            {
+        //                let popUnit = temp.shift();
+        //                semester.units.push(popUnit);
+        //                semCP -= Number(popUnit.credit_points);
+
+        //                semester.credit_points += Number(popUnit.credit_points);
+        //            }
+        //            //console.log(semester);
+        //            year.semesters.push(semester);
+        //        }
+        //        plan.schedule.push(year);
+        //    }
+
+        //    console.log(util.inspect(plan, false, null, true));
+        //    resolve(plan);
+
+        //    //for (let thing of plan.planned_units)
+        //    //{
+        //    //    console.log(thing.code);
+        //    //}
+        //    //console.log(plan);
+        //    //resolve(plan);
+        })
+        //.then(thing => console.log(plan))//console.log(util.inspect(plan, false, null, true)))
+        .catch(errorMsg => reject(errorMsg.toString()));
     });
 }
 
