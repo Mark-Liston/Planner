@@ -1,8 +1,5 @@
 function submitCourse()
 {
-    // $("#errorMsg").hide();
-    // $("#loading").show();
-
     let formData = new FormData($("#StudyDetails")[0]);
     $.ajax(
     {
@@ -15,7 +12,6 @@ function submitCourse()
         data: formData,
         success: function(response)
         {
-            //$("#loading").hide();
             let coursePlan = JSON.parse(response);
             console.log(coursePlan);
             let cont = true;
@@ -35,9 +31,7 @@ function submitCourse()
         },
         error: function(response)
         {
-            // $("#errorMsg").text("Error: " + response.responseText);
-            // $("#errorMsg").show();
-            // $("#loading").hide();
+            alert(response.responseText);
         }
     });
 }
