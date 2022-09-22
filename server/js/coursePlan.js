@@ -8,6 +8,10 @@ const database = require("./database.js");
 
 const util = require("util");
 
+// The last day that a student may enrol for semester 1. This is typically the
+// 11 of March.
+const lastDayToEnrolS1 = new Date(new Date().getFullYear() + "-03-11");
+
 /**
  * Checks whether array is consistent i.e., whether all items in array are
  * identical.
@@ -188,6 +192,7 @@ function concatArray(arr1, arr2)
     return arr1;
 }
 
+// TODO: Implement functionality for subtracting one array from another.
 // Subtracts all the elements in arr1 that are present in arr2.
 function subtractArray(arr1, arr2)
 {
@@ -377,7 +382,12 @@ function fillUnits(units)
                         if (unitData != null)
                         {
                             let offerings = JSON.parse(unitData.data).unit_offering;
+                            // Gets semester when unit is available:
+                            // S1, S2, or BOTH.
                             unit.semester = getSemesters(offerings);
+                            // Gets level of unit
+                            // e.g., ICT159 = 2, ICT283 = 3, ICT302 = 4.
+                            unit.level = Number(unitData.level);
 
                             // Adds all enrolment rules to the unit's 'notes' field.
                             for (let rule of JSON.parse(unitData.data).enrolment_rules)
@@ -410,6 +420,121 @@ function aggregateCP(units)
     return creditPoints;
 }
 
+function fillSemester(semester, units, itr)
+{
+    semester.units.push(units[itr]);
+    semester.credit_points += units[itr].credit_points;
+    return units[itr].credit_points;
+}
+
+function generateSchedule(plan)
+{
+    // Sorts planned units according to level
+    // e.g., ICT100, ICT200, ICT300, ICT400, etc.
+    plan.planned_units.sort(function(a, b)
+    {
+        return a.level - b.level;
+    });
+
+    // Arrays for storing units available in semester 1, semester 2, and
+    // both semesters.
+    let s1Units = [], s2Units = [], bothUnits = [];
+    // Iterators for above arrays.
+    let s1Itr = 0, s2Itr = 0, bothItr = 0;
+    // Sorts units into appropriate semester array.
+    for (let unit of plan.planned_units)
+    {
+        switch(unit.semester)
+        {
+            case "S1":
+                s1Units.push(unit);
+                break;
+            case "S2":
+                s2Units.push(unit);
+                break;
+            case "BOTH":
+                bothUnits.push(unit);
+                break;
+        }
+    }
+
+    // If today is too late to enrol for semester 1, skip to semester 2 for
+    // the first year.
+    let skipS1 = false;
+    if (new Date() > lastDayToEnrolS1)
+    {
+        skipS1 = true;
+    }
+
+    let currentYear = new Date().getFullYear();
+    let count = plan.planned_units.length;
+    // Loops until there are no units left to schedule or schedule reaches
+    // 10 years. It is assumed a student won't study for more than 10 years
+    // at a time.
+    while (count > 0 && currentYear < new Date().getFullYear() + 10)
+    {
+        let year = new planDef.Year();
+        year.year = currentYear;
+        // Semester 1.
+        if (count > 0 && !skipS1)
+        {
+            let semester1 = new planDef.Semester();
+            semester1.semester = 1;
+
+            let semCP = plan.study_load;
+            // Adds units available in semester 1 until study load is reached.
+            while (s1Itr < s1Units.length &&
+                semCP - s1Units[s1Itr].credit_points >= 0 &&
+                count > 0)
+            {
+                semCP -= fillSemester(semester1, s1Units, s1Itr);
+                ++s1Itr;
+                --count;
+            }
+            // Adds units available in both semesters until study load is reached.
+            while (bothItr < bothUnits.length &&
+                semCP - bothUnits[bothItr].credit_points >= 0 &&
+                count > 0)
+            {
+                semCP -= fillSemester(semester1, bothUnits, bothItr);
+                ++bothItr;
+                --count;
+            }
+            year.semesters.push(semester1);
+        }
+        // Semester 2.
+        if (count > 0)
+        {
+            skipS1 = false;
+            let semester2 = new planDef.Semester();
+            semester2.semester = 2;
+
+            let semCP = plan.study_load;
+            // Adds units available in semester 2 until study load is reached.
+            while (s2Itr < s2Units.length &&
+                semCP - s2Units[s2Itr].credit_points >= 0 &&
+                count > 0)
+            {
+                semCP -= fillSemester(semester2, s2Units, s2Itr);
+                ++s2Itr;
+                --count;
+            }
+            // Adds units available in both semesters until study load is reached.
+            while (bothItr < bothUnits.length &&
+                semCP - bothUnits[bothItr].credit_points >= 0 &&
+                count > 0)
+            {
+                semCP -= fillSemester(semester2, bothUnits, bothItr);
+                ++bothItr;
+                --count;
+            }
+            year.semesters.push(semester2);
+        }
+        plan.schedule.push(year);
+        ++currentYear;
+    }
+}
+
 function generatePlan(input)
 {
     return new Promise(function(resolve, reject)
@@ -434,54 +559,20 @@ function generatePlan(input)
             {
                 // TODO: Subtract completed units from planned units.
                 plan.planned_units = subtractArray(plan.planned_units, plan.completed_units);
+                // Fills all units with relevant information e.g., semester
+                // the unit is available, prerequisites, exclusions.
                 return fillUnits(plan.planned_units);
             })
             .then(function()
             {
                 plan.planned_credit_points = aggregateCP(plan.planned_units);
-                //console.log(plan);
-                //console.log(util.inspect(plan.planned_units, false, null, true));
+                // Schedules all units into years and semesters based on when
+                // units are available.
+                generateSchedule(plan);
+                //console.log(util.inspect(plan.schedule, false, null, true));
                 resolve(plan);
             });
-
-        //    let temp = plan.planned_units;
-        //    let currentYear = 2022;
-        //    while (temp.length != 0/* && currentYear != 2025*/)
-        //    {
-        //        let year = new planDef.Year();
-        //        year.year = ++currentYear;
-        //        while (year.semesters.length < 2 && temp.length != 0)
-        //        {
-        //            let semester = new planDef.Semester();
-        //            semester.semester = year.semesters.length + 1;
-
-        //            // TODO: Make this work with remaining CP in semester.
-        //            let semCP = plan.study_load;
-        //            while (semCP != 0 && temp.length != 0)
-        //            {
-        //                let popUnit = temp.shift();
-        //                semester.units.push(popUnit);
-        //                semCP -= Number(popUnit.credit_points);
-
-        //                semester.credit_points += Number(popUnit.credit_points);
-        //            }
-        //            //console.log(semester);
-        //            year.semesters.push(semester);
-        //        }
-        //        plan.schedule.push(year);
-        //    }
-
-        //    console.log(util.inspect(plan, false, null, true));
-        //    resolve(plan);
-
-        //    //for (let thing of plan.planned_units)
-        //    //{
-        //    //    console.log(thing.code);
-        //    //}
-        //    //console.log(plan);
-        //    //resolve(plan);
         })
-        //.then(thing => console.log(plan))//console.log(util.inspect(plan, false, null, true)))
         .catch(errorMsg => reject(errorMsg.toString()));
     });
 }

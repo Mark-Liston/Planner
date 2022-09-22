@@ -157,7 +157,15 @@ async function searchHandbook(searchParam, year, contentType, size)
     
     else if (response.ok)
     {
-        response = (await response.json()).contentlets;
+        // In case it gets to this point and still fails.
+        try
+        {
+            response = (await response.json()).contentlets;
+        }
+        catch (error)
+        {
+            response = null;
+        }
     }
 
     return response;
@@ -190,7 +198,15 @@ async function fetchItem(contentType, version, code)
 
     if (response.ok)
     {
-        response = (await response.json()).contentlets[0];
+        // In case it gets to this point and still fails.
+        try
+        {
+            response = (await response.json()).contentlets[0];
+        }
+        catch (error)
+        {
+            response = null;
+        }
     }
     
     return response;

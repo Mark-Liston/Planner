@@ -1,0 +1,21 @@
+WHILE THERE ARE UNITS
+    year.year = NEXT YEAR
+    WHILE year HAS FEWER THAN 2 semesters AND THERE ARE UNITS
+        semester = NEXT SEMESTER IN YEAR
+        
+        semCP = plan.study_load
+        WHILE SEMESTER HAS CREDIT POINTS AND THERE ARE UNITS
+            popUnit = NEXT PLANNED UNIT
+            ADD popUnit TO semester.units
+            MINUS popUnit.cp FROM semCP
+            ADD popUnit.cp TO semester.cp
+        ENDWHILE
+
+        ADD semester TO year
+    ENDWHILE
+
+    ADD year TO plan.schedule
+ENDWHILE
+
+
+

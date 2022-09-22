@@ -46,8 +46,9 @@ class Unit
     credit_points = 0;
     code = "";
     title = "";
-    enrolment_mode = "";
+    level = 0;
     semester = "";
+    scheduled = false;
     notes = [];
     errors = [];
     prerequisites = [];
@@ -85,7 +86,8 @@ class UnitSelection
     type = "";
     necessity = "";
     credit_points = "";
-    semester = "both";
+    semester = "BOTH";
+    scheduled = false;
     notes = [];
     errors = [];
     units = [];
