@@ -94,7 +94,7 @@ function extractUnits(arr)
                 let shallowUnit = new planDef.ShallowUnit();
                 shallowUnit.code = unit.academic_item_code;
                 shallowUnit.name = unit.academic_item_name;
-                shallowUnit.credit_points = unit.academic_item_credit_points;
+                shallowUnit.credit_points = Number(unit.academic_item_credit_points);
 
                 electives.push(shallowUnit);
             }
@@ -103,7 +103,7 @@ function extractUnits(arr)
                 let mandatoryUnit = new planDef.Unit();
                 mandatoryUnit.type = "decided";
                 mandatoryUnit.necessity = "mandatory";
-                mandatoryUnit.credit_points = unit.academic_item_credit_points;
+                mandatoryUnit.credit_points = Number(unit.academic_item_credit_points);
                 mandatoryUnit.code = unit.academic_item_code;
                 mandatoryUnit.title = unit.academic_item_name;
 
@@ -289,58 +289,79 @@ function getSemesters(offerings)
     return semester;
 }
 
+function getRequisites(unit, unitData)
+{
+    let requisites = JSON.parse(unitData.data).requisites;
+    if (requisites.length > 0)
+    {
+        // Loops through all kinds of requisites (prerequisites, exclusions).
+        for (let req of requisites)
+        {
+                let label = req.requisite_type.label.toUpperCase();
+                if (label == "PREREQUISITE")
+                {
+                    let prereqNodes = req.containers[0];
+                    let prereq = new planDef.PrerequisiteNode();
+                    prereq.operator = prereqNodes.parent_connector.value;
+
+                    for (let subContainer of prereqNodes.containers)
+                    {
+                        let nodeContainer = new planDef.PrerequisiteNode();
+                        nodeContainer.operator = subContainer.parent_connector.value;
+                        for (let prereqData of subContainer.relationships)
+                        {
+                            let prereqUnit = new planDef.ShallowUnit();
+                            prereqUnit.code = prereqData.academic_item_code;
+                            prereqUnit.name = prereqData.academic_item_name;
+                            prereqUnit.credit_points = prereqData.academic_item_credit_points;
+
+                            nodeContainer.items.push(prereqUnit);
+                        }
+                        prereq.items.push(nodeContainer);
+                    }
+                    for (let node of prereqNodes.relationships)
+                    {
+
+                        let prereqUnit = new planDef.ShallowUnit();
+                        prereqUnit.code = node.academic_item_code;
+                        prereqUnit.name = node.academic_item_name;
+                        prereqUnit.credit_points = node.academic_item_credit_points;
+
+                        prereq.items.push(prereqUnit);
+                    }
+
+                    unit.prerequisites.push(prereq);
+                }
+
+                else if (label == "EXCLUSION")
+                {
+                    for (let exclusion of req.containers[0].relationships)
+                    {
+                        let excUnit = new planDef.ShallowUnit();
+                        excUnit.code = exclusion.academic_item_code;
+                        excUnit.name = exclusion.academic_item_name;
+                        excUnit.credit_points = exclusion.academic_item_credit_points;
+
+                        unit.exclusions.push(excUnit);
+                    }
+                }
+        }
+    }
+    return requisites;
+}
+
 function fillUnits(units)
 {
     return new Promise(function(resolve, reject)
     {
         let func = [];
 
-        // Initialises objects to be used repeatedly.
-        let requisites = null;
-        let label = "";
-
         for (let unit of units)
         {
-            if (unit["code"])
+            // If unit position has been assigned a definite unit,
+            // i.e., is not an undecided elective.
+            if (unit.type.toUpperCase() != "UNDECIDED")
             {
-                //database.cacheSearch("unit", {"code": unit.code}).then(function(unitData)
-                //{
-                //    if (unitData != null)
-                //    {
-                //        //requisites = JSON.parse(unitData.data).requisites;
-                //        //if (requisites.length > 0)
-                //        //{
-                //        //    // Loops through all kinds of requisites (prerequisites, exclusions).
-                //        //    for (let req of requisites)
-                //        //    {
-                //        //        label = req.requisite_type.label.toUpperCase();
-                //        //        if (label == "PREREQUISITE")
-                //        //        {
-                //        //            
-                //        //        }
-
-                //        //        else if (label == "EXCLUSION")
-                //        //        {
-                //        //            for (let exclusion of req.containers[0].relationships)
-                //        //            {
-                //        //                let excUnit = new planDef.ShallowUnit();
-                //        //                excUnit.code = exclusion.academic_item_code;
-                //        //                excUnit.credit_points = exclusion.academic_item_credit_points;
-
-                //        //                unit.exclusions.push(excUnit);
-                //        //            }
-                //        //            //if (unitData.code == "ICT302")
-                //        //            //{
-                //        //            //    
-                //        //            //    console.log(req.containers[0]);
-                //        //            //}
-                //        //        }
-                //        //    }
-                //        //}
-                //    }
-                //})
-                //.catch(errorMsg => console.log(errorMsg));
-
                 func.push(new Promise(function(resolve, reject)
                 {
                     database.getUnit(unit.code)
@@ -357,37 +378,7 @@ function fillUnits(units)
                                     unit.notes.push(rule.description);
                                 }
 
-                                requisites = JSON.parse(unitData.data).requisites;
-                                if (requisites.length > 0)
-                                {
-                                    // Loops through all kinds of requisites (prerequisites, exclusions).
-                                    for (let req of requisites)
-                                    {
-                                        label = req.requisite_type.label.toUpperCase();
-                                        if (label == "PREREQUISITE")
-                                        {
-                                            
-                                        }
-
-                                        else if (label == "EXCLUSION")
-                                        {
-                                            //for (let exclusion of req.containers[0].relationships)
-                                            //{
-                                            //    let excUnit = new planDef.ShallowUnit();
-                                            //    excUnit.code = exclusion.academic_item_code;
-                                            //    excUnit.credit_points = exclusion.academic_item_credit_points;
-
-                                            //    unit.exclusions.push(excUnit);
-                                            //}
-
-                                            if (unitData.code == "ICT302")
-                                            {
-                                                
-                                                console.log(util.inspect(req.containers[0], false, null, true));
-                                            }
-                                        }
-                                    }
-                                }
+                                getRequisites(unit, unitData);
 
                                 resolve();
                             }
@@ -402,6 +393,16 @@ function fillUnits(units)
     });
 }
 
+function aggregateCP(units)
+{
+    let creditPoints = 0;
+    for (let unit of units)
+    {
+        creditPoints += Number(unit.credit_points);
+    }
+    return creditPoints;
+}
+
 function generatePlan(input)
 {
     return new Promise(function(resolve, reject)
@@ -412,6 +413,7 @@ function generatePlan(input)
         plan.study_load = 12; // Add field for study load.
         plan.completed_credit_points = 0;
         plan.completed_units = []; // Add completed units input.
+        plan.completed_credit_points = aggregateCP(plan.completed_units);
         
         database.getDegree(input.degreeInput)
             .then(function(degree)
@@ -427,21 +429,13 @@ function generatePlan(input)
                         plan.planned_units = subtractArray(plan.planned_units, plan.completed_units);
                         return fillUnits(plan.planned_units);
                     })
-                    .then(function(thing)
+                    .then(function()
                     {
+                        plan.planned_credit_points = aggregateCP(plan.planned_units);
                         //console.log(plan);
-                        console.log(plan.planned_units);
+                        //console.log(util.inspect(plan.planned_units, false, null, true));
                         resolve(plan);
                     });
-
-                //    //fillUnits(plan.planned_units)
-                //    //    .then(function(fullUnits)
-                //    //    {
-                //    //        plan.planned_units = fullUnits;
-
-                //    //        console.log(plan);
-                //    //        resolve(plan);
-                //    //    });
 
                 //    let temp = plan.planned_units;
                 //    let currentYear = 2022;

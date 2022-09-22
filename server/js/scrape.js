@@ -2,7 +2,9 @@
 
 "use strict";
 
-let fetch = require("node-fetch");
+const fetch = require("node-fetch");
+
+const handbookUrl = "https://handbook.murdoch.edu.au";
 
 /**
  * 
@@ -16,7 +18,7 @@ let fetch = require("node-fetch");
 async function searchHandbook(searchParam, year, contentType, size)
 {
     let response = null;
-    response = await fetch("https://handbook.murdoch.edu.au/api/es/search",
+    response = await fetch(handbookUrl + "/api/es/search",
     {
         // Request boilerplate.
         "headers":
@@ -172,7 +174,7 @@ async function searchHandbook(searchParam, year, contentType, size)
 async function fetchItem(contentType, version, code)
 {
     let response = null;
-    response = await fetch("https://handbook.murdoch.edu.au/api/content/render/false/query/+contentType:" + contentType + "%20+" + contentType + ".version:" + version + "%20+" + contentType + ".code:" + code + "%20+deleted:false%20+working:true%20+live:true%20+languageId:1%20/orderBy/modDate%20desc",
+    response = await fetch(handbookUrl + "/api/content/render/false/query/+contentType:" + contentType + "%20+" + contentType + ".version:" + version + "%20+" + contentType + ".code:" + code + "%20+deleted:false%20+working:true%20+live:true%20+languageId:1%20/orderBy/modDate%20desc",
     {
         // Request boilerplate.
         "headers":

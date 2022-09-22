@@ -54,6 +54,12 @@ class Unit
     exclusions = [];
 }
 
+class PrerequisiteNode
+{
+    operator = "";
+    items = [];
+}
+
 class ShallowUnit
 {
     code = "";
@@ -92,6 +98,7 @@ module.exports =
     OptionItem: OptionItem,
     CompletedUnit: CompletedUnit,
     Unit: Unit,
+    PrerequisiteNode: PrerequisiteNode,
     ShallowUnit: ShallowUnit,
     Year: Year,
     Semester: Semester,
