@@ -9,18 +9,8 @@ $(document).ready(function()
     $("#submitCourse").on("click", function()
     {
         event.preventDefault();
-        // if ($("#degreeInput").val() != "" &&
-        //     $("#majorInput").val() != "")
-        // {
-        //     $("#errorMsg").hide();
-            submitCourse();
-        // }
-
-        // else
-        // {
-        //     $("#errorMsg").show();
-        //     $("#errorMsg").text("Degree and major input is required");
-        // }
+        
+        submitCourse();
     });
 });
 
