@@ -212,34 +212,34 @@ function getOptions(input, plan, degree)
             func.push(new Promise(function(resolve, reject)
             {
                 database.getMajor(input.majorInput, degree)
-                    .then(function(major)
+                .then(function(major)
+                {
+                    if (major["message"])
                     {
-                        if (major["message"])
-                        {
-                            plan.message += major.message;
-                        }
+                        plan.message += major.message;
+                    }
 
-                        // TODO: Change to only make major element if it doesn't
-                        // already exist. If it does exist, access option
-                        // element with type == 'major'.
-                        let majorOption = new planDef.Option();
-                        majorOption.type = "major";
+                    // TODO: Change to only make major element if it doesn't
+                    // already exist. If it does exist, access option
+                    // element with type == 'major'.
+                    let majorOption = new planDef.Option();
+                    majorOption.type = "major";
 
-                        let major1 = new planDef.OptionItem();
-                        major1.code = major.code;
-                        major1.name = major.title;
-                        major1.credit_points = Number(JSON.parse(major.CurriculumStructure).credit_points);
+                    let major1 = new planDef.OptionItem();
+                    major1.code = major.code;
+                    major1.name = major.title;
+                    major1.credit_points = Number(JSON.parse(major.CurriculumStructure).credit_points);
 
-                        concatArray(plan.planned_units, getMajorUnits(major));
+                    concatArray(plan.planned_units, getMajorUnits(major));
 
-                        majorOption.items.push(major1);
-                        plan.options.push(majorOption);
-                        resolve();
-                    })
-                    .catch(function(errorMsg)
-                    {
-                        reject(errorMsg.toString());
-                    });
+                    majorOption.items.push(major1);
+                    plan.options.push(majorOption);
+                    resolve();
+                })
+                .catch(errorMsg =>
+                {
+                    reject(errorMsg);
+                });
             }));
         }
 
@@ -256,7 +256,8 @@ function getOptions(input, plan, degree)
         Promise.all(func).then(function()
         {
             resolve();
-        });
+        })
+        .catch(errorMsg => reject(errorMsg));
     });
 }
 
@@ -571,9 +572,10 @@ function generatePlan(input)
                 generateSchedule(plan);
                 //console.log(util.inspect(plan.schedule, false, null, true));
                 resolve(plan);
-            });
+            })
+            .catch(errorMsg => reject(errorMsg));
         })
-        .catch(errorMsg => reject(errorMsg.toString()));
+        .catch(errorMsg => reject(errorMsg));
     });
 }
 

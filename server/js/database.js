@@ -143,6 +143,10 @@ function getDegree(searchDegree)
             {
                 reject("No matching degree could be found.");
             }
+        })
+        .catch(errorMsg =>
+        {
+            reject(errorMsg);
         });
     });
 }
@@ -161,7 +165,8 @@ function getUnit(searchUnit)
             {
                 reject("No matching unit could be found.");
             }
-        });
+        })
+        .catch(errorMsg => reject(errorMsg));
     });
 }
 
@@ -217,48 +222,8 @@ async function getMajor(searchMajor, degree)
             {
                 reject("No matching major could be found.");
             }
-        });
-    });
-}
-
-function collectPrerequisites(version, code)
-{
-    cacheSearch("unit", {"version": version, "code": code}).then(function(unit)
-    {
-        console.log(code);
-        if (unit != null)
-        {
-            let requisites = JSON.parse(unit.data).requisites;
-            let prerequisites = [];
-            if (requisites.length > 0)
-            {
-                // Loops through all kinds of requisites (prerequisites, exclusions).
-                for (let req of requisites)
-                {
-                    if (req.requisite_type.label.toUpperCase() == "PREREQUISITE")
-                    {
-                        if (req.containers[0].containers.length > 0)
-                        {
-                            for (let splitReqItem of req.containers[0].containers)
-                            {
-                                // Adds individual prerequisites to prerequisite array.
-                                for (let reqItem of splitReqItem.relationships)
-                                {
-                                    prerequisites.push({"version": reqItem.academic_item_version_name, "code": reqItem.academic_item_code});
-                                }
-                            }
-                        }
-                        // Adds individual prerequisites to prerequisite array.
-                        for (let reqItem of req.containers[0].relationships)
-                        {
-                            prerequisites.push({"version": reqItem.academic_item_version_name, "code": reqItem.academic_item_code});
-                        }
-                    }
-                }
-            }
-
-            console.log(prerequisites);
-        }
+        })
+        .catch(errorMsg => reject(errorMsg));
     });
 }
 
