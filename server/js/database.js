@@ -84,7 +84,8 @@ function cacheSearch(type, searchParams)
                         {
                             // Scrape item from handbook and insert it into database if found.
                             item = await scrape.singleSearch(searchParams.code,
-                                                            new Date().getFullYear(),
+                                                            "",
+                                                            //new Date().getFullYear(),
                                                             searchType);
                         }
 

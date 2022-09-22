@@ -127,7 +127,7 @@ function getDegreeUnits(degree)
     if (degree["CurriculumStructure"])
     {
         let degreeStructure = JSON.parse(degree.CurriculumStructure).container;
-        units = {};
+        units = [];
 
         // Extracts spine of degree.
         let index = scrape.searchJSONArr(degreeStructure, function(entry)
@@ -207,31 +207,34 @@ function getOptions(input, plan, degree)
             func.push(new Promise(function(resolve, reject)
             {
                 database.getMajor(input.majorInput, degree)
-                .then(function(major)
-                {
-                    // TODO: Change to only make major element if it doesn't
-                    // already exist. If it does exist, access option
-                    // element with type == 'major'.
-                    let majorOption = new planDef.Option();
-                    majorOption.type = "major";
+                    .then(function(major)
+                    {
+                        if (major["message"])
+                        {
+                            plan.message += major.message;
+                        }
 
-                    let major1 = new planDef.OptionItem();
-                    major1.code = major.code;
-                    major1.name = major.title;
-                    major1.credit_points = Number(JSON.parse(major.CurriculumStructure).credit_points);
+                        // TODO: Change to only make major element if it doesn't
+                        // already exist. If it does exist, access option
+                        // element with type == 'major'.
+                        let majorOption = new planDef.Option();
+                        majorOption.type = "major";
 
-                    //concatArray(plan.planned_units, getMajorUnits(major));
-                    plan.planned_units = concatArray(plan.planned_units, getMajorUnits(major));
-                    //console.log(plan.planned_units);
+                        let major1 = new planDef.OptionItem();
+                        major1.code = major.code;
+                        major1.name = major.title;
+                        major1.credit_points = Number(JSON.parse(major.CurriculumStructure).credit_points);
 
-                    majorOption.items.push(major1);
-                    plan.options.push(majorOption);
-                    resolve();
-                })
-                .catch(function(errorMsg)
-                {
-                    reject(errorMsg.toString());
-                });
+                        concatArray(plan.planned_units, getMajorUnits(major));
+
+                        majorOption.items.push(major1);
+                        plan.options.push(majorOption);
+                        resolve();
+                    })
+                    .catch(function(errorMsg)
+                    {
+                        reject(errorMsg.toString());
+                    });
             }));
         }
 
@@ -240,7 +243,7 @@ function getOptions(input, plan, degree)
         {
             func.push(new Promise(function (resolve, reject)
             {
-                console.log("after");
+                //console.log("after");
                 resolve();
             }));
         }
@@ -252,10 +255,46 @@ function getOptions(input, plan, degree)
     });
 }
 
+function getSemesters(offerings)
+{
+    let arr = [];
+    // Searches for offering at Murdoch campus for semester 1.
+    let sem1Index = scrape.searchJSONArr(offerings, function(entry)
+    {
+        // display_name for Murdoch campus is written as:
+        // MURDOCH-[semester]-[mode]-[start year]-[end year/CURRENT]
+        // e.g., MURDOCH-S1-INT-2018-CURRENT, MURDOCH-S2-EXT-2020-2021
+        arr = entry.display_name.split("-");
+        return arr[0].toUpperCase() == "MURDOCH" &&
+        arr[1].toUpperCase() == "S1";
+    });
+
+    // Searches for offering at Murdoch campus for semester 2.
+    let sem2Index = scrape.searchJSONArr(offerings, function(entry)
+    {
+        arr = entry.display_name.split("-");
+        return arr[0].toUpperCase() == "MURDOCH" &&
+        arr[1].toUpperCase() == "S2";
+    });
+
+    let semester = "BOTH";
+    if (sem1Index != -1 && sem2Index == -1)
+    {
+        semester = "S1";
+    }
+    else if (sem1Index == -1 && sem2Index != -1)
+    {
+        semester = "S2";
+    }
+    return semester;
+}
+
 function fillUnits(units)
 {
     return new Promise(function(resolve, reject)
     {
+        let func = [];
+
         // Initialises objects to be used repeatedly.
         let requisites = null;
         let label = "";
@@ -268,13 +307,6 @@ function fillUnits(units)
                 //{
                 //    if (unitData != null)
                 //    {
-                //        console.log("wot");
-                //        //if (unitData.code == "ICT283")
-                //        //{
-                //        //    console.log(unitData);
-                //        //}
-
-                //        unit.semester = "2";
                 //        //requisites = JSON.parse(unitData.data).requisites;
                 //        //if (requisites.length > 0)
                 //        //{
@@ -309,16 +341,64 @@ function fillUnits(units)
                 //})
                 //.catch(errorMsg => console.log(errorMsg));
 
-                database.getUnit(unit.code)
-                .then(function(unitData)
+                func.push(new Promise(function(resolve, reject)
                 {
-                    console.log("hoo");
-                    unit.semester = "2";
-                });
+                    database.getUnit(unit.code)
+                        .then(function(unitData)
+                        {
+                            if (unitData != null)
+                            {
+                                let offerings = JSON.parse(unitData.data).unit_offering;
+                                unit.semester = getSemesters(offerings);
+
+                                // Adds all enrolment rules to the unit's 'notes' field.
+                                for (let rule of JSON.parse(unitData.data).enrolment_rules)
+                                {
+                                    unit.notes.push(rule.description);
+                                }
+
+                                requisites = JSON.parse(unitData.data).requisites;
+                                if (requisites.length > 0)
+                                {
+                                    // Loops through all kinds of requisites (prerequisites, exclusions).
+                                    for (let req of requisites)
+                                    {
+                                        label = req.requisite_type.label.toUpperCase();
+                                        if (label == "PREREQUISITE")
+                                        {
+                                            
+                                        }
+
+                                        else if (label == "EXCLUSION")
+                                        {
+                                            //for (let exclusion of req.containers[0].relationships)
+                                            //{
+                                            //    let excUnit = new planDef.ShallowUnit();
+                                            //    excUnit.code = exclusion.academic_item_code;
+                                            //    excUnit.credit_points = exclusion.academic_item_credit_points;
+
+                                            //    unit.exclusions.push(excUnit);
+                                            //}
+
+                                            if (unitData.code == "ICT302")
+                                            {
+                                                
+                                                console.log(util.inspect(req.containers[0], false, null, true));
+                                            }
+                                        }
+                                    }
+                                }
+
+                                resolve();
+                            }
+                        });
+                }));
             }
         }
-        console.log(units);
-        resolve(units);
+        Promise.all(func).then(function()
+        {
+            resolve();
+        });
     });
 }
 
@@ -329,7 +409,6 @@ function generatePlan(input)
         let plan = new planDef.Plan();
         plan.student_id = input.studentIDInput;
         plan.student_name = "placeholdername"; // Add field for student name.
-        plan.degree_code = input.degreeInput;
         plan.study_load = 12; // Add field for study load.
         plan.completed_credit_points = 0;
         plan.completed_units = []; // Add completed units input.
@@ -337,18 +416,23 @@ function generatePlan(input)
         database.getDegree(input.degreeInput)
             .then(function(degree)
             {
-                //console.log(degree);
+                plan.degree_code = degree.code;
                 plan.credit_points = Number(JSON.parse(degree.CurriculumStructure).credit_points);
                 plan.planned_units = getDegreeUnits(degree);
-
+                
                 getOptions(input, plan, degree)
                     .then(function()
                     {
-                        console.log(plan);
+                        // TODO: Subtract completed units from planned units.
+                        plan.planned_units = subtractArray(plan.planned_units, plan.completed_units);
+                        return fillUnits(plan.planned_units);
+                    })
+                    .then(function(thing)
+                    {
+                        //console.log(plan);
+                        console.log(plan.planned_units);
+                        resolve(plan);
                     });
-
-                //    // TODO: Subtract completed units from planned units.
-                //    plan.planned_units = subtractArray(plan.planned_units, plan.completed_units);
 
                 //    //fillUnits(plan.planned_units)
                 //    //    .then(function(fullUnits)

@@ -15,6 +15,7 @@ class Plan
     completed_units = [];
     planned_units = [];
     schedule = [];
+    message = "";
 }
 
 class Option

@@ -168,7 +168,7 @@ function reqSubmit(request, response)
                 .then(function(plan)
                 {
                     response.writeHead(200, {"Content-Type": "text/plain"});
-                    response.end(JSON.stringify(structure));
+                    response.end(JSON.stringify(plan));
                 })
                 .catch(errorMsg =>
                 {
