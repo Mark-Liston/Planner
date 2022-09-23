@@ -1,0 +1,151 @@
+/* Navigation */
+nav{
+	background-color: #FCFBDF;
+}
+
+#profile-button{
+	width: 100px;
+	height: 100px;
+	display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+}
+
+#profile-dropdown{
+	position: relative;
+}
+
+#icon{
+	border: solid gray 1px;
+	border-radius: 100%;
+}
+
+/* Main content */
+.content{
+	display: flex;
+	flex-direction: column;
+    align-items: center;
+	margin-top: 50px;
+}
+
+.subcontent{
+	/*border: solid gray 2px;
+	border-radius: 50px;*/
+}
+
+h1{
+	font-family: Ginger;
+	color: #e0242d;
+}
+
+h2{
+	font-family: Ginger;
+}
+
+/*Drag and Drop*/
+
+.courseplan {
+}
+
+.row {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	width: 100%;
+	align-items: center;
+}
+
+.cell {
+	display: flex;
+	flex-direction: column;
+	flex-basis: 100%;
+	flex: 1;
+	align-items: center;
+
+	width: 500px;
+	height: 240px;
+
+	padding-top: 10px;
+	padding-bottom: 10px;
+
+	border-style: solid;
+	border-width: 2px;
+	border-color: lightgrey;
+}
+
+.cp-unit {
+	display: flex;
+	height: 50px;
+	width: 350px;
+	background: black;
+	border-radius: 14px;
+	margin-bottom: 5px;
+}
+
+.cp-dragButton {
+	align-items: center;
+	cursor: pointer;
+	background-color: white;
+	margin-left: 4px;
+	margin-top: 4px;
+	margin-bottom: 4px;
+	border-top-left-radius: 14px;
+	border-bottom-left-radius: 14px;
+	padding: 10px 10px;
+}
+
+.cp-dragButton img {
+	width: 20px;
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+}
+
+.cp-info {
+	margin-top: 5px;
+	margin-left: 15px;
+	margin-bottom: 5px;
+}
+
+.cp-header {
+	display: flex;
+
+}
+
+.cp-header h1 {
+	color: white;
+	text-decoration: solid;
+	font-size: 18px;
+	margin: 0;
+}
+
+.cp-credits {
+	display: flex;
+	margin-left: 180px;
+	align-self: center;
+}
+
+.cp-credits h1 {
+	color: white;
+	text-decoration: solid;
+	font-size: 14px;
+	margin: 0;
+}
+
+.cp-subheader {
+	display: flex;
+}
+
+.cp-subheader p {
+	color: white;
+	font-size: 12px;
+	margin: 0;
+}
+
+
+
+@font-face {
+	font-family: Ginger;
+	src: url(../font/F37\ Ginger\ Regular.ttf);
+}
