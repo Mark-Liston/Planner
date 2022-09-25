@@ -46,6 +46,12 @@ nav{
 
 .btn-primary:hover{
 	background-color: #91171d;
+	border-color: black;
+}
+
+.btn-primary:focus{
+	background-color: #91171d;
+	border-color: black;
 }
 
 h1{
