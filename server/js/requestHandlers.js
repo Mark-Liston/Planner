@@ -5,6 +5,8 @@
 let database = require("./database.js");
 const coursePlan = require("./coursePlan.js");
 
+const scrape = require("./scrape.js");
+
 var fs = require("fs");
 var formidable = require("formidable");
 let util = require("util");
@@ -150,6 +152,42 @@ function reqTemplate(request, response)
     });
 }
 
+function reqComplete(request, response)
+{
+    console.log("Request handler 'complete' was called.");
+
+    let data = [];
+    request.on("data", function(chunk)
+    {
+        data.push(chunk);
+    });
+    request.on("end", function()
+    {
+        data = Buffer.concat(data).toString();
+
+        (async function()
+        {
+            console.log("about to search");
+            let result = await scrape.searchHandbook(data, new Date().getFullYear(), ["murdoch_pcourse"], 10);
+
+            if (result.length > 0)
+            {
+                for (let item of result)
+                {
+                    console.log(item.code);
+                }
+            }
+        })();
+
+        console.log(data);
+        
+        response.writeHead(200, {"Content-Type": "text/plain"});
+        response.end(data);
+    });
+
+    //console.log(data);
+}
+
 function reqSubmit(request, response)
 {
     console.log("Request handler 'submit' was called.");
@@ -186,4 +224,5 @@ exports.reqScript = reqScript;
 exports.reqImage = reqImage;
 exports.reqFont = reqFont;
 exports.reqTemplate = reqTemplate;
+exports.reqComplete = reqComplete;
 exports.reqSubmit = reqSubmit;

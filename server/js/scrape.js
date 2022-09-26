@@ -198,7 +198,7 @@ async function fetchItem(contentType, version, code)
 
     if (response.ok)
     {
-        // In case it gets to this point and still fails.
+        // 
         try
         {
             response = (await response.json()).contentlets[0];

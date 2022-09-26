@@ -1,3 +1,18 @@
+function autoComplete(inputField)
+{
+    $.ajax(
+    {
+        type: "POST",
+        url: "/complete",
+        dataType: "text",
+        data: inputField.val(),
+        success: function(response)
+        {
+            console.log(response);
+        }
+    });
+}
+
 function submitCourse()
 {
     let formData = new FormData($("#StudyDetails")[0]);
