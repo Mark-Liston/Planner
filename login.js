@@ -21,8 +21,8 @@ const store = new mongodbSession({
     collection: 'currentSession'
 })
 
-app.set('view engine', 'ejs');
-app.use(express.static(__dirname+'/src'))
+app.set('view engine', 'html');
+app.use(express.static(__dirname+'/'))
 app.use(express.urlencoded({extended: true}));
 app.use(session({
     secret: 'secret key',
@@ -44,14 +44,20 @@ app.post('/login', async(req,res)=>{
     const {email, password} = req.body;
     const user = await userModel.findOne({email})
     if(!user){
+        console.log("error:Unable to Find Login")
         return res.redirect('/login')
+
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if(!isMatch){
+        console.log('Error:Wrong password')
         return res.redirect('/login')
+
     }
     req.session.isAuth = true;
+    console.log("logged in")
     res.redirect('/profile')
+
 })
 
 app.post('/register', async (req,res)=>{
@@ -59,7 +65,7 @@ app.post('/register', async (req,res)=>{
 
     let user = await userModel.findOne({email});
     if(user){
-        return res.redirect('/register');
+       // return res.redirect('/register');
     }
     const hashPassword = await bcrypt.hash(password, 10);
     user = new userModel({
@@ -69,11 +75,10 @@ app.post('/register', async (req,res)=>{
     })
 
     await user.save();
-    res.redirect('/login')
+    //res.redirect('/login')
+    console.log('account created')
 })
-app.get('/profile', isAuth, (req,res)=>{
-    res.render('profile')
-})
+
 
 app.post('/logout', (req, res)=>{
     req.session.destroy(err =>{
@@ -83,5 +88,5 @@ app.post('/logout', (req, res)=>{
 })
 
 app.listen(PORT, ()=>{
-    console.log(`server is listning on the port ${PORT}`)
+    console.log(`server is on port ${PORT}`)
 })
