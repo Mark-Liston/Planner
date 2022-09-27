@@ -64,7 +64,7 @@ function makeCol(year, yearCount, semCount)
     // fill x-axis label
     if (yearCount == 0)
     {
-        $("#header").append("<th id='cp-xlabel'>Semester" + (semCount+1) + "</th>"); 
+        $("#header").append("<th id='cp-xlabel'>Semester " + (semCount+1) + "</th>"); 
     }
 
     // make column
@@ -83,49 +83,49 @@ function makeUnit(semInfo, i, year)
 
     // check semester
     let semNum = semInfo.semester;
-    console.log(semNum + " = " + (i+1))
+    //console.log(semNum + " = " + (i+1))
 
-        // get unit info
-        let units = semInfo.units;
-        for (let unitCount = 0; unitCount < units.length; unitCount++) 
+    // get unit info
+    let units = semInfo.units;
+    for (let unitCount = 0; unitCount < units.length; unitCount++) 
+    {
+        let code = units[unitCount].code;
+        let credit_points = units[unitCount].credit_points;
+        let title = units[unitCount].title;
+
+        if (units.type == "undecided")
         {
-            let code = units[unitCount].code;
-            let credit_points = units[unitCount].credit_points;
-            let title = units[unitCount].title;
-
-            if (units.type == "undecided")
-            {
-                code = "Undecided (Elective)";
-                title = "";
-            }
-
-            // make draggable unit
-            html += "<div class='cp-unit'>" +
-                        "<a class='cp-dragButton'><img src='../images/drag icon.png' id='dragicon'></a>" +
-                        "<div class='cp-info'>" +
-                            "<div class='cp-header'>" +
-                                "<h1>" + code + "</h1>" +
-                                "<div class='cp-credits'>" +
-                                    "<h1>" + credit_points + " CP</h1>" +
-                                "</div>" +
-                            "</div>" +
-                            "<div class='cp-subheader'>" +
-                                "<p>" + title + "</p>" +
-                            "</div>" +
-                        "</div>" +
-                    "</div>";
+            code = "Undecided (Elective)";
+            title = "";
         }
 
-        $("#year" + year + "sem" + semNum).append(html);
+        // make draggable unit
+        html += "<div class='cp-unit'>" +
+                    "<a class='cp-dragButton'><img src='../images/drag icon.png' id='dragicon'></a>" +
+                    "<div class='cp-info'>" +
+                        "<div class='cp-header'>" +
+                            "<h1>" + code + "</h1>" +
+                            "<div class='cp-credits'>" +
+                                "<h1>" + credit_points + " CP</h1>" +
+                            "</div>" +
+                        "</div>" +
+                        "<div class='cp-subheader'>" +
+                            "<p>" + title + "</p>" +
+                        "</div>" +
+                    "</div>" +
+                "</div>";
+    }
 
-        // enable draggable
-        let col_id = document.getElementById("year" + year + "sem" + semNum);
-        Sortable.create(col_id,
-        {
-            group: 'shared',
-            handle: '.cp-dragButton',
-            animation: 150
-        });
+    $("#year" + year + "sem" + semNum).append(html);
+
+    // enable draggable
+    let col_id = document.getElementById("year" + year + "sem" + semNum);
+    Sortable.create(col_id,
+    {
+        group: 'shared',
+        handle: '.cp-dragButton',
+        animation: 150
+    });
     
 
 }
@@ -137,7 +137,7 @@ function displayPlan(plan)
 	$("#results").show();
 
     // debug
-    console.log(plan);
+    //console.log(plan);
 
     // grab the schedule of the plan
     let schedule = plan.schedule;
