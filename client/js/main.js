@@ -13,10 +13,10 @@ $(document).ready(function()
         submitCourse();
     });
 
-    $("#degreeInput").on("input", function()
-    {
-        autoComplete($("#degreeInput"));
-    });
+    //$("#degreeInput").on("input", function()
+    //{
+    //    autoComplete($("#degreeInput"));
+    //});
 });
 
 function MakeNewPlan()

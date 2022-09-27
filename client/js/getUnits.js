@@ -50,6 +50,11 @@ function submitCourse()
     });
 }
 
+function addUnit()
+{
+
+}
+
 function displayPlan(plan)
 {
     $(".page").hide();
@@ -60,7 +65,8 @@ function displayPlan(plan)
 
     let table = "<div class='container content'>" +
         "<h1>Course Planner</h1>" +
-        "<h2>Here is your course plan</h2>Semester 1&emsp;&emsp;&emsp;&emsp;Semester 2" +
+        "<h2>Here is your course plan</h2>" +
+        "<h1>Semester 1&emsp;&emsp;&emsp;&emsp;Semester 2</h1>" +
         "<div class='container subcontent'>" +
             // Generated Course Plan
             "<div class='courseplan'>";
@@ -167,7 +173,6 @@ function displayPlan(plan)
         "</div>" +
     "</div>";
 
-    //table += "</table>";
     $("#results").append(table);
 }
 
