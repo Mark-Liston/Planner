@@ -1,3 +1,21 @@
+function autoComplete(type, inputField)
+{
+    $.ajax(
+    {
+        type: "POST",
+        url: "/complete",
+        // data is sent as JSON in text form and parsed server-side.
+        dataType: "text",
+        data: '{"type": "' + type + '", "data": "' + inputField.val() + '"}',
+        success: function(response)
+        {
+            console.log(response); 
+            inputField.autocomplete({source: response});
+            console.log("what");
+        }
+    });
+}
+
 function submitCourse()
 {
     let formData = new FormData($("#StudyDetails")[0]);
@@ -58,7 +76,6 @@ function makeRow(year, yearCount)
 
 function makeCol(year, yearCount, semCount)
 {
-
     let html = "";
 
     // fill x-axis label
@@ -71,14 +88,10 @@ function makeCol(year, yearCount, semCount)
     html += "<td id='year" + year + "sem" + (semCount+1) + "'></td>";
 
     $("#" + year + "_row").append(html);
-
-    
 }
 
 function makeUnit(semInfo, i, year)
 {
-
-
     let html = "";
 
     // check semester
@@ -126,8 +139,6 @@ function makeUnit(semInfo, i, year)
         handle: '.cp-dragButton',
         animation: 150
     });
-    
-
 }
 
 
@@ -168,5 +179,4 @@ function displayPlan(plan)
         }
  
     }
-
 }

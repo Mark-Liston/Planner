@@ -12,6 +12,14 @@ $(document).ready(function()
         
         submitCourse();
     });
+
+    $("#unitCodeInput").on("input", function()
+    {
+        if ($("#unitCodeInput").val() != "")
+        {
+            autoComplete("Unit", $("#unitCodeInput"));
+        }
+    });
 });
 
 function MakeNewPlan()
