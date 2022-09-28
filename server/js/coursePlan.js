@@ -477,10 +477,12 @@ function generateSchedule(plan)
         let year = new planDef.Year();
         year.year = currentYear;
         // Semester 1.
+        let semester1 = new planDef.Semester();
+        semester1.semester = 1;
         if (count > 0 && !skipS1)
         {
-            let semester1 = new planDef.Semester();
-            semester1.semester = 1;
+            //let semester1 = new planDef.Semester();
+            //semester1.semester = 1;
 
             let semCP = plan.study_load;
             // Adds units available in semester 1 until study load is reached.
@@ -501,14 +503,18 @@ function generateSchedule(plan)
                 ++bothItr;
                 --count;
             }
-            year.semesters.push(semester1);
+            //year.semesters.push(semester1);
         }
+        year.semesters.push(semester1);
+        
         // Semester 2.
+        let semester2 = new planDef.Semester();
+        semester2.semester = 2;
         if (count > 0)
         {
             skipS1 = false;
-            let semester2 = new planDef.Semester();
-            semester2.semester = 2;
+            //let semester2 = new planDef.Semester();
+            //semester2.semester = 2;
 
             let semCP = plan.study_load;
             // Adds units available in semester 2 until study load is reached.
@@ -529,8 +535,9 @@ function generateSchedule(plan)
                 ++bothItr;
                 --count;
             }
-            year.semesters.push(semester2);
+            //year.semesters.push(semester2);
         }
+        year.semesters.push(semester2);
         plan.schedule.push(year);
         ++currentYear;
     }
