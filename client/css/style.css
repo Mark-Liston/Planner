@@ -133,11 +133,12 @@ h2{
 	margin-top: 5px;
 	margin-left: 15px;
 	margin-bottom: 5px;
+    width: 100%;
 }
 
 .cp-header {
-	display: flex;
-
+	display: grid;
+    align-items: start;
 }
 
 .cp-header h1 {
@@ -145,12 +146,14 @@ h2{
 	text-decoration: solid;
 	font-size: 18px;
 	margin: 0;
+    text-align: left;
 }
 
 .cp-credits {
-	display: flex;
-	margin-left: 180px;
-	align-self: center;
+    grid-column-start: 2;
+    margin: 0 auto;
+    margin-right: 10px;
+    white-space: nowrap;
 }
 
 .cp-credits h1 {

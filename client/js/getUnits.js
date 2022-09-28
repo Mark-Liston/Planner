@@ -93,10 +93,10 @@ function makeUnit(semInfo, i, year)
         let credit_points = units[unitCount].credit_points;
         let title = units[unitCount].title;
 
-        if (units.type == "undecided")
+        if (units[unitCount].type == "undecided")
         {
-            code = "Undecided (Elective)";
-            title = "";
+            code = "Elective";
+            title = "Undecided";
         }
 
         // make draggable unit
