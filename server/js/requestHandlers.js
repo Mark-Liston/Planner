@@ -2,8 +2,10 @@
 
 "use strict";
 
-let database = require("./database.js");
+const database = require("./database.js");
 const coursePlan = require("./coursePlan.js");
+
+const scrape = require("./scrape.js");
 
 var fs = require("fs");
 var formidable = require("formidable");
@@ -150,6 +152,31 @@ function reqTemplate(request, response)
     });
 }
 
+function reqComplete(request, response)
+{
+    console.log("Request handler 'complete' was called.");
+
+    let data = "";
+    request.on("data", function(chunk)
+    {
+        data += chunk;
+    });
+    request.on("end", function()
+    {
+        (async function()
+        {
+            console.log("about to search");
+            let parsedData = JSON.parse(data);
+            database.getSuggestions(parsedData.type, "%" + parsedData.data + "%")
+            .then(function(result)
+            {
+                response.writeHead(200, {"Content-Type": "application/json"});
+                response.end(JSON.stringify(result));
+            });
+        })();
+    });
+}
+
 function reqSubmit(request, response)
 {
     console.log("Request handler 'submit' was called.");
@@ -186,4 +213,5 @@ exports.reqScript = reqScript;
 exports.reqImage = reqImage;
 exports.reqFont = reqFont;
 exports.reqTemplate = reqTemplate;
+exports.reqComplete = reqComplete;
 exports.reqSubmit = reqSubmit;
