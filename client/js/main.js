@@ -9,9 +9,17 @@ $(document).ready(function()
     $("#submitCourse").on("click", function()
     {
         event.preventDefault();
-        
         submitCourse();
     });
+
+	//Check if login cookie persists
+	var login = CheckLogin()
+	if(login != null){
+		$("#username").html(login.username);
+		$("#loginButton").replaceWith('<a href="#" onclick="LogOut()" class="dropdown-item">Logout</a>');
+	}
+
+
 });
 
 function MakeNewPlan()
@@ -44,3 +52,4 @@ function RemoveStudy(item)
 		$("#AddStudyBtn").show();
 	}
 }
+

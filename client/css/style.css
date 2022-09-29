@@ -54,6 +54,11 @@ nav{
 	border-color: black;
 }
 
+#loginHeader{
+	background-color: #e0242d;
+	color: white;
+}
+
 h1{
 	font-family: Ginger;
 	text-align: center;
@@ -163,8 +168,6 @@ h2{
 	font-size: 12px;
 	margin: 0;
 }
-
-
 
 @font-face {
 	font-family: Ginger;
