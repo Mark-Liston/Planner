@@ -11,10 +11,11 @@ function LogIn(){
     	//Data being sent
 		{ 
 			email: $("#emailInput"),
-			password: $("#emailInput")
+			password: $("#passwordInput")
 		}, 
         function(data, status, xhr) {   // success callback function
 			//Create session cookie here and force reload!!!
+			//Data will be anything you send back from the server
 
         }).fail(function(jqxhr, settings, ex) {
 			//Report failure
