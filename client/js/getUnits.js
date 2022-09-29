@@ -1,3 +1,10 @@
+// removes ghost image when dragging a unit
+document.addEventListener("dragstart", function(event) {
+    var img = new Image();
+    img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=';
+    event.dataTransfer.setDragImage(img, 0, 0);
+}, false);
+
 function submitCourse()
 {
     let formData = new FormData($("#StudyDetails")[0]);
@@ -75,7 +82,7 @@ function makeCol(year, yearCount, semCount)
     
 }
 
-function makeUnit(semInfo, i, year)
+function makeUnit(semInfo, year)
 {
 
 
@@ -83,7 +90,6 @@ function makeUnit(semInfo, i, year)
 
     // check semester
     let semNum = semInfo.semester;
-    //console.log(semNum + " = " + (i+1))
 
     // get unit info
     let units = semInfo.units;
@@ -130,7 +136,6 @@ function makeUnit(semInfo, i, year)
 
 }
 
-
 function displayPlan(plan)
 {
     $(".page").hide();
@@ -145,26 +150,20 @@ function displayPlan(plan)
     // make course plan
     for (let yearCount = 0; yearCount < schedule.length; yearCount++)
     {
-        // row
+        // makes row
         let year = schedule[yearCount].year;
         makeRow(year, yearCount);
  
-
-        // column
+        // makes column
         let semTotal = 2;
         for (let semCount = 0; semCount < semTotal; semCount++)
         {
             makeCol(year, yearCount, semCount);
 
-        }
+            // fills columns with units
+            let semInfo = schedule[yearCount].semesters[semCount]
+            makeUnit(semInfo,year);
 
-        // unit
-        let semesters = schedule[yearCount].semesters
-        // determine how many sem
-        for (let i = 0; i < semesters.length; i++)
-        {
-            let semInfo = schedule[yearCount].semesters[i]
-            makeUnit(semInfo, i, year);
         }
  
     }
