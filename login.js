@@ -40,15 +40,15 @@ const isAuth = (req, res, next)=>{
 }
 
 
-app.post('/login', async(req,res)=>{
-    const {email, password} = req.body;
-    const user = await userModel.findOne({email})
+app.post('/server/login', async(req,res)=>{
+    const {emailInput, passwordInput} = req.body;
+    const user = await userModel.findOne({emailInput})
     if(!user){
         console.log("error:Unable to Find Login")
         return res.redirect('/login')
 
     }
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(passwordInput, user.passwordInput);
     if(!isMatch){
         console.log('Error:Wrong password')
         return res.redirect('/login')
@@ -61,17 +61,17 @@ app.post('/login', async(req,res)=>{
 })
 
 app.post('/register', async (req,res)=>{
-    const {username, email, password} = req.body;
+    const {username, emailInput, passwordInput} = req.body;
 
-    let user = await userModel.findOne({email});
+    let user = await userModel.findOne({emailInput});
     if(user){
        // return res.redirect('/register');
     }
-    const hashPassword = await bcrypt.hash(password, 10);
+    const hashPassword = await bcrypt.hash(passwordInput, 10);
     user = new userModel({
         username,
-        email,
-        password: hashPassword
+        emailInput,
+        passwordInput: hashpasswordInput
     })
 
     await user.save();
