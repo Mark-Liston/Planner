@@ -1,4 +1,4 @@
-// removes ghost image when dragging a unit
+// an event that removes ghost image when dragging a unit
 document.addEventListener("dragstart", function(event) {
     var img = new Image();
     img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=';
@@ -33,6 +33,7 @@ function submitCourse()
             if (cont)
             {
                 displayPlan(coursePlan);
+                displayTotalCredits(coursePlan);
             }
         },
         error: function(response)
@@ -41,7 +42,6 @@ function submitCourse()
         }
     });
 }
-
 
 function makeRow(year, yearCount)
 {
@@ -61,7 +61,6 @@ function makeRow(year, yearCount)
 
     $("#courseplan").append(html);
 }
-
 
 function makeCol(year, yearCount, semCount)
 {
@@ -84,8 +83,6 @@ function makeCol(year, yearCount, semCount)
 
 function makeUnit(semInfo, year)
 {
-
-
     let html = "";
 
     // check semester
@@ -133,21 +130,20 @@ function makeUnit(semInfo, year)
         animation: 150
     });
     
-
 }
 
-function displayPlan(plan)
+function displayPlan(coursePlan)
 {
     $(".page").hide();
 	$("#results").show();
 
     // debug
-    //console.log(plan);
+    console.log(coursePlan);
 
-    // grab the schedule of the plan
-    let schedule = plan.schedule;
+    // grab the schedule of the coursePlan
+    let schedule = coursePlan.schedule;
 
-    // make course plan
+    // make course coursePlan
     for (let yearCount = 0; yearCount < schedule.length; yearCount++)
     {
         // makes row
@@ -161,11 +157,16 @@ function displayPlan(plan)
             makeCol(year, yearCount, semCount);
 
             // fills columns with units
-            let semInfo = schedule[yearCount].semesters[semCount]
-            makeUnit(semInfo,year);
+            let semInfo = schedule[yearCount].semesters[semCount];
+            makeUnit(semInfo, year);
 
         }
  
     }
 
+}
+
+function displayTotalCredits(coursePlan)
+{
+    $("#totalcreditspoints").html("Total Credit Points: " + coursePlan.credit_points);
 }
