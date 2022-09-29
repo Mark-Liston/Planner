@@ -13,11 +13,25 @@ $(document).ready(function()
         submitCourse();
     });
 
-    $("#unitCodeInput").on("input", function()
+    //$("#unitCodeInput").on("input", function()
+    //{
+    //    if ($("#unitCodeInput").val() != "")
+    //    {
+    //        autoComplete("Unit", $("#unitCodeInput"));
+    //    }
+    //});
+    $("#degreeInput").on("input", function()
     {
-        if ($("#unitCodeInput").val() != "")
+        if ($("#degreeInput").val() != "")
         {
-            autoComplete("Unit", $("#unitCodeInput"));
+            autoComplete("Degree", $("#degreeInput"));
+        }
+    });
+    $("#majorInput").on("input", function()
+    {
+        if ($("#majorInput").val() != "")
+        {
+            autoComplete("Major", $("#majorInput"));
         }
     });
 });

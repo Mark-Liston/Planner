@@ -12,6 +12,11 @@ const util = require("util");
 // 11 of March.
 const lastDayToEnrolS1 = new Date(new Date().getFullYear() + "-03-11");
 
+function extractCode(text)
+{
+    return text.trim().split(" ")[0];
+}
+
 /**
  * Checks whether array is consistent i.e., whether all items in array are
  * identical.
@@ -211,7 +216,7 @@ function getOptions(input, plan, degree)
 
             func.push(new Promise(function(resolve, reject)
             {
-                database.getMajor(input.majorInput, degree)
+                database.getMajor(extractCode(input.majorInput), degree)
                 .then(function(major)
                 {
                     if (major["message"])
@@ -555,7 +560,7 @@ function generatePlan(input)
         plan.completed_units = []; // Add completed units input.
         plan.completed_credit_points = aggregateCP(plan.completed_units);
         
-        database.getDegree(input.degreeInput)
+        database.getDegree(extractCode(input.degreeInput))
         .then(function(degree)
         {
             plan.degree_code = degree.code;

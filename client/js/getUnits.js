@@ -9,9 +9,7 @@ function autoComplete(type, inputField)
         data: '{"type": "' + type + '", "data": "' + inputField.val() + '"}',
         success: function(response)
         {
-            console.log(response); 
-            inputField.autocomplete({source: response});
-            console.log("what");
+            inputField.autocomplete({source: JSON.parse(response)});
         }
     });
 }
