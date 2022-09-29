@@ -10,6 +10,75 @@ const sqlite = require("sqlite3").verbose();
 
 const dbPath = "database/Planner.db";
 
+function getSuggestions(type, matchString)
+{
+    return new Promise(function(resolve, reject)
+    {
+        let table = "";
+        // Potentially unecessary as table names are likely case-insensitive.
+        switch (type.toUpperCase())
+        {
+            case "DEGREE":
+                table = "Degree";
+                break;
+            case "MAJOR":
+                table = "Major";
+                break;
+            case "UNIT":
+                table = "Unit";
+                break;
+            default:
+                break;
+        }
+
+        let item = null;
+        let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
+        {
+            if (error)
+            {
+                console.error(error.message);
+            }
+        });
+        
+        // Gets all items of the given type containing the matchString.
+        let qry = "SELECT code || ' - ' || json_extract(" + table + ".data, '$.title') AS name" +
+                " FROM " + table +
+                " WHERE json_valid(" + table + ".data) AND" +
+                " (" +
+                    " json_extract(" + table + ".data, '$.title') LIKE ? OR" +
+                    " json_extract(" + table + ".data, '$.code') LIKE ?" +
+                " )" +
+                " GROUP BY name";
+        db.all(qry, [matchString, matchString], function(error, rows)
+        {
+            let result = [];
+            if (error)
+            {
+                console.error(error.message);
+            }
+
+            else
+            {
+                // Turns array of objects into array of strings.
+                for (let entry of rows)
+                {
+                    result.push(entry.name);
+                }
+            }
+
+            db.close(function(error)
+            {
+                if (error)
+                {
+                    console.error(error.message);
+                }
+            });
+
+            resolve(result);
+        });
+    });
+}
+
 // Gets today's date in ISO format and removes last 14 chars to isolate yyyy-mm-dd.
 function getDate()
 {
@@ -227,6 +296,7 @@ async function getMajor(searchMajor, degree)
     });
 }
 
+exports.getSuggestions = getSuggestions;
 exports.getDegree = getDegree;
 exports.getUnit = getUnit;
 exports.getMajor = getMajor;

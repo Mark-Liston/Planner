@@ -12,6 +12,21 @@ $(document).ready(function()
         submitCourse();
     });
 
+    $("#degreeInput").on("input", function()
+    {
+        if ($("#degreeInput").val() != "")
+        {
+            autoComplete("Degree", $("#degreeInput"));
+        }
+    });
+    $("#majorInput").on("input", function()
+    {
+        if ($("#majorInput").val() != "")
+        {
+            autoComplete("Major", $("#majorInput"));
+        }
+    });
+
 	//Check if login cookie persists
 	var login = CheckLogin()
 	if(login != null){
@@ -52,4 +67,3 @@ function RemoveStudy(item)
 		$("#AddStudyBtn").show();
 	}
 }
-

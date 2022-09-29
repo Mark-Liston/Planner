@@ -12,6 +12,11 @@ const util = require("util");
 // 11 of March.
 const lastDayToEnrolS1 = new Date(new Date().getFullYear() + "-03-11");
 
+function extractCode(text)
+{
+    return text.trim().split(" ")[0];
+}
+
 /**
  * Checks whether array is consistent i.e., whether all items in array are
  * identical.
@@ -211,7 +216,7 @@ function getOptions(input, plan, degree)
 
             func.push(new Promise(function(resolve, reject)
             {
-                database.getMajor(input.majorInput, degree)
+                database.getMajor(extractCode(input.majorInput), degree)
                 .then(function(major)
                 {
                     if (major["message"])
@@ -477,10 +482,12 @@ function generateSchedule(plan)
         let year = new planDef.Year();
         year.year = currentYear;
         // Semester 1.
+        let semester1 = new planDef.Semester();
+        semester1.semester = 1;
         if (count > 0 && !skipS1)
         {
-            let semester1 = new planDef.Semester();
-            semester1.semester = 1;
+            //let semester1 = new planDef.Semester();
+            //semester1.semester = 1;
 
             let semCP = plan.study_load;
             // Adds units available in semester 1 until study load is reached.
@@ -501,14 +508,18 @@ function generateSchedule(plan)
                 ++bothItr;
                 --count;
             }
-            year.semesters.push(semester1);
+            //year.semesters.push(semester1);
         }
+        year.semesters.push(semester1);
+        
         // Semester 2.
+        let semester2 = new planDef.Semester();
+        semester2.semester = 2;
         if (count > 0)
         {
             skipS1 = false;
-            let semester2 = new planDef.Semester();
-            semester2.semester = 2;
+            //let semester2 = new planDef.Semester();
+            //semester2.semester = 2;
 
             let semCP = plan.study_load;
             // Adds units available in semester 2 until study load is reached.
@@ -529,8 +540,9 @@ function generateSchedule(plan)
                 ++bothItr;
                 --count;
             }
-            year.semesters.push(semester2);
+            //year.semesters.push(semester2);
         }
+        year.semesters.push(semester2);
         plan.schedule.push(year);
         ++currentYear;
     }
@@ -548,7 +560,7 @@ function generatePlan(input)
         plan.completed_units = []; // Add completed units input.
         plan.completed_credit_points = aggregateCP(plan.completed_units);
         
-        database.getDegree(input.degreeInput)
+        database.getDegree(extractCode(input.degreeInput))
         .then(function(degree)
         {
             plan.degree_code = degree.code;
