@@ -1,7 +1,5 @@
 // index.js
 
-"use strict";
-
 var server = require("./js/server");
 var router = require("./js/router");
 var requestHandlers = require("./js/requestHandlers");
@@ -14,14 +12,7 @@ var handle = {};
 // appropriate request handler
 handle["/"] = requestHandlers.reqStart;
 handle["/start"] = requestHandlers.reqStart;
-handle["/style"] = requestHandlers.reqStyle;
-handle["/icon"] = requestHandlers.reqIcon;
-handle["/script"] = requestHandlers.reqScript;
-handle["/images"] = requestHandlers.reqImage;
-handle["/font"] = requestHandlers.reqFont;
-handle["/templates"] = requestHandlers.reqTemplate;
-handle["/complete"] = requestHandlers.reqComplete;
-handle["/submit"] = requestHandlers.reqSubmit;
+handle["/reqFile"] = requestHandlers.reqFile;
 
 // pass handle object (and route function) to server
 server.startServer(router.route, handle);
