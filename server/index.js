@@ -3,6 +3,7 @@
 var server = require("./js/server");
 var router = require("./js/router");
 var requestHandlers = require("./js/requestHandlers");
+var loginHandlers = require("./js/login");
 
 // create ‘handle’ object literal
 var handle = {};
@@ -13,6 +14,11 @@ var handle = {};
 handle["/"] = requestHandlers.reqStart;
 handle["/start"] = requestHandlers.reqStart;
 handle["/reqFile"] = requestHandlers.reqFile;
+
+// login.js handles
+handle["/login"] = loginHandlers.login;
+handle["/register"] = loginHandlers.register;
+handle["/logout"] = loginHandlers.logout;
 
 // pass handle object (and route function) to server
 server.startServer(router.route, handle);

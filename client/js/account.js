@@ -37,62 +37,40 @@ function CheckLogin(key)
 
 
 function LogIn(){
-	$.post('/server/LogIn',  //URL to send data to
+	$.post('/login',  //URL to send data to
 		//Data being sent
 		{
-			email: $("#emailInput"),
-			password: $("#passwordInput")
+			email: $("#emailInput").val(),
+			password: $("#passwordInput").val()
 		},
-		function(data, status, xhr) {   var xhr = new XMLHttpRequest();
-			xhr.onreadystatechange = function ()
-			{
-				if (this.readyState == 4 && this.status == 200)
-				{
-					//Get response
-					var response = this.responseText;
+		function(data, status, xhr) {
+			if (status == "success") {
+				let account = {};
+				account.username = data.username;
+				// TODO - implement type and cookie storing
+				json_str = JSON.stringify(account);
+				createCookie("login", json_str, 1);
 
-					//If response valid parse it
-					console.log("Response: " + response);
-					if (response !== "")
-					{
-						accountIn = JSON.parse(response);
+				/*
+				// Not working?
+				let cookieGuest = getCookie("guest");
+				if (cookieGuest) {
+					createCookie(username, cookieGuest, 1);
 
-						//If password valid store login in cookie / Update cookie if it exists
-						if (password == accountIn.password)
-						{
-							// update login cookie
-							account.username = accountIn.username;
-							account.type = accountIn.type;
-							json_str = JSON.stringify(account);
-							createCookie("login", json_str, 1); //it also overwrites/updates cookie that has login as the key
-
-							// add guest cart (if not empty) to log-in account's cart cookie
-							var cookieGuest = getCookie("guest");
-							if (cookieGuest) {
-								createCookie(username, cookieGuest, 1);
-
-								createCookie("guest", "", 0);
-							}
-							location.reload();
-							return true;
-
-						} else
-						{ //if invalid tell the user off
-							document.getElementById("loginAlert").innerText = "Incorrect password";
-							return false;
-						}
-					}
-					else
-					{ //if invalid tell the user off
-						document.getElementById("loginAlert").innerText = "No Account Found";
-						return false;
-					}
+					createCookie("guest", "", 0);
 				}
+				*/
+				location.reload();
 			}
 
 		}).fail(function(jqxhr, settings, ex) {
-
-			console.log('failure to connect to login system')
+			//Check if unauthorised response
+			if (jqxhr.status == 401){
+				// Print reason for login failure
+				alert(jqxhr.responseJSON.reason);
+			} else {
+				console.log('failure to connect to login system')
+			}
 
 		}
 	);

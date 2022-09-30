@@ -1,7 +1,6 @@
 {
     "dependencies": {
-        "formidable": "^2.0.1",
-        "jest": "^29.0.3",
+        "bcrypt": "^5.0.1",
         "node-fetch": "^2.6.7",
         "sqlite3": "^5.0.11"
     },

@@ -1,6 +1,5 @@
 var fetch = require("node-fetch");
 var fs = require("fs");
-var formidable = require("formidable");
 const { request } = require("http");
 
 function reqStart(request, response) {

@@ -1,92 +1,117 @@
-const express = require('express');
-const session = require('express-session');
-const mongodbSession = require('connect-mongodb-session')(session);
-const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const userModel = require('../../models/User')
+const db = require("./database");
 
-const app = express();
-const PORT = 5000;
+async function getRequestData(req) {
+    const buffers = [];
 
-mongoose.connect('mongodb://localhost:27017/sessions', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() =>{
-    console.log('Mongodb is connected...')
-}).catch(error =>{
-    console.log('Failed to connect', error)
-})
-const store = new mongodbSession({
-    uri: 'mongodb://localhost:27017/sessions',
-    collection: 'currentSession'
-})
+    for await (const chunk of req) {
+        buffers.push(chunk);
+    }
 
-app.set('view engine', 'html');
-app.use(express.static(__dirname+'/'))
-app.use(express.urlencoded({extended: true}));
-app.use(session({
-    secret: 'secret key',
-    resave: false,
-    saveUninitialized: false,
-    store: store,
-}))
+    // Combine all data into string
+    return Buffer.concat(buffers).toString();
+}
 
-const isAuth = (req, res, next)=>{
-    if(req.session.isAuth){
-        next()
-    }else{
-        res.redirect('/login')
+function parseForm(data) {
+    let result = {};
+
+    let parts = data.split('&');
+    for (let part of parts) {
+        let separatorIndex = part.indexOf('=');
+        if (separatorIndex != -1) {
+            result[part.slice(0,separatorIndex)] = decodeURIComponent(part.slice(separatorIndex+1));
+        }
+    }
+
+    return result;
+}
+
+async function login(req, res) {
+    if (req.method == "POST") {
+        // Capture form submitted data
+        const data = await getRequestData(req);
+
+        // Parse form data into usable format
+        let {email, password} = parseForm(data);
+    
+        // Get user account
+        let userInfo = await db.getAccount(email);
+        if (userInfo == undefined) {
+            res.writeHead(401, { "Content-Type": "text/json"});
+			res.write('{"reason": "Invalid Email"}');
+            res.end();
+            console.log("Account doesn't exist")
+        } else {
+            // Check if hashes are correct
+            if (bcrypt.compareSync(password, userInfo.password)) {
+                // Passwords matched
+                console.log(email + " logged in");
+
+                res.writeHead(200, { "Content-Type": "text/json"});
+                res.write(JSON.stringify({
+                    username: userInfo.username
+                }));
+                res.end();
+            } else {
+                // Passwords didn't match
+                console.log(email + " login attempt, password was incorrect");
+
+                res.writeHead(401, { "Content-Type": "text/json"});
+                res.write('{"reason": "Invalid Password"}');
+                res.end();
+            }
+        }
+    } else {
+        // Get request, redirect to home
+        res.writeHead(302, {
+            'Location': './'
+          });
+        res.end();
+    }
+}
+
+async function register(req,res) {
+    if (req.method == "POST") {
+        // Capture form submitted data
+        const data = await getRequestData(req);
+
+        // Parse form data into usable format
+        let {email, password, username} = parseForm(data);
+
+        // Check if user already exists
+        let userInfo = await db.getAccount(email);
+        if (userInfo == undefined) {
+            // Create salt
+            const salt = bcrypt.genSaltSync(10);
+            
+            // Create hash
+            let hashPwd = bcrypt.hashSync(password, salt);
+
+            db.createAccount(email, username, hashPwd);
+
+            res.writeHead(200, { "Content-Type": "text/json"});
+            res.write('{"success": true}');
+            res.end();
+        } else {
+            // Bad request account already exists
+            res.writeHead(403, { "Content-Type": "text/json"});
+            res.write('{"reason": "Account already exists"}');
+            res.end();
+        }
+    } else {
+        // Get request, redirect to home
+        res.writeHead(302, {
+            'Location': './'
+          });
+        res.end();
     }
 }
 
 
-app.post('/login', async(req,res)=>{
-    const {email, password} = req.body;
-    const user = await userModel.findOne({email})
-    if(!user){
-        console.log("error:Unable to Find Login")
-        return res.redirect('/login')
+function logout(req, res) {
+    // TODO - Not implemented, should destroy provided sessionID
+}
 
-    }
-    const isMatch = await bcrypt.compare(password, user.password);
-    if(!isMatch){
-        console.log('Error:Wrong password')
-        return res.redirect('/login')
-
-    }
-    req.session.isAuth = true;
-    console.log("logged in")
-    res.redirect('/profile')
-
-})
-
-app.post('/register', async (req,res)=>{
-    const {username, email, password} = req.body;
-
-    let user = await userModel.findOne({email});
-    if(user){
-       // return res.redirect('/register');
-    }
-    const hashPassword = await bcrypt.hash(password, 10);
-    user = new userModel({
-        username,
-        email,
-        password: hashPassword
-    })
-
-    await user.save();
-    //res.redirect('/login')
-    console.log('account created')
-})
-
-
-app.post('/logout', (req, res)=>{
-    req.session.destroy(err =>{
-        if (err) throw err;
-        res.redirect('/')
-    })
-})
-
-app.listen(PORT, ()=>{
-    console.log(`server is on port ${PORT}`)
-})
+exports.login = login;
+exports.register = register;
+exports.logout = logout;
