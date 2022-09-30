@@ -43,7 +43,7 @@ function generateElectives(units, entry, electives, creditPoints)
     let elective = new planDef.UnitSelection();
     elective.type = "undecided"; // Shows that user hasn't decided on which unit to do to satisfy the elective.
     elective.necessity = "elective";
-    elective.credit_points = creditPoints[0];
+    elective.credit_points = Number(creditPoints[0]);
     elective.units = electives; // All the units/options to choose from for the elective.
 
     // Number of options for the elective.
