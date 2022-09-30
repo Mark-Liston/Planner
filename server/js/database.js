@@ -91,7 +91,7 @@ function cacheSearch(type, searchParams)
                 case "MINOR":
                     searchType = ["murdoch_paos"];
                     break;
-                case "CO_MAJOR":
+                case "CO-MAJOR":
                     searchType = ["murdoch_paos"];
                     break;
                 case "UNIT":
@@ -113,7 +113,7 @@ function cacheSearch(type, searchParams)
             // Gets any items from the last 6 months with a matching code.
             // Items are updated every 6 months.
             let qry = "SELECT *" +
-                    " FROM " + table +
+                    " FROM '" + table + "'" +
                     " WHERE code = ? AND" +
                     " retrievedOn > date(?, '-6 month')" +
                     " ORDER BY retrievedOn ASC";
@@ -148,7 +148,7 @@ function cacheSearch(type, searchParams)
 
                         if (item != null)
                         {
-                            qry = "INSERT INTO " + table + " (code, retrievedOn, data)" +
+                            qry = "INSERT INTO '" + table + "' (code, retrievedOn, data)" +
                                 " VALUES(?, ?, ?)";
                             db.run(qry, [item.code, getDate(), JSON.stringify(item)], function(error)
                             {
@@ -304,7 +304,9 @@ async function getOption(searchOption, type, degree)
         {
             if (option != null)
             {
-                if (!degreeHasOption(degree, searchOption, type))
+                // For majors and minors, check if they are part of the degree.
+                if ((type.toUpperCase() == "MAJOR" || type.toUpperCase() == "MINOR") &&
+                    !degreeHasOption(degree, searchOption, type))
                 {
                     option.message = "Degree does not contain " + type.toLowerCase();
                 }

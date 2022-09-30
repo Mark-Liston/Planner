@@ -197,13 +197,6 @@ function concatArray(arr1, arr2)
     return arr1;
 }
 
-// TODO: Implement functionality for subtracting one array from another.
-// Subtracts all the elements in arr1 that are present in arr2.
-function subtractArray(arr1, arr2)
-{
-    return arr1;
-}
-
 function addOption(input, type, plan, degree)
 {
     return new Promise(function(resolve, reject)
@@ -213,24 +206,38 @@ function addOption(input, type, plan, degree)
         {
             if (optionData["message"])
             {
-                plan.message += optionData.message;
+                plan.message += optionData.message + "\n";
             }
 
-            // TODO: Change to only make major element if it doesn't
-            // already exist. If it does exist, access option
-            // element with type == 'major'.
-            let option = new planDef.Option();
-            option.type = type.toLowerCase();
+            // Checks if option already exists in plan.
+            let option;
+            let index = scrape.searchJSONArr(plan.options, function(entry)
+            {
+                return entry.type.toUpperCase() == type.toUpperCase();
+            });
+            // If option exists, point to existing object.
+            if (index != -1)
+            {
+                option = plan.options[index];
+            }
+            // If option doesn't exist, create new object.
+            else
+            {
+                option = new planDef.Option();
+                option.type = type.toLowerCase();
+                // Adds reference of object to plan's array of options.
+                plan.options.push(option);
+            }
 
             let optionItem = new planDef.OptionItem();
             optionItem.code = optionData.code;
             optionItem.name = optionData.title;
             optionItem.credit_points = Number(JSON.parse(optionData.CurriculumStructure).credit_points);
 
+            // Add all option's units to the rest of the plan's units.
             concatArray(plan.planned_units, getOptionUnits(optionData, type));
 
             option.items.push(optionItem);
-            plan.options.push(option);
             resolve();
         })
         .catch(errorMsg =>
@@ -240,23 +247,42 @@ function addOption(input, type, plan, degree)
     });
 }
 
+function removeDuplicates(arr, areItemsEqual)
+{
+    let returnArr;
+    let j = 0;
+    for (let i = 0; i < arr.length; ++i)
+    {
+        for (j = i + 1; j < arr.length; ++j)
+        {
+            if (areItemsEqual(arr[i], arr[j]))
+            {
+                returnArr = arr.splice(j, 1);
+                --i;
+            }
+        }
+    }
+    return returnArr;
+}
+
 function getOptions(input, plan, degree)
 {
     return new Promise(function(resolve, reject)
     {
         let func = [];
 
+        // Adds input major.
         if (input.majorInput != "")
         {
-            // TODO: Remove any duplicates from units in option items.
-
             func.push(addOption(input.majorInput, "major", plan, degree));
         }
 
-        // Replace with loop for all extraInput elements.
-        if (input["extraInput0"])
+        // Adds all input additional options.
+        for (let i = 0; input["extraInput" + i]; ++i)
         {
-            let prefix = input.extraInput0.trim().split("-")[0];
+            // Gets chars before '-' in option code
+            // e.g., MJ-CMSC => MJ.
+            let prefix = input["extraInput" + i].trim().split("-")[0];
             let table = "";
             switch (prefix)
             {
@@ -267,20 +293,29 @@ function getOptions(input, plan, degree)
                     table = "Minor";
                     break;
                 case "CJ":
-                    table = "Co_Major";
+                    table = "Co-Major";
                     break;
                 default:
             }
 
-            func.push(addOption(input.extraInput0, table, plan, degree)); 
-        }
-        if (input["extraInput1"])
-        {
+            func.push(addOption(input["extraInput" + i], table, plan, degree));
         }
 
         Promise.all(func).then(function()
         {
-            console.log(plan.options);
+            removeDuplicates(plan.planned_units, function(item1, item2)
+            {
+                // Undecided units cannot be compared.
+                if (item1.type.toUpperCase() != "UNDECIDED" &&
+                    item2.type.toUpperCase() != "UNDECIDED")
+                {
+                    return item1.code.toUpperCase() == item2.code.toUpperCase();
+                }
+                else
+                {
+                    return false;
+                }
+            });
             resolve();
         })
         .catch(errorMsg => reject(errorMsg));
@@ -586,13 +621,19 @@ function generatePlan(input)
         {
             plan.degree_code = degree.code;
             plan.credit_points = Number(JSON.parse(degree.CurriculumStructure).credit_points);
-            plan.planned_units = getDegreeUnits(degree);
-            
+
             getOptions(input, plan, degree)
             .then(function()
             {
-                // TODO: Subtract completed units from planned units.
-                plan.planned_units = subtractArray(plan.planned_units, plan.completed_units);
+                // When options are added to the plan, all duplicate units
+                // in planned_units are removed. Here, the degree's units are
+                // added after those of the options. This is because some
+                // degrees such as D1059 contain multiple of the same unit.
+                //
+                // A better solution may be to add a field in each unit
+                // specifying its parent. Then, when removing duplicates, the
+                // program could only remove duplicates from different parents.
+                concatArray(plan.planned_units, getDegreeUnits(degree));
                 // Fills all units with relevant information e.g., semester
                 // the unit is available, prerequisites, exclusions.
                 return fillUnits(plan.planned_units);
