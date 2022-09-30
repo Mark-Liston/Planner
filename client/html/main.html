@@ -71,7 +71,7 @@
                     <input type="text" id="degreeInput" name="degreeInput" class="form-control" placeholder="e.g. B1356">
                 
                     <label for="majorInput">Major:</label>
-                    <input type="text" id="majorInput" name="majorInput" class="form-control" placeholder="e.g. MJ-3625">
+                    <input type="text" id="majorInput" name="majorInput" class="optionInput form-control" placeholder="e.g. MJ-3625">
 
 					<!-- For dynamic addition of additional subjects being studied -->
 					<div class="container col-auto">
@@ -83,7 +83,7 @@
 								<!-- Data will be retreived from this not by ID, but by the class "ExtraMajor" and must be iterated over for all inputs -->
 								<div class="row entry">
 									<div class="col-10">
-										<input type="text" class="ExtraMajor form-control " placeholder="e.g. CJ-432">
+                                        <input type="text" name="extraInput0" class="ExtraMajor optionInput form-control" placeholder="e.g. CJ-432">
 									</div>
 									<button type="button" class="btn btn-outline-danger col-auto" onclick="RemoveStudy(this)">X</button>
 								</div>

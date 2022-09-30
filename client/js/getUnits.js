@@ -1,16 +1,35 @@
 function autoComplete(type, inputField)
 {
-    $.ajax(
+    let func = [];
+    let sources = [];
+    // Compiles the search results from all categories specified in type,
+    // e.g., if type = ["Major"] only results for major will be shown in
+    // autocomplete. If type = ["Major", "Minor", "Co-Major"] then results for
+    // all three categories will be shown.
+    for (let entry of type)
     {
-        type: "POST",
-        url: "/complete",
-        // data is sent as JSON in text form and parsed server-side.
-        dataType: "text",
-        data: '{"type": "' + type + '", "data": "' + inputField.val() + '"}',
-        success: function(response)
+        func.push(new Promise(function(resolve, reject)
         {
-            inputField.autocomplete({source: JSON.parse(response)});
-        }
+            $.ajax(
+            {
+                type: "POST",
+                url: "/complete",
+                // data is sent as JSON in text form and parsed server-side.
+                dataType: "text",
+                data: '{"type": "\'' + entry + '\'", "data": "' + inputField.val() + '"}',
+                success: function(response)
+                {
+                    // Appends results to array of suggestions.
+                    sources = sources.concat(JSON.parse(response));
+                    resolve();
+                }
+            });
+        }));
+    }
+    Promise.all(func).then(function()
+    {
+        // Displays suggestions after all categories have been compiled.
+        inputField.autocomplete({source: sources});
     });
 }
 
