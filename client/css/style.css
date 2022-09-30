@@ -32,6 +32,7 @@ nav{
 
 .subcontent{
 	padding-top: 10px;
+	padding-bottom: 10px;
 }
 
 .entry{
@@ -48,11 +49,13 @@ nav{
 }
 
 h1{
+	font-weight: bold;
 	font-family: Ginger;
 	color: #e0242d;
 }
 
 h2{
+	font-size: 24px;
 	font-family: Ginger;
 }
 
@@ -151,8 +154,8 @@ h2{
 
 .cp-header h1 {
 	color: white;
-	text-decoration: solid;
 	font-size: 18px;
+	font-weight: unset;
 	margin: 0;
     text-align: left;
 }
@@ -166,19 +169,31 @@ h2{
 
 .cp-credits h1 {
 	color: white;
-	text-decoration: solid;
+	font-weight: unset;
 	font-size: 14px;
 	margin: 0;
 }
 
 .cp-subheader {
-	display: flex;
+	display: block;
+	text-align: left;
+	white-space: nowrap;
+	overflow: hidden;
+	width: 280px;
+	text-overflow: ellipsis;
 }
 
 .cp-subheader p {
 	color: white;
-	font-size: 12px;
+	font-size: 13px;
 	margin: 0;
+}
+
+#totalcreditspoints {
+	padding-top: 10px;
+	text-align: right;
+	font-weight: bold;
+	font-size: 20px;
 }
 
 
