@@ -88,6 +88,12 @@ function cacheSearch(type, searchParams)
                 case "MAJOR":
                     searchType = ["murdoch_paos"];
                     break;
+                case "MINOR":
+                    searchType = ["murdoch_paos"];
+                    break;
+                case "CO_MAJOR":
+                    searchType = ["murdoch_paos"];
+                    break;
                 case "UNIT":
                     searchType = ["murdoch_psubject"];
                     break;
@@ -221,7 +227,7 @@ function getUnit(searchUnit)
     });
 }
 
-function degreeHasMajor(degree, searchMajor)
+function degreeHasOption(degree, searchOption, type)
 {
     let result = false;
     // Checks if degree has a curriculum structure.
@@ -229,23 +235,59 @@ function degreeHasMajor(degree, searchMajor)
     {
         let degreeStructure = JSON.parse(degree.CurriculumStructure).container;
 
-        // Finds index of element containing all the majors in a degree.
+        // Finds index of element containing all relevant options in a degree.
         let index = scrape.searchJSONArr(degreeStructure, function(entry)
         {
-            return entry.title.toUpperCase() == "MAJOR";
+            return entry.title.toUpperCase() == type.toUpperCase();
         });
         if (index != -1)
         {
-            let majors = degreeStructure[index].relationship;
+            let options = degreeStructure[index].relationship;
 
-            // Searches for major matching search input.
-            index = scrape.searchJSONArr(majors, function(entry)
+            // Searches for option matching search input.
+            index = scrape.searchJSONArr(options, function(entry)
             {
-                return entry.academic_item_code.toUpperCase() == searchMajor.toUpperCase();
+                return entry.academic_item_code.toUpperCase() == searchOption.toUpperCase();
             });
             if (index != -1)
             {
                 result = true;
+            }
+        }
+
+        // If option isn't in first level of degree's structure
+        // i.e., if option is in 'Option' level of structure.
+        else
+        {
+            // Finds index of element containing all option parent objects in
+            // a degree e.g., Additional Majors, Recommended Co-Majors,
+            // Recommended Minors, General Electives.
+            index = scrape.searchJSONArr(degreeStructure, function(entry)
+            {
+                return entry.title.toUpperCase() == "OPTION";
+            });
+            if (index != -1)
+            {
+                let optionStructure = degreeStructure[index].container;
+                // Finds index of option parent object.
+                index = scrape.searchJSONArr(optionStructure, function(entry)
+                {
+                    return entry.title.toUpperCase().search(" " + type.toUpperCase()) != -1;
+                });
+                if (index != -1)
+                {
+                    let options = optionStructure[index].relationship;
+
+                    // Searches for option matching search input.
+                    index = scrape.searchJSONArr(options, function(entry)
+                    {
+                        return entry.academic_item_code.toUpperCase() == searchOption.toUpperCase();
+                    });
+                    if (index != -1)
+                    {
+                        result = true;
+                    }
+                }
             }
         }
     }
@@ -253,82 +295,24 @@ function degreeHasMajor(degree, searchMajor)
     return result;
 }
 
-async function getMajor(searchMajor, degree)
+async function getOption(searchOption, type, degree)
 {
     return new Promise(function(resolve, reject)
     {
-        // Resolve with details of major.
-        cacheSearch("major", {"code": searchMajor}).then(function(major)
+        // Resolve with details of option.
+        cacheSearch(type, {"code": searchOption}).then(function(option)
         {
-            if (major != null)
+            if (option != null)
             {
-                if (!degreeHasMajor(degree, searchMajor))
+                if (!degreeHasOption(degree, searchOption, type))
                 {
-                    major.message = "Degree does not contain major";
+                    option.message = "Degree does not contain " + type.toLowerCase();
                 }
-                
-                resolve(major);
+                resolve(option);
             }
             else
             {
-                reject("No matching major could be found.");
-            }
-        })
-        .catch(errorMsg => reject(errorMsg));
-    });
-}
-
-function degreeHasMinor(degree, searchMinor)
-{
-    let result = false;
-    // Checks if degree has a curriculum structure.
-    if (degree["CurriculumStructure"])
-    {
-        let degreeStructure = JSON.parse(degree.CurriculumStructure).container;
-
-        // Finds index of element containing all the minors in a degree.
-        let index = scrape.searchJSONArr(degreeStructure, function(entry)
-        {
-            return entry.title.toUpperCase() == "MINOR";
-        });
-        if (index != -1)
-        {
-            let minors = degreeStructure[index].relationship;
-
-            // Searches for minor matching search input.
-            index = scrape.searchJSONArr(minors, function(entry)
-            {
-                return entry.academic_item_code.toUpperCase() == searchMinor.toUpperCase();
-            });
-            if (index != -1)
-            {
-                result = true;
-            }
-        }
-    }
-
-    return result;
-}
-
-async function getMinor(searchMinor, degree)
-{
-    return new Promise(function(resolve, reject)
-    {
-        // Resolve with details of minor.
-        cacheSearch("minor", {"code": searchMinor}).then(function(minor)
-        {
-            if (minor != null)
-            {
-                if (!degreeHasMinor(degree, searchMinor))
-                {
-                    minor.message = "Degree does not contain minor";
-                }
-
-                resolve(minor);
-            }
-            else
-            {
-                reject("No matching minor could be found.");
+                reject("No matching " + type.toLowerCase() + " could be found.");
             }
         })
         .catch(errorMsg => reject(errorMsg));
@@ -338,5 +322,5 @@ async function getMinor(searchMinor, degree)
 exports.getSuggestions = getSuggestions;
 exports.getDegree = getDegree;
 exports.getUnit = getUnit;
-exports.getMajor = getMajor;
+exports.getOption = getOption;
 exports.cacheSearch = cacheSearch;

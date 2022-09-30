@@ -164,24 +164,24 @@ function getDegreeUnits(degree)
     return units;
 }
 
-function getMajorUnits(major)
+function getOptionUnits(option, type)
 {
     let units = null;
 
     // Checks if degree has a curriculum structure.
-    if (major["CurriculumStructure"])
+    if (option["CurriculumStructure"])
     {
-        let degreeStructure = JSON.parse(major.CurriculumStructure).container;
+        let degreeStructure = JSON.parse(option.CurriculumStructure).container;
         units = {};
 
         let index = scrape.searchJSONArr(degreeStructure, function(entry)
         {
-            return entry.title.toUpperCase() == "MAJOR";
+            return entry.title.toUpperCase() == type.toUpperCase();
         });
         if (index != -1)
         {
-            let major = degreeStructure[index].container;
-            units = extractUnits(major);
+            let optionData = degreeStructure[index].container;
+            units = extractUnits(optionData);
         }
     }
 
@@ -204,6 +204,42 @@ function subtractArray(arr1, arr2)
     return arr1;
 }
 
+function addOption(input, type, plan, degree)
+{
+    return new Promise(function(resolve, reject)
+    {
+        database.getOption(extractCode(input), type, degree)
+        .then(function(optionData)
+        {
+            if (optionData["message"])
+            {
+                plan.message += optionData.message;
+            }
+
+            // TODO: Change to only make major element if it doesn't
+            // already exist. If it does exist, access option
+            // element with type == 'major'.
+            let option = new planDef.Option();
+            option.type = type.toLowerCase();
+
+            let optionItem = new planDef.OptionItem();
+            optionItem.code = optionData.code;
+            optionItem.name = optionData.title;
+            optionItem.credit_points = Number(JSON.parse(optionData.CurriculumStructure).credit_points);
+
+            concatArray(plan.planned_units, getOptionUnits(optionData, type));
+
+            option.items.push(optionItem);
+            plan.options.push(option);
+            resolve();
+        })
+        .catch(errorMsg =>
+        {
+            reject(errorMsg);
+        });
+    });
+}
+
 function getOptions(input, plan, degree)
 {
     return new Promise(function(resolve, reject)
@@ -214,38 +250,7 @@ function getOptions(input, plan, degree)
         {
             // TODO: Remove any duplicates from units in option items.
 
-            func.push(new Promise(function(resolve, reject)
-            {
-                database.getMajor(extractCode(input.majorInput), degree)
-                .then(function(major)
-                {
-                    if (major["message"])
-                    {
-                        plan.message += major.message;
-                    }
-
-                    // TODO: Change to only make major element if it doesn't
-                    // already exist. If it does exist, access option
-                    // element with type == 'major'.
-                    let majorOption = new planDef.Option();
-                    majorOption.type = "major";
-
-                    let major1 = new planDef.OptionItem();
-                    major1.code = major.code;
-                    major1.name = major.title;
-                    major1.credit_points = Number(JSON.parse(major.CurriculumStructure).credit_points);
-
-                    concatArray(plan.planned_units, getMajorUnits(major));
-
-                    majorOption.items.push(major1);
-                    plan.options.push(majorOption);
-                    resolve();
-                })
-                .catch(errorMsg =>
-                {
-                    reject(errorMsg);
-                });
-            }));
+            func.push(addOption(input.majorInput, "major", plan, degree));
         }
 
         // Replace with loop for all extraInput elements.
@@ -256,21 +261,18 @@ function getOptions(input, plan, degree)
             switch (prefix)
             {
                 case "MJ":
-                    console.log("Major");
+                    table = "Major";
                     break;
                 case "MN":
-                    console.log("Minor");
+                    table = "Minor";
                     break;
                 case "CJ":
-                    console.log("Co_Major");
+                    table = "Co_Major";
                     break;
                 default:
             }
 
-            func.push(new Promise(function (resolve, reject)
-            {
-                resolve();
-            }));
+            func.push(addOption(input.extraInput0, table, plan, degree)); 
         }
         if (input["extraInput1"])
         {
@@ -278,6 +280,7 @@ function getOptions(input, plan, degree)
 
         Promise.all(func).then(function()
         {
+            console.log(plan.options);
             resolve();
         })
         .catch(errorMsg => reject(errorMsg));
@@ -609,6 +612,6 @@ function generatePlan(input)
     });
 }
 
-exports.getDegreeUnits = getDegreeUnits;
-exports.getMajorUnits = getMajorUnits;
+//exports.getDegreeUnits = getDegreeUnits;
+//exports.getOptionUnits = getOptionUnits;
 exports.generatePlan = generatePlan;
