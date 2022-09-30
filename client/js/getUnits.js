@@ -5,6 +5,10 @@ document.addEventListener("dragstart", function(event) {
     event.dataTransfer.setDragImage(img, 0, 0);
 }, false);
 
+
+// todo a listener to listen when an item is dropped then update JSON
+
+
 function submitCourse()
 {
     let formData = new FormData($("#StudyDetails")[0]);
@@ -81,9 +85,11 @@ function makeCol(year, yearCount, semCount)
     
 }
 
-function makeUnit(semInfo, year)
+function makeUnit(coursePlan, year, yearCount, semCount)
 {
     let html = "";
+
+    let semInfo = coursePlan.schedule[yearCount].semesters[semCount];
 
     // check semester
     let semNum = semInfo.semester;
@@ -109,7 +115,7 @@ function makeUnit(semInfo, year)
                         "<div class='cp-header'>" +
                             "<h1>" + code + "</h1>" +
                             "<div class='cp-credits'>" +
-                                "<h1>" + credit_points + " CP</h1>" +
+                                "<h1 >" + credit_points + " CP</h1>" +
                             "</div>" +
                         "</div>" +
                         "<div class='cp-subheader'>" +
@@ -127,10 +133,108 @@ function makeUnit(semInfo, year)
     {
         group: 'shared',
         handle: '.cp-dragButton',
-        animation: 150
+        animation: 150,
+
+        // drag end event
+        onEnd: function(event) 
+        {
+            // rules here       
+
+            updatePlan(coursePlan, event);
+        }
+
     });
     
 }
+
+function updatePlan(coursePlan, event)
+{
+    // grab unit code from the draggable item
+    let unit_code = event.item.getElementsByClassName("cp-header")[0].firstChild.textContent;
+    let copyUnitObj = new Object();
+    
+    // grab year and semester of the table id
+    let fromTable_id = event.from.id;
+    let fromYear = fromTable_id.substring(4, 8);
+    let fromSem = fromTable_id.substring(11);
+
+    let toTable_id = event.to.id;
+    let toYear = toTable_id.substring(4, 8);
+    let toSem = toTable_id.substring(11);
+
+    // debug
+    console.log("dropped: " + unit_code + 
+                '\n' + "from: Year " + fromYear + ", Sem " + fromSem + 
+                '\n' + "to: Year " + toYear + ", Sem " + toSem);
+
+    // From update
+    for (let i = 0; i < coursePlan.schedule.length; i++)
+    {
+        // determine year
+        if (fromYear == coursePlan.schedule[i].year)
+        {
+            // determine semester
+            for (let j = 0; j < coursePlan.schedule[i].semesters.length; j++)
+            {
+                if (fromSem == (j+1))
+                {
+                    for (let k = 0; k < coursePlan.schedule[i].semesters[j].units.length; k++)
+                    {
+                        // find the unit thats been dragged
+                        if (coursePlan.schedule[i].semesters[j].units[k].code == unit_code)
+                        {
+                            // create a copy of that object
+                            copyUnitObj = coursePlan.schedule[i].semesters[j].units[k];
+
+                            // remove the unit from the JSON
+                            coursePlan.schedule[i].semesters[j].units.splice(k, 1);
+                            // debug
+                            console.log("removed Year " + fromYear + ", Sem " + fromSem + " unit: " + unit_code); 
+                            console.log(coursePlan.schedule[i].semesters[j].units);
+
+                            // update the JSON credit points for that year semester
+                            coursePlan.schedule[i].semesters[j].credit_points -= copyUnitObj.credit_points;  
+                            // debug
+                            console.log("updated Year " + fromYear + ", Sem " + fromSem + " credits: " + coursePlan.schedule[i].semesters[j].credit_points); 
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+
+    // To update
+    for (let i = 0; i < coursePlan.schedule.length; i++)
+    {
+        // determine year
+        if (toYear == coursePlan.schedule[i].year)
+        {
+            // determine semester
+            for (let j = 0; j < coursePlan.schedule[i].semesters.length; j++)
+            {
+                if (toSem == (j+1))
+                {        
+                    // add the copied unit obj
+                    coursePlan.schedule[i].semesters[j].units.push(copyUnitObj);
+                    console.log("added Year " + toYear + ", Sem " + toSem + " unit: " + unit_code); 
+                    console.log(coursePlan.schedule[i].semesters[j].units);
+
+                    // update the JSON credit points for that year semester
+                    coursePlan.schedule[i].semesters[j].credit_points += copyUnitObj.credit_points;  
+                    // debug
+                    console.log("updated Year " + toYear + ", Sem " + toSem + " credits: " + coursePlan.schedule[i].semesters[j].credit_points); 
+                }
+            }
+        }
+    }
+
+    // debug - UPDATED JSON HERE
+    console.log("course plan is succesfully updated!");
+    console.log(coursePlan.schedule);
+    
+}
+
 
 function displayPlan(coursePlan)
 {
@@ -140,29 +244,28 @@ function displayPlan(coursePlan)
     // debug
     console.log(coursePlan);
 
-    // grab the schedule of the coursePlan
-    let schedule = coursePlan.schedule;
-
     // make course coursePlan
-    for (let yearCount = 0; yearCount < schedule.length; yearCount++)
+    for (let i = 0; i < coursePlan.schedule.length; i++)
     {
         // makes row
-        let year = schedule[yearCount].year;
-        makeRow(year, yearCount);
+        let year = coursePlan.schedule[i].year;
+        makeRow(year, i);
  
         // makes column
         let semTotal = 2;
-        for (let semCount = 0; semCount < semTotal; semCount++)
+        for (let j = 0; j < semTotal; j++)
         {
-            makeCol(year, yearCount, semCount);
+            makeCol(year, i, j);
 
-            // fills columns with units
-            let semInfo = schedule[yearCount].semesters[semCount];
-            makeUnit(semInfo, year);
+            // fills column with units
+            makeUnit(coursePlan, year, i, j);
 
         }
  
     }
+
+    // debug
+    console.log("course plan is displayed!");
 
 }
 
