@@ -20,6 +20,7 @@ handle["/script"] = requestHandlers.reqScript;
 handle["/images"] = requestHandlers.reqImage;
 handle["/font"] = requestHandlers.reqFont;
 handle["/templates"] = requestHandlers.reqTemplate;
+handle["/complete"] = requestHandlers.reqComplete;
 handle["/submit"] = requestHandlers.reqSubmit;
 
 // pass handle object (and route function) to server

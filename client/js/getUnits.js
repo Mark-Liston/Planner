@@ -1,3 +1,19 @@
+function autoComplete(type, inputField)
+{
+    $.ajax(
+    {
+        type: "POST",
+        url: "/complete",
+        // data is sent as JSON in text form and parsed server-side.
+        dataType: "text",
+        data: '{"type": "' + type + '", "data": "' + inputField.val() + '"}',
+        success: function(response)
+        {
+            inputField.autocomplete({source: JSON.parse(response)});
+        }
+    });
+}
+
 // an event that removes ghost image when dragging a unit
 document.addEventListener("dragstart", function(event) {
     var img = new Image();
@@ -68,7 +84,6 @@ function makeRow(year, yearCount)
 
 function makeCol(year, yearCount, semCount)
 {
-
     let html = "";
 
     // fill x-axis label
@@ -81,8 +96,6 @@ function makeCol(year, yearCount, semCount)
     html += "<td id='year" + year + "sem" + (semCount+1) + "'></td>";
 
     $("#" + year + "_row").append(html);
-
-    
 }
 
 function makeUnit(coursePlan, year, yearCount, semCount)
@@ -143,8 +156,7 @@ function makeUnit(coursePlan, year, yearCount, semCount)
             updatePlan(coursePlan, event);
         }
 
-    });
-    
+    });  
 }
 
 function updatePlan(coursePlan, event)
@@ -232,7 +244,6 @@ function updatePlan(coursePlan, event)
     // debug - UPDATED JSON HERE
     console.log("course plan is succesfully updated!");
     console.log(coursePlan.schedule);
-    
 }
 
 
@@ -266,7 +277,6 @@ function displayPlan(coursePlan)
 
     // debug
     console.log("course plan is displayed!");
-
 }
 
 function displayTotalCredits(coursePlan)

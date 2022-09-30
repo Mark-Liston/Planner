@@ -12,6 +12,28 @@ $(document).ready(function()
         
         submitCourse();
     });
+
+    //$("#unitCodeInput").on("input", function()
+    //{
+    //    if ($("#unitCodeInput").val() != "")
+    //    {
+    //        autoComplete("Unit", $("#unitCodeInput"));
+    //    }
+    //});
+    $("#degreeInput").on("input", function()
+    {
+        if ($("#degreeInput").val() != "")
+        {
+            autoComplete("Degree", $("#degreeInput"));
+        }
+    });
+    $("#majorInput").on("input", function()
+    {
+        if ($("#majorInput").val() != "")
+        {
+            autoComplete("Major", $("#majorInput"));
+        }
+    });
 });
 
 function MakeNewPlan()
