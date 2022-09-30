@@ -41,31 +41,19 @@ function createAccountTable() {
         }
     });
 
-    // For testing add test account
-    // email: test@testmail.com
-    // pass: test1234567890
-    const salt = bcrypt.genSaltSync(10);
-    // now we set user password to hashed password
-    let hashPwd = bcrypt.hashSync("test1234567890", salt);
-    db.run(`INSERT or IGNORE INTO Users(email, username, password)
-              VALUES(?, ?, ?)`,
-              ['test@testmail.com', 'tester0', hashPwd],
-        (err) => {
-            if (err) {
-                console.log(err);
-                throw err;
-            }
-        }
-    );
-
     db.close((err) => {
         if (err) {
             console.error(err.message);
         }
     });
+
+    // For testing add test account
+    // email: test@testmail.com
+    // pass: test1234567890
+    createAccount('test@testmail.com', 'tester0', 'test1234567890');
 }
 
-function createAccount(email, username, hash){
+function createAccount(email, username, password){
     let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
         {
             if (error)
@@ -75,9 +63,13 @@ function createAccount(email, username, hash){
         }
     );
 
-    db.run(`INSERT INTO Users(email, username, password)
+    const salt = bcrypt.genSaltSync(10);
+    // now we set user password to hashed password
+    let hashPwd = bcrypt.hashSync(password, salt);
+
+    db.run(`INSERT OR IGNORE INTO Users(email, username, password)
               VALUES(?, ?, ?)`,
-              [email, username, hash],
+              [email, username, hashPwd],
         (err) => {
             if (err) {
                 console.log(err);

@@ -81,13 +81,7 @@ async function register(req,res) {
         // Check if user already exists
         let userInfo = await db.getAccount(email);
         if (userInfo == undefined) {
-            // Create salt
-            const salt = bcrypt.genSaltSync(10);
-            
-            // Create hash
-            let hashPwd = bcrypt.hashSync(password, salt);
-
-            db.createAccount(email, username, hashPwd);
+            db.createAccount(email, username, password);
 
             res.writeHead(200, { "Content-Type": "text/json"});
             res.write('{"success": true}');
