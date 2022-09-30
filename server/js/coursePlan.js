@@ -248,14 +248,32 @@ function getOptions(input, plan, degree)
             }));
         }
 
-        if (true)
-        //if (input.major2Input != "")
+        // Replace with loop for all extraInput elements.
+        if (input["extraInput0"])
         {
+            let prefix = input.extraInput0.trim().split("-")[0];
+            let table = "";
+            switch (prefix)
+            {
+                case "MJ":
+                    console.log("Major");
+                    break;
+                case "MN":
+                    console.log("Minor");
+                    break;
+                case "CJ":
+                    console.log("Co_Major");
+                    break;
+                default:
+            }
+
             func.push(new Promise(function (resolve, reject)
             {
-                //console.log("after");
                 resolve();
             }));
+        }
+        if (input["extraInput1"])
+        {
         }
 
         Promise.all(func).then(function()
