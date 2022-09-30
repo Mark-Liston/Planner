@@ -14,22 +14,7 @@ function getSuggestions(type, matchString)
 {
     return new Promise(function(resolve, reject)
     {
-        let table = "";
-        // Potentially unecessary as table names are likely case-insensitive.
-        switch (type.toUpperCase())
-        {
-            case "DEGREE":
-                table = "Degree";
-                break;
-            case "MAJOR":
-                table = "Major";
-                break;
-            case "UNIT":
-                table = "Unit";
-                break;
-            default:
-                break;
-        }
+        let table = type;
 
         let item = null;
         let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
@@ -93,20 +78,17 @@ function cacheSearch(type, searchParams)
         // Can only perform search if code is provided.
         if (searchParams["code"])
         {
-            let table = "";
+            let table = type;
             let searchType = "";
             switch (type.toUpperCase())
             {
                 case "DEGREE":
-                    table = "Degree";
                     searchType = ["murdoch_pcourse"];
                     break;
                 case "MAJOR":
-                    table = "Major";
                     searchType = ["murdoch_paos"];
                     break;
                 case "UNIT":
-                    table = "Unit";
                     searchType = ["murdoch_psubject"];
                     break;
                 default:
@@ -202,7 +184,7 @@ function getDegree(searchDegree)
 {
     return new Promise(function(resolve, reject)
     {
-        cacheSearch("degree", {"code": searchDegree}).then(function(degree)
+        cacheSearch("Degree", {"code": searchDegree}).then(function(degree)
         {
             if (degree != null)
             {
@@ -290,6 +272,63 @@ async function getMajor(searchMajor, degree)
             else
             {
                 reject("No matching major could be found.");
+            }
+        })
+        .catch(errorMsg => reject(errorMsg));
+    });
+}
+
+function degreeHasMinor(degree, searchMinor)
+{
+    let result = false;
+    // Checks if degree has a curriculum structure.
+    if (degree["CurriculumStructure"])
+    {
+        let degreeStructure = JSON.parse(degree.CurriculumStructure).container;
+
+        // Finds index of element containing all the minors in a degree.
+        let index = scrape.searchJSONArr(degreeStructure, function(entry)
+        {
+            return entry.title.toUpperCase() == "MINOR";
+        });
+        if (index != -1)
+        {
+            let minors = degreeStructure[index].relationship;
+
+            // Searches for minor matching search input.
+            index = scrape.searchJSONArr(minors, function(entry)
+            {
+                return entry.academic_item_code.toUpperCase() == searchMinor.toUpperCase();
+            });
+            if (index != -1)
+            {
+                result = true;
+            }
+        }
+    }
+
+    return result;
+}
+
+async function getMinor(searchMinor, degree)
+{
+    return new Promise(function(resolve, reject)
+    {
+        // Resolve with details of minor.
+        cacheSearch("minor", {"code": searchMinor}).then(function(minor)
+        {
+            if (minor != null)
+            {
+                if (!degreeHasMinor(degree, searchMinor))
+                {
+                    minor.message = "Degree does not contain minor";
+                }
+
+                resolve(minor);
+            }
+            else
+            {
+                reject("No matching minor could be found.");
             }
         })
         .catch(errorMsg => reject(errorMsg));
