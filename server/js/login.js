@@ -59,7 +59,12 @@ function parseCookies(req) {
 function checkSession(req,res) {
     let cookies = parseCookies(req);
     if (cookies.sessionID != undefined && sessions[cookies.sessionID] != undefined){
-        req.session = sessions[cookies.sessionID];
+        if (sessions[cookies.sessionID].expires > new Date) {
+            req.session = sessions[cookies.sessionID];
+        } else {
+            delete sessions[cookies.sessionID];
+            req.session = undefined;
+        }
     }
 }
 
