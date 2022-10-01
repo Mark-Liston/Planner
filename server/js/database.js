@@ -10,7 +10,7 @@ const { promises } = require('stream');
 
 const sqlite = require("sqlite3").verbose();
 
-const dbPath = "./server/database/Planner.db";
+const dbPath = "./database/Planner.db";
 
 //Ensure account table is created
 createAccountTable();
@@ -125,21 +125,8 @@ function getSuggestions(type, matchString)
     return new Promise(function(resolve, reject)
     {
         let table = "";
-        // Potentially unecessary as table names are likely case-insensitive.
-        switch (type.toUpperCase())
-        {
-            case "DEGREE":
-                table = "Degree";
-                break;
-            case "MAJOR":
-                table = "Major";
-                break;
-            case "UNIT":
-                table = "Unit";
-                break;
-            default:
-                break;
-        }
+        // Ensure correct capitalisation  (Potentially unecessary as table names are likely case-insensitive)
+		table = type[0].toUpperCase() + type.substring(1).toLowerCase();
 
         let item = null;
         let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)

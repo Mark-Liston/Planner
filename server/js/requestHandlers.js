@@ -1,6 +1,10 @@
 var fetch = require("node-fetch");
 var fs = require("fs");
 const { request } = require("http");
+var formidable = require("formidable");
+
+const database = require("./database.js");
+const coursePlan = require("./coursePlan.js");
 
 function reqStart(request, response) {
 	console.log("Request handler 'start' was called.");
