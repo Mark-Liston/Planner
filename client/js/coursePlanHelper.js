@@ -25,21 +25,23 @@ function getFullUnit(unitCode, coursePlan)
 	return null;
 }
 
+/*
 /**
  * Counts up the total credit points of units in a semester
  * @param semester - a coursePlan semester
  * @returns total credit points
- */
+ *
 function getSemCreditPoints(semester)
 {
 	let creditPoints = 0;
 	for(let i = 0; i < semester.units.length; i++)
 	{
-		creditPoints += semester.units[i];
+		creditPoints += semester.units[i].credit_points;
 	}
 	
 	return creditPoints;
 }
+*/
 
 /*
 function getSemester(coursePlan, year, semester)
