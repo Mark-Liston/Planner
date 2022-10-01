@@ -9,7 +9,15 @@ $(document).ready(function()
     $("#submitCourse").on("click", function()
     {
         event.preventDefault();
-        submitCourse();
+        
+        if (duplicateOptions())
+        {
+            submitCourse();
+        }
+        else
+        {
+            alert("All majors/minors/co-majors must be unique");
+        }
     });
 
     $("#degreeInput").on("input", function()
@@ -23,9 +31,22 @@ $(document).ready(function()
     {
         if ($("#majorInput").val() != "")
         {
-            autoComplete("Major", $("#majorInput"));
+            autoComplete(["Major"], $("#majorInput"));
         }
     });
+    // Refreshes every 5 seconds in case user adds an additional major/minor
+    // input field.
+    setTimeout(function()
+    {
+        $(".ExtraMajor").each(function(index)
+        {
+            $(this).on("input", function()
+            {
+                if ($(this).val() != "")
+                {
+                    autoComplete(["Major", "Minor", "Co-Major"], $(this));
+                }
+            }); 
 
 	//Check if login cookie persists
 	var login = CheckLogin()
@@ -35,7 +56,28 @@ $(document).ready(function()
 	}
 
 
+        });
+    }, 5000);
 });
+
+function extractCode(text)
+{
+    return text.trim().split(" ")[0];
+}
+
+function duplicateOptions()
+{
+    let options = [];
+    $(".optionInput").each(function(index)
+    {
+        if ($(this).val() != "")
+        {
+            options.push(extractCode($(this).val()).toUpperCase());
+        }
+    });
+
+    return new Set(options).size == options.length;
+}
 
 function MakeNewPlan()
 {
@@ -46,10 +88,19 @@ function MakeNewPlan()
 // Functionality for dynamically adding and removing additional majors.
 function AddStudy()
 {
-	$.get("../templates/StudyDetailsEntry.html", function(data)
-    {
-		$("#ExtraStudy").append(data);
-	});
+    let option = "<div class='row entry'>" +
+        "<div class='col-10'>" +
+            "<input type='text' name='extraInput" + minors + "' class='ExtraMajor optionInput form-control' placeholder='e.g. CJ-432'>" +
+        "</div>" +
+        "<button type='button' class='btn btn-outline-danger col-auto' onclick='RemoveStudy(this)'>X</button>" +
+    "</div>";
+
+    $("#ExtraStudy").append(option);
+
+	//$.get("../templates/StudyDetailsEntry.html", function(data)
+    //{
+	//	$("#ExtraStudy").append(data);
+	//});
 	minors++;
 
 	if(minors > 1)
