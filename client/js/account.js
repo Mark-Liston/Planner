@@ -3,38 +3,9 @@
 
 function CheckLogin(key)
 {
-	//Check if cookie exists if it doesn't then
-	//return null else return object
-
-	// username=
-	const prefix = key + "=";
-	// retrieve cookies
-	const cookiesDecoded = decodeURIComponent(document.cookie);
-	// split cookies
-	const cookiesArr = cookiesDecoded.split('; ');
-
-	// find cookie
-	for (let i = 0; i < cookiesArr.length; i++)
-	{
-		let cookie = cookiesArr[i];
-
-		// skip spaces
-		while (cookie.charAt(0) == ' ')
-		{
-			cookie = cookie.substring(1);
-		}
-
-		// grab specified cookie name
-		if (cookie.indexOf(prefix) == 0)
-		{
-			return cookie.substring(prefix.length, cookie.length);
-		}
-	}
-
-	//cookie not found
-	return "";
+	let cookies = parseCookies();
+	return cookies.login != undefined ? JSON.parse(cookies.login) : undefined;
 }
-
 
 function LogIn(){
 	$.post('/login',  //URL to send data to
@@ -50,6 +21,7 @@ function LogIn(){
 				// TODO - implement type and cookie storing
 				json_str = JSON.stringify(account);
 				createCookie("login", json_str, 1);
+				createCookie("sessionID", data.sessionID, 1);
 
 				/*
 				// Not working?
@@ -78,12 +50,19 @@ function LogIn(){
 
 
 function LogOut(){
-	//Destroy login cookie and force reload of page
-
 	createCookie("login","",0);
-	location.reload();
+	createCookie("sessionID","",0);
+	//Destroy login cookie and force reload of page
+	$.post('/logout', 
+		{},
+		function(data, status, xhr) {
+			// Do nothing
+		}).fail(function(jqxhr, settings, ex) {
+			console.log('failed to logout')
+		}
+	);
 	console.log("Logged out");
-
+	location.reload();
 }
 
 function createCookie(key, value, expireDays)
@@ -105,4 +84,21 @@ function getUsername() {
 	}
 
 	return "";
+}
+
+function parseCookies() {
+    const list = {};
+    const cookieHeader = document.cookie;
+    if (!cookieHeader) return list;
+
+    cookieHeader.split(`;`).forEach(function(cookie) {
+        let [ name, ...rest] = cookie.split(`=`);
+        name = name?.trim();
+        if (!name) return;
+        const value = rest.join(`=`).trim();
+        if (!value) return;
+        list[name] = decodeURIComponent(value);
+    });
+
+    return list;
 }

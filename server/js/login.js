@@ -1,5 +1,18 @@
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const db = require("./database");
+const sessions = {};
+
+// Check in 5 mins interval, destroy sessions that have expired
+setInterval(() => {
+    const currentTime = new Date;
+    for (const key in sessions) {
+        // check if session has expired
+        if (sessions[key].expires < currentTime) {
+            delete sessions[key];
+        }
+    }
+}, 5 * 60000);
 
 async function getRequestData(req) {
     const buffers = [];
@@ -26,8 +39,47 @@ function parseForm(data) {
     return result;
 }
 
+function parseCookies(req) {
+    const list = {};
+    const cookieHeader = req.headers?.cookie;
+    if (!cookieHeader) return list;
+
+    cookieHeader.split(`;`).forEach(function(cookie) {
+        let [ name, ...rest] = cookie.split(`=`);
+        name = name?.trim();
+        if (!name) return;
+        const value = rest.join(`=`).trim();
+        if (!value) return;
+        list[name] = decodeURIComponent(value);
+    });
+
+    return list;
+}
+
+function checkSession(req,res) {
+    let cookies = parseCookies(req);
+    if (cookies.sessionID != undefined && sessions[cookies.sessionID] != undefined){
+        req.session = sessions[cookies.sessionID];
+    }
+}
+
+
 async function login(req, res) {
     if (req.method == "POST") {
+        checkSession(req,res);
+
+        // User is already logged in
+        if (req.session?.email != undefined) {
+            res.writeHead(200, { "Content-Type": "text/json"});
+            res.write(JSON.stringify({
+                'username': req.session.username,
+                'sessionID': req.session.sessionID,
+                'email': req.session.email
+            }));
+            res.end();
+            return;
+        }
+
         // Capture form submitted data
         const data = await getRequestData(req);
 
@@ -45,11 +97,27 @@ async function login(req, res) {
             // Check if hashes are correct
             if (bcrypt.compareSync(password, userInfo.password)) {
                 // Passwords matched
+
+                // Generate unique id
+                const sessionID = crypto.randomBytes(48).toString('hex');
+                while (sessions[sessionID] != undefined) {
+                    sessionID = crypto.randomBytes(48).toString('hex');
+                }
+
+                sessions[sessionID] = {
+                    'username': userInfo.username,
+                    'email': userInfo.email,
+                    'sessionID': sessionID,
+                    'expires': new Date((new Date).getTime() + 60 * 60000) // Expires in 1 hour
+                }
+
                 console.log(email + " logged in");
 
                 res.writeHead(200, { "Content-Type": "text/json"});
                 res.write(JSON.stringify({
-                    username: userInfo.username
+                    username: userInfo.username,
+                    email: userInfo.email,
+                    sessionID: sessionID
                 }));
                 res.end();
             } else {
@@ -103,9 +171,23 @@ async function register(req,res) {
 
 
 function logout(req, res) {
-    // TODO - Not implemented, should destroy provided sessionID
+    checkSession(req,res);
+
+    // Destroy session if it exists
+    if (req.session?.email != undefined) {
+        let sessionID = req.session.sessionID;
+        delete sessions[sessionID];
+        req.session = undefined;
+    }
+
+    // Redirect to home
+    res.writeHead(302, {
+        'Location': './'
+      });
+    res.end();
 }
 
 exports.login = login;
 exports.register = register;
 exports.logout = logout;
+exports.checkSession = checkSession;
