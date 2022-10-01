@@ -172,10 +172,41 @@ function makeUnit(coursePlan, year, yearCount, semCount)
         {
             // rules here       
 
+			//Is only returning true/false/null. Use as you deem appropriate.
+			checkSemAvailability(coursePlan, event);
+			
             updatePlan(coursePlan, event);
         }
 
     });  
+}
+
+//Checks if the dragged unit is available in the semester it was moved to.
+//Returns true, false, or null.
+function checkSemAvailability(coursePlan, event)
+{
+	// grab unit code from the draggable item
+    let unit_code = event.item.getElementsByClassName("cp-header")[0].firstChild.textContent;
+
+	let available = false;
+	
+	//Get all the data for the unit from the course plan.
+	let fullUnit = getFullUnit(unit_code, coursePlan);
+	
+	if(fullUnit != null)
+	{
+		if(isAvailableInSemester(fullUnit, event.to.id.substring(11)))
+		{
+			available = true;
+		}
+	}
+	else
+	{
+		available = null;
+	}
+	
+	console.log("checkSemAvailability returns: " + available);
+	return available;
 }
 
 function updatePlan(coursePlan, event)
