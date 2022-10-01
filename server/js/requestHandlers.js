@@ -5,7 +5,7 @@ const { request } = require("http");
 function reqStart(request, response) {
 	console.log("Request handler 'start' was called.");
 
-	fs.readFile("./client/html/main.html", 'utf-8', (err, data)=>{
+	fs.readFile("../client/html/main.html", 'utf-8', (err, data)=>{
 		if(!err){
 			response.writeHead(200, { "Content-Type": "text/html" });
 			response.write(data);
@@ -59,5 +59,61 @@ function reqFile(path, response){
 	});
 }
 
+function reqComplete(request, response)
+{
+    console.log("Request handler 'complete' was called.");
+
+    let data = "";
+    request.on("data", function(chunk)
+    {
+        data += chunk;
+    });
+    request.on("end", function()
+    {
+        (async function()
+        {
+            console.log("about to search");
+            let parsedData = JSON.parse(data);
+            database.getSuggestions(parsedData.type, "%" + parsedData.data + "%")
+            .then(function(result)
+            {
+                response.writeHead(200, {"Content-Type": "application/json"});
+                response.end(JSON.stringify(result));
+            });
+        })();
+    });
+}
+
+function reqSubmit(request, response)
+{
+    console.log("Request handler 'submit' was called.");
+
+    let form = new formidable.IncomingForm();
+    form.parse(request, async function(error, field)
+    {
+        if (error)
+        {
+            console.error(error.message);
+        }
+
+        else
+        {
+            coursePlan.generatePlan(field)
+            .then(function(plan)
+            {
+                response.writeHead(200, {"Content-Type": "text/plain"});
+                response.end(JSON.stringify(plan));
+            })
+            .catch(errorMsg =>
+            {
+                response.writeHead(404, {"Content-Type": "text/plain"});
+                response.end(errorMsg.toString());
+            });
+        }
+    });
+}
+
 exports.reqStart = reqStart;
 exports.reqFile = reqFile;
+exports.reqComplete = reqComplete;
+exports.reqSubmit = reqSubmit;
