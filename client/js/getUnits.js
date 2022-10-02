@@ -172,6 +172,9 @@ function makeUnit(coursePlan, year, yearCount, semCount)
         {
             // rules here       
 
+			//Is only returning true/false/null. Use as you deem appropriate.
+			checkSemAvailability(coursePlan, event);
+			
             updatePlan(coursePlan, event);
         }
 
@@ -245,7 +248,7 @@ function updatePlan(coursePlan, event)
     console.log("dropped: " + unit_code + 
                 '\n' + "from: Year " + fromYear + ", Sem " + fromSem + 
                 '\n' + "to: Year " + toYear + ", Sem " + toSem);
-
+	
     // From update
     for (let i = 0; i < coursePlan.schedule.length; i++)
     {
