@@ -1,16 +1,35 @@
 function autoComplete(type, inputField)
 {
-    $.ajax(
+    let func = [];
+    let sources = [];
+    // Compiles the search results from all categories specified in type,
+    // e.g., if type = ["Major"] only results for major will be shown in
+    // autocomplete. If type = ["Major", "Minor", "Co-Major"] then results for
+    // all three categories will be shown.
+    for (let entry of type)
     {
-        type: "POST",
-        url: "/complete",
-        // data is sent as JSON in text form and parsed server-side.
-        dataType: "text",
-        data: '{"type": "' + type + '", "data": "' + inputField.val() + '"}',
-        success: function(response)
+        func.push(new Promise(function(resolve, reject)
         {
-            inputField.autocomplete({source: JSON.parse(response)});
-        }
+            $.ajax(
+            {
+                type: "POST",
+                url: "/complete",
+                // data is sent as JSON in text form and parsed server-side.
+                dataType: "text",
+                data: '{"type": "\'' + entry + '\'", "data": "' + inputField.val() + '"}',
+                success: function(response)
+                {
+                    // Appends results to array of suggestions.
+                    sources = sources.concat(JSON.parse(response));
+                    resolve();
+                }
+            });
+        }));
+    }
+    Promise.all(func).then(function()
+    {
+        // Displays suggestions after all categories have been compiled.
+        inputField.autocomplete({source: sources});
     });
 }
 
@@ -159,10 +178,56 @@ function makeUnit(coursePlan, year, yearCount, semCount)
     });  
 }
 
+//Checks if the dragged unit is available in the semester it was moved to.
+//Returns true, false, or null.
+function checkSemAvailability(coursePlan, event)
+{
+	// grab unit code from the draggable item
+    let unit_code = event.item.getElementsByClassName("cp-header")[0].firstChild.textContent;
+	let unit_type = "DECIDED";
+	if(event.item.getElementsByClassName("cp-subheader")[0].firstChild.textContent.toUpperCase() == "UNDECIDED")
+	{
+		unit_type = "UNDECIDED";
+	};
+	let plannedSem = event.to.id.substring(11)
+
+	let available = false;
+	
+	if(unit_type.toUpperCase() == "UNDECIDED")
+	{
+		available = true;
+	}
+	else
+	{
+		//Get all the data for the unit from the course plan.
+		let fullUnit = getFullUnit(unit_code, coursePlan);
+	
+		if(fullUnit != null)
+		{
+			if(isAvailableInSemester(fullUnit, plannedSem))
+			{
+				available = true;
+			}
+		}
+		else
+		{
+			available = null;
+		}
+	}
+	
+	console.log("checkSemAvailability for "+ unit_code + " in sem " + plannedSem + " returns: " + available);
+	return available;
+}
+
 function updatePlan(coursePlan, event)
 {
     // grab unit code from the draggable item
     let unit_code = event.item.getElementsByClassName("cp-header")[0].firstChild.textContent;
+	let unit_type = "DECIDED";
+	if(event.item.getElementsByClassName("cp-subheader")[0].firstChild.textContent.toUpperCase() == "UNDECIDED")
+	{
+		unit_type = "UNDECIDED";
+	};
     let copyUnitObj = new Object();
     
     // grab year and semester of the table id
@@ -173,6 +238,8 @@ function updatePlan(coursePlan, event)
     let toTable_id = event.to.id;
     let toYear = toTable_id.substring(4, 8);
     let toSem = toTable_id.substring(11);
+	
+	let copied = false;
 
     // debug
     console.log("dropped: " + unit_code + 
@@ -190,25 +257,41 @@ function updatePlan(coursePlan, event)
             {
                 if (fromSem == (j+1))
                 {
-                    for (let k = 0; k < coursePlan.schedule[i].semesters[j].units.length; k++)
+                    for (let k = 0; k < coursePlan.schedule[i].semesters[j].units.length && copied == false; k++)
                     {
-                        // find the unit thats been dragged
-                        if (coursePlan.schedule[i].semesters[j].units[k].code == unit_code)
-                        {
-                            // create a copy of that object
-                            copyUnitObj = coursePlan.schedule[i].semesters[j].units[k];
+						//If moved unit is decided, i.e. has a unit code
+						if(unit_type.toUpperCase() == "DECIDED")
+						{		
+							// find the unit thats been dragged
+							if (coursePlan.schedule[i].semesters[j].units[k].code == unit_code)
+							{
+								// create a copy of that object
+								copyUnitObj = coursePlan.schedule[i].semesters[j].units[k];
+								copied = true;
+								
+							}
+						}
+						//otherwise if find first undecided unit in semester
+						else if(coursePlan.schedule[i].semesters[j].units[k].type.toUpperCase() == "UNDECIDED")
+						{
+							// create a copy of that object
+							copyUnitObj = coursePlan.schedule[i].semesters[j].units[k];
+							copied = true;
+						}
+						
+						if(copied == true)
+						{
+							// remove the unit from the JSON
+							coursePlan.schedule[i].semesters[j].units.splice(k, 1);
+							// debug
+							console.log("removed Year " + fromYear + ", Sem " + fromSem + " unit: " + unit_code); 
+							console.log(coursePlan.schedule[i].semesters[j].units);
 
-                            // remove the unit from the JSON
-                            coursePlan.schedule[i].semesters[j].units.splice(k, 1);
-                            // debug
-                            console.log("removed Year " + fromYear + ", Sem " + fromSem + " unit: " + unit_code); 
-                            console.log(coursePlan.schedule[i].semesters[j].units);
-
-                            // update the JSON credit points for that year semester
-                            coursePlan.schedule[i].semesters[j].credit_points -= copyUnitObj.credit_points;  
-                            // debug
-                            console.log("updated Year " + fromYear + ", Sem " + fromSem + " credits: " + coursePlan.schedule[i].semesters[j].credit_points); 
-                        }
+							// update the JSON credit points for that year semester
+							coursePlan.schedule[i].semesters[j].credit_points -= copyUnitObj.credit_points;  
+							// debug
+							console.log("updated Year " + fromYear + ", Sem " + fromSem + " credits: " + coursePlan.schedule[i].semesters[j].credit_points);
+						}
                     }
 
                 }
@@ -217,29 +300,34 @@ function updatePlan(coursePlan, event)
     }
 
     // To update
-    for (let i = 0; i < coursePlan.schedule.length; i++)
-    {
-        // determine year
-        if (toYear == coursePlan.schedule[i].year)
-        {
-            // determine semester
-            for (let j = 0; j < coursePlan.schedule[i].semesters.length; j++)
-            {
-                if (toSem == (j+1))
-                {        
-                    // add the copied unit obj
-                    coursePlan.schedule[i].semesters[j].units.push(copyUnitObj);
-                    console.log("added Year " + toYear + ", Sem " + toSem + " unit: " + unit_code); 
-                    console.log(coursePlan.schedule[i].semesters[j].units);
+	if(copied == true)
+	{
+		for (let i = 0; i < coursePlan.schedule.length; i++)
+		{
+			// determine year
+			if (toYear == coursePlan.schedule[i].year)
+			{
+				// determine semester
+				for (let j = 0; j < coursePlan.schedule[i].semesters.length; j++)
+				{
+					if (toSem == (j+1))
+					{        
+						// add the copied unit obj
+						coursePlan.schedule[i].semesters[j].units.push(copyUnitObj);
+						console.log("added Year " + toYear + ", Sem " + toSem + " unit: " + unit_code); 
+						console.log(coursePlan.schedule[i].semesters[j].units);
 
-                    // update the JSON credit points for that year semester
-                    coursePlan.schedule[i].semesters[j].credit_points += copyUnitObj.credit_points;  
-                    // debug
-                    console.log("updated Year " + toYear + ", Sem " + toSem + " credits: " + coursePlan.schedule[i].semesters[j].credit_points); 
-                }
-            }
-        }
-    }
+						// update the JSON credit points for that year semester
+						coursePlan.schedule[i].semesters[j].credit_points += copyUnitObj.credit_points;  
+						// debug
+						console.log("updated Year " + toYear + ", Sem " + toSem + " credits: " + coursePlan.schedule[i].semesters[j].credit_points); 
+					}
+				}
+			}
+		}
+	}
+	
+	console.log("copied == " + copied);
 
     // debug - UPDATED JSON HERE
     console.log("course plan is succesfully updated!");
