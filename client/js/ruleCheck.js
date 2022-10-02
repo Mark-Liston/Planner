@@ -28,22 +28,3 @@ function isAvailableInSemester(unit, semesterNum)
 	console.log("unit.code: " + unit.code + "; unit.semester: " + unit.semester + "; returns: " + available + " for semesterNum: " + semesterNum);
 	return available;
 }
-
-/*
-/**
- * Checks if adding a unit to a semester would go over the study load.
- * @param unit - the unit to add.
- * @param semsester - the semester the unit will be added to.
- * @param studyLoad - max total credit points to be studied per semester.
- * @returns true if adding unit would go over study load, otherwise false.
- *
-function isOverStudyLoad(unit, semester, studyLoad)
-{
-	if(unit.credit_points + getSemCreditPoints(semester) > studyLoad)
-	{
-		return true;
-	}
-	
-	return false;
-}
-*/
