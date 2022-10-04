@@ -23,15 +23,7 @@ function LogIn(){
 				createCookie("login", json_str, 1);
 				createCookie("sessionID", data.sessionID, 1);
 
-				/*
-				// Not working?
-				let cookieGuest = getCookie("guest");
-				if (cookieGuest) {
-					createCookie(username, cookieGuest, 1);
 
-					createCookie("guest", "", 0);
-				}
-				*/
 				location.reload();
 			}
 
