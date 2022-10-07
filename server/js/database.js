@@ -2,13 +2,123 @@
 
 "use strict";
 
+const bcrypt = require('bcrypt');
 const scrape = require("./scrape.js");
 const coursePlan = require("./coursePlan.js");
 const planDef = require("./planDef.js");
+const { promises } = require('stream');
 
 const sqlite = require("sqlite3").verbose();
 
-const dbPath = "database/Planner.db";
+const dbPath = "./database/Planner.db";
+
+//Ensure account table is created
+createAccountTable();
+
+function createAccountTable() {
+    let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE | sqlite.OPEN_CREATE, function(error)
+        {
+            if (error)
+            {
+                console.error(error.message);
+            }
+        }
+    );
+
+    let query = `
+    CREATE TABLE IF NOT EXISTS Users (
+        email TEXT PRIMARY KEY,
+        username TEXT,
+        password VARCHAR(60)
+    );
+    `;
+
+    // Create user table 
+    db.run(query, (err) => {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+    });
+
+    db.close((err) => {
+        if (err) {
+            console.error(err.message);
+        }
+    });
+
+    // For testing add test account
+    // email: test@testmail.com
+    // pass: test1234567890
+    createAccount('test@testmail.com', 'tester0', 'test1234567890');
+}
+
+function createAccount(email, username, password){
+    let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
+        {
+            if (error)
+            {
+                console.error(error.message);
+            }
+        }
+    );
+
+    const salt = bcrypt.genSaltSync(10);
+    // now we set user password to hashed password
+    let hashPwd = bcrypt.hashSync(password, salt);
+
+    db.run(`INSERT OR IGNORE INTO Users(email, username, password)
+              VALUES(?, ?, ?)`,
+              [email, username, hashPwd],
+        (err) => {
+            if (err) {
+                console.log(err);
+                console.log("Failed to create account");
+                throw err;
+            }
+        }
+    );
+
+    db.close((err) => {
+        if (err) {
+            console.error(err.message);
+        }
+    });
+}
+
+async function getAccount(email) {
+    return new Promise((resolve, reject) => {
+            let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
+            {
+                if (error)
+                {
+                    console.error(error.message);
+                }
+            }
+        );
+
+        // Get matchign account
+        db.get(`SELECT *
+                FROM Users
+                WHERE email  = ?`,
+                [email],
+            (err, row) => {
+                // Close database
+                db.close((err) => {
+                    if (err) {
+                        console.error(err.message);
+                    }
+                });
+
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(row);
+                }
+            }
+        );
+    });
+}
 
 function getSuggestions(type, matchString)
 {
@@ -326,3 +436,6 @@ exports.getDegree = getDegree;
 exports.getUnit = getUnit;
 exports.getOption = getOption;
 exports.cacheSearch = cacheSearch;
+exports.getAccount = getAccount;
+exports.createAccount = createAccount;
+

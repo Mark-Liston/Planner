@@ -1,52 +1,12 @@
-// router.js
+// create route function with pathname as parameter
+function route(pathname, handle, request, response) {
+	console.log("Routing a request for " + pathname);
 
-"use strict";
-
-function route(handle, pathname, request, response)
-{
-    if (request.url.match("\.css$"))
-    {
-        pathname = "/style";
-    }
-
-    else if (request.url.includes("favicon"))
-    {
-        pathname = "/icon";
-    }
-
-    else if (request.url.match("\.js$"))
-    {
-        pathname = "/script";
-    }
-
-    else if (request.url.match("^\/images\/"))
-    {
-        pathname = "/images";
-    }
-
-    else if (request.url.match("^\/font\/"))
-    {
-        pathname = "/font";
-    }
-
-    else if (request.url.match("^\/templates\/"))
-    {
-        pathname = "/templates";
-    }
-
-    console.log("About to route a request for " + pathname);
-    if (typeof handle[pathname] === 'function')
-    {
-        handle[pathname](request, response);
-    }
-    
-    else
-    {
-        console.log("No request handler found for ", pathname);
-        response.writeHead(404, {"Content-Type":"text/plain"});
-        response.write("Error 404: Resource not found!");
-        response.end();
-    }
+	if(typeof handle[pathname] === 'function'){ //If the pathname points to a function, call said function
+		handle[pathname](request, response);
+	} else{
+		handle["/reqFile"](("../client"+decodeURI(pathname)), response);
+	}
 }
 
 exports.route = route;
