@@ -46,40 +46,47 @@ document.addEventListener("dragstart", function(event) {
 
 function submitCourse()
 {
-    let formData = new FormData($("#StudyDetails")[0]);
-    $.ajax(
+    if ($("#studentEmailInput").val() == "")
     {
-        type: "POST",
-        url: "/submit",
-        dataType: "html",
-        cache: false,
-        contentType: false,
-        processData: false,
-        data: formData,
-        success: function(response)
+        alert("A student email is required");
+    }
+    else
+    {
+        let formData = new FormData($("#StudyDetails")[0]);
+        $.ajax(
         {
-            let coursePlan = JSON.parse(response);
-            let cont = true;
-            if (coursePlan["message"])
+            type: "POST",
+            url: "/submit",
+            dataType: "html",
+            cache: false,
+            contentType: false,
+            processData: false,
+            data: formData,
+            success: function(response)
             {
-                if (confirm(coursePlan.message + "\n" +
-                    "Would you like to generate a course plan anyway?") == false)
+                let coursePlan = JSON.parse(response);
+                let cont = true;
+                if (coursePlan["message"])
                 {
-                    cont = false;
+                    if (confirm(coursePlan.message + "\n" +
+                        "Would you like to generate a course plan anyway?") == false)
+                    {
+                        cont = false;
+                    }
                 }
-            }
 
-            if (cont)
+                if (cont)
+                {
+                    displayPlan(coursePlan);
+                    displayTotalCredits(coursePlan);
+                }
+            },
+            error: function(response)
             {
-                displayPlan(coursePlan);
-                displayTotalCredits(coursePlan);
+                alert(response.responseText);
             }
-        },
-        error: function(response)
-        {
-            alert(response.responseText);
-        }
-    });
+        });
+    }
 }
 
 function makeRow(year, yearCount)

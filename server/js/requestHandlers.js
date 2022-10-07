@@ -105,6 +105,7 @@ function reqSubmit(request, response)
             coursePlan.generatePlan(field)
             .then(function(plan)
             {
+                database.saveCoursePlan(field.studentEmailInput, "Generated course plan", plan);
                 response.writeHead(200, {"Content-Type": "text/plain"});
                 response.end(JSON.stringify(plan));
             })
