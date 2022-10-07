@@ -8,10 +8,6 @@ const database = require("./database.js");
 
 const util = require("util");
 
-// The last day that a student may enrol for semester 1. This is typically the
-// 11 of March.
-const lastDayToEnrolS1 = new Date(new Date().getFullYear() + "-03-11");
-
 function extractCode(text)
 {
     return text.trim().split(" ")[0];
@@ -498,6 +494,13 @@ function generateSchedule(plan)
         return a.level - b.level;
     });
 
+    // The last day that a student may enrol for semester 1. This is typically the
+    // 11 of March.
+    const lastDayToEnrolS1 = new Date(new Date().getFullYear() + "-03-11");
+    // The last day that a student may enrol for semester 2. This is typically the
+    // 12 of August.
+    const lastDayToEnrolS2 = new Date(new Date().getFullYear() + "-08-12");
+
     // Arrays for storing units available in semester 1, semester 2, and
     // both semesters.
     let s1Units = [], s2Units = [], bothUnits = [];
@@ -520,15 +523,21 @@ function generateSchedule(plan)
         }
     }
 
+    let skipS1 = false;
+    let today = new Date();
+    let currentYear = new Date().getFullYear();
+    // If today is too late to enrol for semester 2, skip to next year.
+    if (today > lastDayToEnrolS2)
+    {
+        ++currentYear;
+    }
     // If today is too late to enrol for semester 1, skip to semester 2 for
     // the first year.
-    let skipS1 = false;
-    if (new Date() > lastDayToEnrolS1)
+    else if (new Date() > lastDayToEnrolS1)
     {
         skipS1 = true;
     }
 
-    let currentYear = new Date().getFullYear();
     let count = plan.planned_units.length;
     // Loops until there are no units left to schedule or schedule reaches
     // 10 years. It is assumed a student won't study for more than 10 years

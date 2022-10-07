@@ -20,11 +20,18 @@ $(document).ready(function()
         }
     });
 
+    //$("#unitCodeInput").on("input", function()
+    //{
+    //    if ($("#unitCodeInput").val() != "")
+    //    {
+    //        autoComplete("Unit", $("#unitCodeInput"));
+    //    }
+    //});
     $("#degreeInput").on("input", function()
     {
         if ($("#degreeInput").val() != "")
         {
-            autoComplete("Degree", $("#degreeInput"));
+            autoComplete(["Degree"], $("#degreeInput"));
         }
     });
     $("#majorInput").on("input", function()
@@ -34,29 +41,23 @@ $(document).ready(function()
             autoComplete(["Major"], $("#majorInput"));
         }
     });
-    // Refreshes every 5 seconds in case user adds an additional major/minor
-    // input field.
+    $(document).on("input", ".ExtraMajor", function()
+    {
+        if ($(this).val() != "")
+        {
+            autoComplete(["Major", "Minor", "Co-Major"], $(this));
+        }
+    });
+    // Refreshes every 5 seconds.
     setTimeout(function()
     {
-        $(".ExtraMajor").each(function(index)
-        {
-            $(this).on("input", function()
-            {
-                if ($(this).val() != "")
-                {
-                    autoComplete(["Major", "Minor", "Co-Major"], $(this));
-                }
-            }); 
-
-	//Check if login cookie persists
-	var login = CheckLogin()
-	if(login != null){
-		$("#username").html(login.username);
-		$("#loginButton").replaceWith('<a href="#" onclick="LogOut()" class="dropdown-item">Logout</a>');
-	}
-
-
-        });
+      //Check if login cookie persists
+      var login = CheckLogin()
+      if(login != null)
+      {
+        $("#username").html(login.username);
+        $("#loginButton").replaceWith('<a href="#" onclick="LogOut()" class="dropdown-item">Logout</a>');
+      }
     }, 5000);
 });
 
