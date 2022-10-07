@@ -41,21 +41,13 @@ $(document).ready(function()
             autoComplete(["Major"], $("#majorInput"));
         }
     });
-    // Refreshes every 5 seconds in case user adds an additional major/minor
-    // input field.
-    setTimeout(function()
+    $(document).on("input", ".ExtraMajor", function()
     {
-        $(".ExtraMajor").each(function(index)
+        if ($(this).val() != "")
         {
-            $(this).on("input", function()
-            {
-                if ($(this).val() != "")
-                {
-                    autoComplete(["Major", "Minor", "Co-Major"], $(this));
-                }
-            }); 
-        });
-    }, 5000);
+            autoComplete(["Major", "Minor", "Co-Major"], $(this));
+        }
+    });
 });
 
 function extractCode(text)
