@@ -28,3 +28,92 @@ function isAvailableInSemester(unit, semesterNum)
 	console.log("unit.code: " + unit.code + "; unit.semester: " + unit.semester + "; returns: " + available + " for semesterNum: " + semesterNum);
 	return available;
 }
+
+/**
+ * Checks if a unit has been passed before a particular semester.
+ * @param {*} unitCode The unit to check
+ * @param {*} yearNum The year in which the semester occurrs.
+ * @param {*} semNum The semester number.
+ * @param {*} coursePlan The course plan to check for the unit.
+ * @returns True if the unit has been passed before the specified semester.
+ */
+function unitPassedBeforeYearSem(unitCode, yearNum, semNum, coursePlan)
+{
+	//Check if unit is in completed units and has been passed.
+	let unit = coursePlan.completed_units.find(({code}) => code == unitCode);
+	if(unit != undefined && unit.grade >= 50){ return true; }
+	
+	//Check if unit is planned for a semester before the one of interest
+	let yearSem = getPlannedUnitYearSem(unitCode, coursePlan.schedule);
+	if(yearSem != null)
+	{
+		if(yearSem.year < yearNum)
+		{
+			return true;
+		}
+		else if(yearSem.year == yearNum && yearSem.semester < semNum)
+		{
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+/**
+ * Checks if a prerequisite is satisfied by a certain semester.
+ * @param {*} prereqItem The prerequisite to check. Can be a prereqNode or a unit
+ * @param {*} plannedYearNum The year the semester is in
+ * @param {*} plannedSemNum The semester number the prerequisite is to be satisfied before
+ * @param {*} coursePlan A course plan containing completed units and a schedule
+ * @returns True if the prerequisite is satisfied by the specified semester, otherwise false.
+ */
+function prereqItemMet(prereqItem, plannedYearNum, plannedSemNum, coursePlan)
+{
+	console.log("prereqItemMet checking:");
+	console.log(prereqItem);
+	//Check if prereqItem is a unit
+	if(hasUnitCode(prereqItem))
+	{
+		if(unitPassedBeforeYearSem(prereqItem.code, plannedYearNum, plannedSemNum, coursePlan))
+		{
+			console.log("prereqItem " + prereqItem.code + " satisfied");
+			return true;
+		}
+		
+		console.log("prereqItem " + prereqItem.code + " not satisfied");
+		return false;
+	}
+	else //prereqItem is a prereqNode
+	{
+		//If operator is AND, all prerequisite items must be satisfied
+		if(prereqItem.operator.toUpperCase() == "AND")
+		{
+			for(let item in prereqItem.items)
+			{
+				if(!prereqItemMet(prereqItem.items[item], plannedYearNum, plannedSemNum, coursePlan))
+				{
+					console.log("AND prereq not satisfied; prereqItemMet returns false");
+					return false;
+				}
+			}
+			
+			console.log("AND prereq satisfied; prereqItemMet returns true");
+			return true;
+		}
+		else //operator is OR, so only one prereq item need be satisfied
+		{
+			for(let item in prereqItem.items)
+			{
+				if(prereqItemMet(prereqItem.items[item], plannedYearNum, plannedSemNum, coursePlan))
+				{
+					console.log("OR prereq satisfied; prereqItemMet returns true");
+					return true;
+				}
+			}
+			
+			console.log("OR prereq not satisfied; prereqItemMet returns false");
+			return false;
+		}
+	}
+}

@@ -17,7 +17,8 @@ function getFullUnit(unitCode, coursePlan)
 				{
 					if(unit.code.toUpperCase() == unitCode.toUpperCase())
 					{
-						console.log("getFullUnit for " + unitCode + " returns " + unit);
+						console.log("getFullUnit for " + unitCode + " returns " + unit.code);
+						console.log(unit);
 						return unit;
 					}
 				}
@@ -26,5 +27,57 @@ function getFullUnit(unitCode, coursePlan)
 	}
 	
 	console.log(unitCode + " not found in coursePlan");
+	return null;
+}
+
+/**
+ * Checks if an object has a unit code.
+ * @param {*} obj The object to check.
+ * @returns True if obj has unit code, otherwise false.
+ */
+function hasUnitCode(obj)
+{
+	try
+	{
+		obj.code.toUpperCase();
+		return true;
+	}
+	catch
+	{
+		return false;
+	}
+}
+
+/**
+ * Returns the year number and semester number that a unit is planned to be studied in.
+ * @param {*} unitCode The code for the unit to find.
+ * @param {*} schedule The collection of years from a CoursePlan
+ * @returns object with year and semester if found, otherwise null
+ */
+function getPlannedUnitYearSem(unitCode, schedule)
+{
+	for(let i = 0; i < schedule.length; i++)
+	{
+		for(let j = 0; j < schedule[i].semesters.length; j++)
+		{
+			for(let k = 0; k < schedule[i].semesters[j].units.length; k++)
+			{
+				let unit = schedule[i].semesters[j].units[k];
+				if(unit.type.toUpperCase() != "UNDECIDED")
+				{
+					if(unit.code.toUpperCase() == unitCode.toUpperCase())
+					{
+						console.log("year: " + schedule[i].year + " sem: " + schedule[i].semesters[j].semester);
+						return {
+							year: schedule[i].year,
+							semester: schedule[i].semesters[j].semester
+						};
+					}
+				}
+				
+			}
+		}
+	}
+	
 	return null;
 }

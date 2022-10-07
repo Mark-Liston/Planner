@@ -174,6 +174,7 @@ function makeUnit(coursePlan, year, yearCount, semCount)
 
 			//Is only returning true/false/null. Use as you deem appropriate.
 			checkSemAvailability(coursePlan, event);
+            checkPrereqsMet(coursePlan, event);
 			
             updatePlan(coursePlan, event);
         }
@@ -222,6 +223,46 @@ function checkSemAvailability(coursePlan, event)
 	return available;
 }
 
+//Checks if the prerequisites for the dragged item are satisfied in its new location
+function checkPrereqsMet(coursePlan, event)
+{
+    if(event.item.getElementsByClassName("cp-subheader")[0].firstChild.textContent.toUpperCase() != "UNDECIDED")
+	{
+        //Get the unit code of the dragged item
+		let unit_code = event.item.getElementsByClassName("cp-header")[0].firstChild.textContent;
+        
+        //Get the year and semester the item has been dragged to
+        let toYear = event.to.id.substring(4, 8);
+        let toSem = event.to.id.substring(11);
+
+        //Get the unit's prerequisites
+        let prereqs = getFullUnit(unit_code, coursePlan).prerequisites;
+
+        //prereqs is an array of prereqNode, which in turn contains
+        //other prereqNodes and units.
+        //Assumption: relationship between top-level prereqNodes in array is
+        //"OR", i.e. only one top-level prereqNode need be satisfied.
+        if(prereqs.length > 0)
+        {
+            for(let prereq in prereqs)
+            {
+                if(prereqItemMet(prereqs[prereq], toYear, toSem, coursePlan))
+                {
+                    console.log("checkPrereqsMet for" + unit_code + " returns true");
+                    return true;
+                }
+            }
+            console.log("checkPrereqsMet for " + unit_code + " returns false");
+            return false;
+        }
+        console.log("checkPrereqsMet: " + unit_code + " has no prereqs; checkPrereqsMet returns true");
+        return true;
+        
+	}
+    console.log("checkPrereqsMet: undecided elective has no prereqs");
+    return true;
+}
+
 function updatePlan(coursePlan, event)
 {
     // grab unit code from the draggable item
@@ -230,7 +271,7 @@ function updatePlan(coursePlan, event)
 	if(event.item.getElementsByClassName("cp-subheader")[0].firstChild.textContent.toUpperCase() == "UNDECIDED")
 	{
 		unit_type = "UNDECIDED";
-	};
+	}
     let copyUnitObj = new Object();
     
     // grab year and semester of the table id
