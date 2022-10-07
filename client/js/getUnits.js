@@ -184,7 +184,7 @@ function makeUnit(coursePlan, year, yearCount, semCount)
 
         // make draggable unit
         html += "<div class='cp-unit'>" +
-                    "<a class='cp-dragButton'><img src='../images/drag icon.png' id='dragicon'></a>" +
+                    "<a class='cp-dragButton' style='display: none;'><img src='../images/drag icon.png' id='dragicon'></a>" +
                     "<div class='cp-info'>" +
                         "<div class='cp-header'>" +
                             "<h1>" + code + "</h1>" +
@@ -212,13 +212,37 @@ function makeUnit(coursePlan, year, yearCount, semCount)
         // drag end event
         onEnd: function(event) 
         {
-            // rules here       
+            // rules here 
+            let msg = "";      
+            let unit_code = event.item.getElementsByClassName("cp-header")[0].firstChild.textContent;
+            let toTable_id = event.to.id;
+            let toYear = toTable_id.substring(4, 8);
+            let toSem = toTable_id.substring(11);
 
-			//Is only returning true/false/null. Use as you deem appropriate.
-			checkSemAvailability(coursePlan, event);
-            checkPrereqsMet(coursePlan, event);
-			
-            updatePlan(coursePlan, event);
+            // to do : figure an algorithm to check if all units are valid
+			if (!checkSemAvailability(coursePlan, event))
+            {
+                $("#message").show();
+                msg = '<p id="msg-highalert">* ' + unit_code + ' is not available in Year ' + toYear + ' Semester ' + toSem + '</p>';
+                console.log(msg);
+                $("#message").append(msg);
+
+            }
+            else if (!checkPrereqsMet(coursePlan, event))
+            {
+                $("#message").show();
+                msg = '<p id="msg-highalert">* ' + unit_code + ' needs a prerequisite unit_here</p>';
+                console.log(msg);
+                $("#message").append(msg);
+            }
+            else
+            {
+                    // to do : check all units are valid then
+                    // enable update plan when apply changes button is clicked
+                    // $("#message").html("<p>Message:</p>");
+                    // $("#message").hide();
+                    //updatePlan(coursePlan, event);   
+            }
         }
 
     });  

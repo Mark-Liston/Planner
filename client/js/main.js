@@ -106,6 +106,8 @@ function MakeNewPlan()
 {
 	$(".page").hide();
 	$("#search").show();
+    $("#cancelChangesPlan").hide();
+    $("#applyChangesPlan").hide();
 }
 
 // Functionality for dynamically adding and removing additional majors.
@@ -140,4 +142,25 @@ function RemoveStudy(item)
     {
 		$("#AddStudyBtn").show();
 	}
+}
+
+function editPlan()
+{
+    $("#editPlan").hide();
+
+    $('.cp-dragButton').show();
+    $("#cancelChangesPlan").show();
+    $("#applyChangesPlan").show();
+}
+
+function cancelChangesPlan()
+{
+    $("#editPlan").show();
+
+    $('.cp-dragButton').hide();
+    $("#cancelChangesPlan").hide();
+    $("#applyChangesPlan").hide();
+
+    // revert plan to original form here
+    displayPlan();
 }
