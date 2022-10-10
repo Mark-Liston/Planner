@@ -5,6 +5,7 @@ $(document).ready(function()
 	// Hides all non immediate articles.
 	$(".page").hide();
 	$("#landing").show();
+    $("#viewPlanBtn").hide();
 
     $("#submitCourse").on("click", function()
     {
@@ -61,6 +62,11 @@ $(document).ready(function()
             $("#loginButton").replaceWith('<a href="#" onclick="LogOut()" class="dropdown-item">Logout</a>');
             $("#studentEmailInput").prop("readonly", true);
             $("#studentEmailInput").val(login.email);
+            $("#viewPlanBtn").show();
+        }
+        else
+        {
+            $("#viewPlanBtn").hide();
         }
     }, 1000);
 });

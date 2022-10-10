@@ -89,6 +89,40 @@ function submitCourse()
     }
 }
 
+function showPlan()
+{
+    var login = CheckLogin()
+    if(login != null)
+    {
+        console.log(login.email);
+        $.ajax(
+        {
+            type: "POST",
+            url: "/viewPlan",
+            dataType: "text",
+            cache: false,
+            contentType: false,
+            processData: false,
+            data: '{"email": "' + login.email + '"}',
+            success: function(response)
+            {
+                console.log("wow");
+                let coursePlan = JSON.parse(response);
+                displayPlan(coursePlan);
+                displayTotalCredits(coursePlan);
+            },
+            error: function(response)
+            {
+                alert(response.responseText);
+            }
+        });
+    }
+    else
+    {
+        $("#viewPlanBtn").hide();
+    }
+}
+
 function makeRow(year, yearCount)
 {
     let html = "";

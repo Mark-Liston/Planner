@@ -23,6 +23,7 @@ handle["/logout"] = loginHandlers.logout;
 //Course Handlers
 handle["/complete"] = requestHandlers.reqComplete;
 handle["/submit"] = requestHandlers.reqSubmit;
+handle["/viewPlan"] = requestHandlers.reqViewPlan;
 
 // pass handle object (and route function) to server
 server.startServer(router.route, handle);
