@@ -235,7 +235,7 @@ function makeUnit(coursePlan, year, yearCount, semCount)
 
             }
             
-            if (!checkPrereqsMet(coursePlan, event) && !msgExists)
+            if (!checkPrereqsMet(coursePlan, event))
             {
                 // makes the message if it doesnt already exist
                 if(messageObj.unit == "")
