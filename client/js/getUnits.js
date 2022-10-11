@@ -159,6 +159,10 @@ function makeUnit(coursePlan, year, yearCount, semCount)
 
     $("#year" + year + "sem" + semNum).append(html);
 
+    // assign an array to courseplan's message to be used for rules messaging
+    let messages = [];
+    coursePlan.message = messages;
+
     // enable draggable
     let col_id = document.getElementById("year" + year + "sem" + semNum);
     Sortable.create(col_id,
@@ -170,37 +174,130 @@ function makeUnit(coursePlan, year, yearCount, semCount)
         // drag end event
         onEnd: function(event) 
         {
-            // rules here 
-            let msg = "";      
+            // sorry spaghetti code atm. will improve later
+
+            // rules here     
             let unit_code = event.item.getElementsByClassName("cp-header")[0].firstChild.textContent;
             let toTable_id = event.to.id;
             let toYear = toTable_id.substring(4, 8);
             let toSem = toTable_id.substring(11);
+            let messageObj = {
+                unit: "",
+                msg_SemAvai: "",
+                msg_PreReq: ""
+            };
 
-            // to do : figure an algorithm to check if all units are valid
-			if (!checkSemAvailability(coursePlan, event))
+            // checks the message in the courseplan JSON if the messages already exsits for that chosen unit (removes duplication of messages)
+            coursePlan.message.forEach(function(item)
             {
-                $("#message").show();
-                msg = '<p id="msg-highalert">* ' + unit_code + ' is not available in Year ' + toYear + ' Semester ' + toSem + '</p>';
-                console.log(msg);
-                $("#message").append(msg);
+                if (item.unit == unit_code)
+                {
+                    console.log("Message already exists for " + unit_code);
+                    messageObj = item;
+                }
+            });
+
+            $("#message").show();
+
+			if (!checkSemAvailability(coursePlan, event))
+            {              
+                // makes the message if it doesnt exist
+                if(messageObj.unit == "")
+                {
+                    // make message obj
+                    messageObj.unit = unit_code;
+                    messageObj.msg_SemAvai = '<p id="msg-highalert">* ' + unit_code + ' is not available in Year ' + toYear + ' Semester ' + toSem + '</p>';
+
+                     // save message to the json
+                     coursePlan.message.push(messageObj);
+                     console.log(coursePlan);
+                }
+                // update message for that unit
+                else if (messageObj.unit == unit_code)
+                {
+                     // update message
+                     let index = coursePlan.message.findIndex((item => item.unit == unit_code));
+                     coursePlan.message[index].msg_SemAvai= '<p id="msg-highalert">* ' + unit_code + ' is not available in Year ' + toYear + ' Semester ' + toSem + '</p>';
+                     console.log(coursePlan);
+                }
 
             }
-            else if (!checkPrereqsMet(coursePlan, event))
+            else 
             {
-                $("#message").show();
-                msg = '<p id="msg-highalert">* ' + unit_code + ' needs a prerequisite unit_here</p>';
-                console.log(msg);
-                $("#message").append(msg);
+                // unit exists in the messages
+                if (messageObj.unit == unit_code)
+                {
+                    // remove check sem message for that unit
+                    let index = coursePlan.message.findIndex((item => item.unit == unit_code));
+                    coursePlan.message[index].msg_SemAvai = "";
+                    console.log(coursePlan);
+                }
+
+            }
+            
+            if (!checkPrereqsMet(coursePlan, event) && !msgExists)
+            {
+                // makes the message if it doesnt already exist
+                if(messageObj.unit == "")
+                {
+                    // make message obj
+                    messageObj.unit = unit_code;
+                    messageObj.msg_PreReq = '<p id="msg-highalert">* ' + unit_code + ' needs a prerequisite "unit_here"</p>';
+
+                        // save message to the json
+                        coursePlan.message.push(messageObj);
+                        console.log(coursePlan);
+                }
+                // update message for that unit
+                else if (messageObj.unit == unit_code)
+                {
+                        // update message
+                        let index = coursePlan.message.findIndex((item => item.unit == unit_code));
+                        coursePlan.message[index].msg_PreReq = '<p id="msg-highalert">* ' + unit_code + ' needs a prerequisite "unit_here"</p>';
+                        console.log(coursePlan);
+                
+                }
             }
             else
             {
-                    // to do : check all units are valid then
-                    // enable update plan when apply changes button is clicked
-                    // $("#message").html("<p>Message:</p>");
-                    // $("#message").hide();
-                    //updatePlan(coursePlan, event);   
+                // unit exists in the messages
+                if (messageObj.unit == unit_code)
+                {
+                    // remove check preReq message for that unit
+                    let index = coursePlan.message.findIndex((item => item.unit == unit_code));
+                    coursePlan.message[index].msg_PreReq = "";
+                    console.log(coursePlan); 
+                }
+
             }
+
+
+            if (coursePlan.message.length > 0)
+            {
+                // delete unit's message if both checkSem and preReq have no messages
+                let index = coursePlan.message.findIndex((item => item.unit == unit_code));
+                if (coursePlan.message[index].msg_SemAvai == "" && coursePlan.message[index].msg_PreReq == "")
+                {
+                    coursePlan.message.splice(index, 1);
+                }
+            }
+
+            if (coursePlan.message.length == 0)
+            {
+                $("#message").hide();
+            }
+            else
+            {                
+                // update messages on the front-end
+                let messages = ""
+                coursePlan.message.forEach(function(item)
+                {
+                    messages += item.msg_SemAvai;
+                    messages += item.msg_PreReq;
+                });
+                $("#message").html('<p>Message:</p>' + messages);
+            }
+
         }
 
     });  
