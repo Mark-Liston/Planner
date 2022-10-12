@@ -308,7 +308,7 @@ function getDegree(searchDegree)
             }
             else
             {
-                reject("No matching degree could be found.");
+                reject("No matching degree with code " + searchDegree + " could be found.");
             }
         })
         .catch(errorMsg =>
@@ -418,7 +418,7 @@ async function getOption(searchOption, type, degree)
                 if ((type.toUpperCase() == "MAJOR" || type.toUpperCase() == "MINOR") &&
                     !degreeHasOption(degree, searchOption, type))
                 {
-                    option.message = "Degree does not contain " + type.toLowerCase();
+                    option.message = "Degree " + degree.code + " does not contain " + type.toLowerCase() + " " + option.code;
                 }
                 resolve(option);
             }
