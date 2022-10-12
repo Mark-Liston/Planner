@@ -424,7 +424,14 @@ async function getOption(searchOption, type, degree)
             }
             else
             {
-                reject("No matching " + type.toLowerCase() + " could be found.");
+                if (type == "")
+                {
+                    reject("No matching item could be found with code " + searchOption);
+                }
+                else
+                {
+                    reject("No matching " + type.toLowerCase() + " could be found with code " + searchOption);
+                }
             }
         })
         .catch(errorMsg => reject(errorMsg));
