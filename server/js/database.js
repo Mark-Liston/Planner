@@ -445,7 +445,7 @@ function saveCoursePlan(email, changes, plan)
         
         // Gets all items of the given type containing the matchString.
         let qry = "INSERT INTO CoursePlan (email, timeChanged, changes, data)" +
-                " VALUES(?, datetime('now'), ?, ?)";
+                " VALUES(?, datetime('now', 'localtime'), ?, ?)";
         db.all(qry, [email, changes, JSON.stringify(plan)], function(error, rows)
         {
             let result = [];

@@ -132,6 +132,9 @@ function reqViewPlan(request, response)
     {
         let parsedData = JSON.parse(data);
         console.log(parsedData);
+
+        //let coursePlan = database.getCoursePlan(parsedData.email);
+
         response.writeHead(200, {"Content-Type": "application/json"});
         response.end("heyyy");
     });
