@@ -455,7 +455,6 @@ function saveCoursePlan(email, changes, plan)
                 " VALUES(?, datetime('now', 'localtime'), ?, ?)";
         db.all(qry, [email, changes, JSON.stringify(plan)], function(error, rows)
         {
-            let result = [];
             if (error)
             {
                 console.error(error.message);
@@ -479,6 +478,47 @@ function saveCoursePlan(email, changes, plan)
     });
 }
 
+function getCoursePlan(email)
+{
+    return new Promise(function(resolve, reject)
+    {
+        let coursePlan = null;
+        let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
+        {
+            if (error)
+            {
+                console.error(error.message);
+            }
+        });
+        
+        // Gets all items of the given type containing the matchString.
+        let qry = "SELECT * FROM CoursePlan WHERE email = ?" +
+                    "ORDER BY timeChanged DESC";
+        db.all(qry, [email], function(error, rows)
+        {
+            if (error)
+            {
+                console.error(error.message);
+            }
+
+            else
+            {
+                coursePlan = rows[0];
+            }
+
+            db.close(function(error)
+            {
+                if (error)
+                {
+                    console.error(error.message);
+                }
+            });
+
+            resolve(coursePlan);
+        });
+    });
+}
+
 exports.getSuggestions = getSuggestions;
 exports.getDegree = getDegree;
 exports.getUnit = getUnit;
@@ -487,3 +527,4 @@ exports.cacheSearch = cacheSearch;
 exports.getAccount = getAccount;
 exports.createAccount = createAccount;
 exports.saveCoursePlan = saveCoursePlan;
+exports.getCoursePlan = getCoursePlan;

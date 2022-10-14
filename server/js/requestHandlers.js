@@ -122,7 +122,6 @@ function reqViewPlan(request, response)
 {
     console.log("Request handler 'viewPlan' was called.");
 
-    let coursePlan = null;
     let data = "";
     request.on("data", function(chunk)
     {
@@ -131,16 +130,22 @@ function reqViewPlan(request, response)
     request.on("end", function()
     {
         let parsedData = JSON.parse(data);
-        console.log(parsedData);
 
-        //let coursePlan = database.getCoursePlan(parsedData.email);
-
-        response.writeHead(200, {"Content-Type": "application/json"});
-        response.end("heyyy");
+        database.getCoursePlan(parsedData.email)
+        .then(function(coursePlan)
+        {
+            if (coursePlan != null)
+            {
+                response.writeHead(200, {"Content-Type": "application/json"});
+                response.end(JSON.stringify(coursePlan));
+            }
+            else
+            {
+                response.writeHead(404, {"Content-Type": "text/plain"});
+                response.end("Course plan unavailable");
+            }
+        });
     });
-
-    //response.writeHead(200, {"Content-Type": "application/json"});
-    //response.end("thing");
 }
 
 exports.reqStart = reqStart;

@@ -94,7 +94,6 @@ function showPlan()
     var login = CheckLogin()
     if(login != null)
     {
-        console.log(login.email);
         $.ajax(
         {
             type: "POST",
@@ -106,10 +105,9 @@ function showPlan()
             data: '{"email": "' + login.email + '"}',
             success: function(response)
             {
-                console.log("wow");
                 let coursePlan = JSON.parse(response);
-                displayPlan(coursePlan);
-                displayTotalCredits(coursePlan);
+                displayPlan(JSON.parse(coursePlan.data));
+                displayTotalCredits(JSON.parse(coursePlan.data));
             },
             error: function(response)
             {
@@ -426,7 +424,7 @@ function displayPlan(coursePlan)
 	$("#results").show();
 
     // debug
-    console.log(coursePlan);
+    //console.log(coursePlan);
 
     // make course coursePlan
     for (let i = 0; i < coursePlan.schedule.length; i++)
