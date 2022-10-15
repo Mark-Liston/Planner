@@ -71,8 +71,17 @@ function submitCourse()
 
             if (cont)
             {
-                displayPlan(coursePlan);
-                displayTotalCredits(coursePlan);
+
+                $(".page").hide();
+                $("#completedUnits").show();
+
+                $("#submitDoneUnits").on("click", function()
+                {
+                    event.preventDefault();
+
+                    displayPlan(coursePlan);
+                    displayTotalCredits(coursePlan);
+                });
             }
         },
         error: function(response)
