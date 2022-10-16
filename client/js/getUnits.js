@@ -75,10 +75,7 @@ function submitCourse()
                 $(".page").hide();
                 $("#completedUnits").show();
 
-                $("#addDoneUnitBtn").on("click", function()
-                {
-                    console.log("add");
-                });
+                $("#addDoneUnitBtn").on("click", getGrades);
 
                 $("#submitDoneUnits").on("click", function()
                 {
@@ -88,6 +85,30 @@ function submitCourse()
                     displayTotalCredits(coursePlan);
                 });
             }
+        },
+        error: function(response)
+        {
+            alert(response.responseText);
+        }
+    });
+}
+
+function getGrades()
+{
+    let code = extractCode($("#doneUnitInput").val());
+    $.ajax(
+    {
+        type: "POST",
+        url: "/getUnit",
+        // data is sent as JSON in text form and parsed server-side.
+        dataType: "text",
+        data: '{"code": "' + code + '"}',
+        success: function(response)
+        {
+            response = JSON.parse(response);
+            let unitElement = "<label for='" + response.code + "_grade'>" + response.code + "</label>" +
+                "<input type='text' id='" + response.code + "_grade' class='form-control'>";
+            $("#doneUnits").append(unitElement);
         },
         error: function(response)
         {

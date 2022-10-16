@@ -87,6 +87,35 @@ function reqComplete(request, response)
     });
 }
 
+function reqGetUnit(request, response)
+{
+    console.log("Request handler 'get unit' was called.");
+
+    let data = "";
+    request.on("data", function(chunk)
+    {
+        data += chunk;
+    });
+    request.on("end", function()
+    {
+        (async function()
+        {
+            let parsedData = JSON.parse(data);
+            database.getUnit(parsedData.code)
+            .then(function(result)
+            {
+                response.writeHead(200, {"Content-Type": "application/json"});
+                response.end(JSON.stringify(result));
+            })
+            .catch(function(errorMsg)
+            {
+                response.writeHead(404, {"Content-Type": "text/plain"});
+                response.end(errorMsg.toString());
+            });
+        })();
+    });
+}
+
 function reqSubmit(request, response)
 {
     console.log("Request handler 'submit' was called.");
@@ -119,4 +148,5 @@ function reqSubmit(request, response)
 exports.reqStart = reqStart;
 exports.reqFile = reqFile;
 exports.reqComplete = reqComplete;
+exports.reqGetUnit = reqGetUnit;
 exports.reqSubmit = reqSubmit;
