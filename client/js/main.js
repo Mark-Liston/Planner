@@ -10,13 +10,16 @@ $(document).ready(function()
     {
         event.preventDefault();
         
-        if (duplicateOptions())
+        if (validateCourseInput())
         {
-            submitCourse();
-        }
-        else
-        {
-            alert("All majors/minors/co-majors must be unique");
+            if (duplicateOptions())
+            {
+                submitCourse();
+            }
+            else
+            {
+                alert("All majors/minors/co-majors must be unique");
+            }
         }
     });
 
@@ -60,6 +63,16 @@ $(document).ready(function()
       }
     }, 5000);
 });
+
+function validateInputField(inputField)
+{
+    let valid = true;
+    if (!/^([^@$%&\\\/:*?"'<>|~`#^+={}\[\];!]+)$/.test(inputField.val()))
+    {
+        valid = false;
+    }
+    return valid;
+}
 
 function extractCode(text)
 {
