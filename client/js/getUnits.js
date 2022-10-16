@@ -75,6 +75,11 @@ function submitCourse()
                 $(".page").hide();
                 $("#completedUnits").show();
 
+                $("#addDoneUnitBtn").on("click", function()
+                {
+                    console.log("add");
+                });
+
                 $("#submitDoneUnits").on("click", function()
                 {
                     event.preventDefault();

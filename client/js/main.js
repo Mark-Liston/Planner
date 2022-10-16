@@ -48,6 +48,13 @@ $(document).ready(function()
             autoComplete(["Major", "Minor", "Co-Major"], $(this));
         }
     });
+    $("#doneUnitInput").on("input", function()
+    {
+        if ($(this).val() != "")
+        {
+            autoComplete(["Unit"], $(this));
+        }
+    });
     // Refreshes every 5 seconds.
     setTimeout(function()
     {

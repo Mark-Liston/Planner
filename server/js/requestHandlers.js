@@ -76,7 +76,6 @@ function reqComplete(request, response)
     {
         (async function()
         {
-            console.log("about to search");
             let parsedData = JSON.parse(data);
             database.getSuggestions(parsedData.type, "%" + parsedData.data + "%")
             .then(function(result)
