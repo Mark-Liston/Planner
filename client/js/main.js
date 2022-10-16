@@ -10,16 +10,13 @@ $(document).ready(function()
     {
         event.preventDefault();
         
-        if (validateCourseInput())
+        if (duplicateOptions())
         {
-            if (duplicateOptions())
-            {
-                submitCourse();
-            }
-            else
-            {
-                alert("All majors/minors/co-majors must be unique");
-            }
+            submitCourse();
+        }
+        else
+        {
+            alert("All majors/minors/co-majors must be unique");
         }
     });
 
