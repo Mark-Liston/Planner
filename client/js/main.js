@@ -68,6 +68,16 @@ $(document).ready(function()
     }, 5000);
 });
 
+function validateInputField(inputField)
+{
+    let valid = true;
+    if (!/^([^@$%&\\\/:*?"'<>|~`#^+={}\[\];!]+)$/.test(inputField.val()))
+    {
+        valid = false;
+    }
+    return valid;
+}
+
 function extractCode(text)
 {
     return text.trim().split(" ")[0];
