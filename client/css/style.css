@@ -31,9 +31,7 @@ nav{
 }
 
 .subcontent{
-	border: solid gray 2px;
-	border-radius: 50px;
-	padding: 50px;
+	padding-bottom: 20px;
 }
 
 .entry{
@@ -84,10 +82,14 @@ h2{
 /*Course Plan - Drag and Drop*/
 #courseplan tr {
 	display: flex;
+	flex: 1;
 	flex-direction: row;
 	flex-wrap: wrap;
 	width: 100%;
-	align-items: center;
+	align-items: stretch;
+	height: auto;
+	text-align: center;
+
 }
 
 #courseplan td {
@@ -97,8 +99,8 @@ h2{
 	flex: 1;
 	align-items: center;
 
-	width: 500px;
-	height: 240px;
+	min-height: 260px;
+	margin: -1px;
 
 	padding-top: 10px;
 	padding-bottom: 10px;
@@ -106,6 +108,8 @@ h2{
 	border-style: solid;
 	border-width: 2px;
 	border-color: lightgrey;
+
+
 }
 
 #cp-xlabel {
@@ -124,15 +128,19 @@ h2{
 
 #cp-ylabel {
 	padding-right: 15px;
+	display: flex;
+	justify-content: center;
+	align-content: center;
+	flex-direction: column;
 }
 
 .cp-unit {
 	display: flex;
-	height: 50px;
-	width: 350px;
+	min-height: 50px;
 	background: black;
 	border-radius: 14px;
 	margin-bottom: 5px;
+	padding-right: 10px;
 }
 
 .cp-dragButton {
@@ -220,10 +228,38 @@ h2{
 	height: auto;
 }
 
-#msg-highalert {
-	color: #91171d;
+#message h2 {
+	margin-top: 10px;
+	font-weight: bold;
+	font-family: Ginger;
+	color: red;
 }
 
+#message h3 {
+	font-size: large;
+	display: inline;
+	color: red;
+	font-weight: bold;
+}
+
+#message h4 {
+	font-size: medium;
+	display: inline;
+	color: black;
+	font-weight: bold;
+}
+
+#message h5 {
+	font-size: small;
+	display: inline;
+	color: black;
+}
+
+#message p {
+	font-size: large;
+	color: black;
+	display: inline;
+}
 
 
 @font-face {
