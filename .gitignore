@@ -1,4 +1,3 @@
 server/node_modules
 .vscode/*
-# Planner.db can be ignored once tables are automatically generated.
-# server/database/Planner.db
+server/database/Planner.db

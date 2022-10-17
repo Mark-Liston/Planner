@@ -7,53 +7,70 @@ const scrape = require("./scrape.js");
 const coursePlan = require("./coursePlan.js");
 const planDef = require("./planDef.js");
 const { promises } = require('stream');
+const fs = require("fs");
 
 const sqlite = require("sqlite3").verbose();
 
 const dbPath = "./database/Planner.db";
+const schemaPath = "./database/Schema.db.sql";
 
-//Ensure account table is created
-createAccountTable();
+//Ensure The database exists/is setup correctly
+DatabaseConnect();
 
-function createAccountTable() {
-    let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE | sqlite.OPEN_CREATE, function(error)
-        {
-            if (error)
-            {
-                console.error(error.message);
-            }
-        }
-    );
+function DatabaseConnect() {
+	// Create/connect to the database
+    let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE | sqlite.OPEN_CREATE, function(err) {
+		if (err){
+			console.error("Database failed to open/create: "+err.message);
+		}
+		else{
+			console.log("Database connection created successfully");
+		}
+	});
 
-    let query = `
-    CREATE TABLE IF NOT EXISTS Users (
-        email TEXT PRIMARY KEY,
-        username TEXT,
-        password VARCHAR(60)
-    );
-    `;
+	//Run Schema setup
+    fs.readFile(schemaPath, function(err, data) {
+		if(err){
+			console.error("Schema could not be found: " + err);
+		} else{
+			console.log("Schema loaded");
 
-    // Create user table 
-    db.run(query, (err) => {
-        if (err) {
-            console.log(err);
-            throw err;
-        }
-    });
+			//Execute Schema
+			let schemaArr = data.toString().split(");");
+			db.serialize(() =>{
+				db.run("BEGIN TRANSACTION;");
+				schemaArr.forEach(query => {
+					if (query) {
+						query += ");";
+						db.run(query, err => {
+							if (err){
+								console.error("Your SQL broken: "+query);
+								throw err;
+							}
+					  	});
+					}
+				});
+				db.run("COMMIT;");
+			});
 
-    db.close((err) => {
-        if (err) {
-            console.error(err.message);
-        }
-    });
+			console.log("Schema Applied");
 
-    // For testing add test account
-    // email: test@testmail.com
-    // pass: test1234567890
-    createAccount('test@testmail.com', 'tester0', 'test1234567890');
+			//Close connection
+			db.close(function(err) {
+				if (err) {
+					console.error(err.message);
+				} else{
+					// For testing add test account
+					// email: test@testmail.com
+					// pass: test1234567890
+					createAccount('test@testmail.com', 'tester0', 'test1234567890');
+				}
+			});
+		}		
+	});
 }
 
-function createAccount(email, username, password){
+async function createAccount(email, username, password){
     let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
         {
             if (error)
@@ -72,10 +89,11 @@ function createAccount(email, username, password){
               [email, username, hashPwd],
         (err) => {
             if (err) {
-                console.log(err);
-                console.log("Failed to create account");
+                console.error("Failed to create account: " + err);
                 throw err;
-            }
+            } else{
+				console.log("An account has been made");
+			}
         }
     );
 
@@ -88,16 +106,15 @@ function createAccount(email, username, password){
 
 async function getAccount(email) {
     return new Promise((resolve, reject) => {
-            let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
+        let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
+        {
+            if (error)
             {
-                if (error)
-                {
-                    console.error(error.message);
-                }
+                console.error(error.message);
             }
-        );
+        });
 
-        // Get matchign account
+        // Get matching account
         db.get(`SELECT *
                 FROM Users
                 WHERE email  = ?`,
