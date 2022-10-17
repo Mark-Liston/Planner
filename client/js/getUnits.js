@@ -49,40 +49,79 @@ document.addEventListener("dragstart", function(event) {
 
 function submitCourse()
 {
-    let formData = new FormData($("#StudyDetails")[0]);
-    $.ajax(
+    if ($("#studentEmailInput").val() == "")
     {
-        type: "POST",
-        url: "/submit",
-        dataType: "html",
-        cache: false,
-        contentType: false,
-        processData: false,
-        data: formData,
-        success: function(response)
+        alert("A student email is required");
+    }
+    else
+    {
+        let formData = new FormData($("#StudyDetails")[0]);
+        $.ajax(
         {
-            let coursePlan = JSON.parse(response);
-            let cont = true;
-            if (coursePlan["message"])
+            type: "POST",
+            url: "/submit",
+            dataType: "html",
+            cache: false,
+            contentType: false,
+            processData: false,
+            data: formData,
+            success: function(response)
             {
-                if (confirm(coursePlan.message + "\n" +
-                    "Would you like to generate a course plan anyway?") == false)
+                let coursePlan = JSON.parse(response);
+                let cont = true;
+                if (coursePlan["message"])
                 {
-                    cont = false;
+                    if (confirm(coursePlan.message + "\n" +
+                        "Would you like to generate a course plan anyway?") == false)
+                    {
+                        cont = false;
+                    }
                 }
-            }
 
-            if (cont)
+                if (cont)
+                {
+                    displayPlan(coursePlan);
+                    displayTotalCredits(coursePlan);
+                }
+            },
+            error: function(response)
             {
-                displayPlan(coursePlan);
-                displayTotalCredits(coursePlan);
+                alert(response.responseText);
             }
-        },
-        error: function(response)
+        });
+    }
+}
+
+function showPlan()
+{
+    var login = CheckLogin()
+    if(login != null)
+    {
+        $.ajax(
         {
-            alert(response.responseText);
-        }
-    });
+            type: "POST",
+            url: "/viewPlan",
+            dataType: "text",
+            cache: false,
+            contentType: false,
+            processData: false,
+            data: '{"email": "' + login.email + '"}',
+            success: function(response)
+            {
+                let coursePlan = JSON.parse(response);
+                displayPlan(JSON.parse(coursePlan.data));
+                displayTotalCredits(JSON.parse(coursePlan.data));
+            },
+            error: function(response)
+            {
+                alert(response.responseText);
+            }
+        });
+    }
+    else
+    {
+        $("#viewPlanBtn").hide();
+    }
 }
 
 function makeRow(year, yearCount)
@@ -388,7 +427,7 @@ function displayPlan(coursePlan)
 	$("#results").show();
 
     // debug
-    console.log(coursePlan);
+    //console.log(coursePlan);
 
     // make course coursePlan
     for (let i = 0; i < coursePlan.schedule.length; i++)

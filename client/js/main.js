@@ -5,6 +5,7 @@ $(document).ready(function()
 	// Hides all non immediate articles.
 	$(".page").hide();
 	$("#landing").show();
+    $("#viewPlanBtn").hide();
 
     $("#submitCourse").on("click", function()
     {
@@ -48,17 +49,28 @@ $(document).ready(function()
             autoComplete(["Major", "Minor", "Co-Major"], $(this));
         }
     });
-    // Refreshes every 5 seconds.
+    // Checks login every second.
     setTimeout(function()
     {
-      //Check if login cookie persists
-      var login = CheckLogin()
-      if(login != null)
-      {
-        $("#username").html(login.username);
-        $("#loginButton").replaceWith('<a href="#" onclick="LogOut()" class="dropdown-item">Logout</a>');
-      }
-    }, 5000);
+        $("#studentEmailInput").prop("readonly", false);
+
+        //Check if login cookie persists
+        var login = CheckLogin()
+        if(login != null)
+        {
+            $("#username").html(login.username);
+            $("#loginButton").replaceWith('<a href="#" onclick="LogOut()" class="dropdown-item">Logout</a>');
+            $("#studentEmailInput").prop("readonly", true);
+            $("#studentEmailInput").val(login.email);
+            $("#viewPlanBtn").show();
+            $("#landingLoginBtn").hide();
+        }
+        else
+        {
+            $("#viewPlanBtn").hide();
+            $("#landingLoginBtn").show();
+        }
+    }, 1000);
 });
 
 function validateInputField(inputField)
