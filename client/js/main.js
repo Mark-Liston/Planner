@@ -63,10 +63,12 @@ $(document).ready(function()
             $("#studentEmailInput").prop("readonly", true);
             $("#studentEmailInput").val(login.email);
             $("#viewPlanBtn").show();
+            $("#landingLoginBtn").hide();
         }
         else
         {
             $("#viewPlanBtn").hide();
+            $("#landingLoginBtn").show();
         }
     }, 1000);
 });
