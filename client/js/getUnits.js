@@ -1,3 +1,5 @@
+
+
 function autoComplete(type, inputField)
 {
     let func = [];
@@ -39,10 +41,6 @@ document.addEventListener("dragstart", function(event) {
     img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=';
     event.dataTransfer.setDragImage(img, 0, 0);
 }, false);
-
-
-// todo a listener to listen when an item is dropped then update JSON
-
 
 function submitCourse()
 {
@@ -141,7 +139,7 @@ function makeUnit(coursePlan, year, yearCount, semCount)
         }
 
         // make draggable unit
-        html += "<div class='cp-unit'>" +
+        html += "<div class='cp-unit'" + "id='" + code + "'" + ">" +
                     "<a class='cp-dragButton' style='display: none;'><img src='../images/drag icon.png' id='dragicon'></a>" +
                     "<div class='cp-info'>" +
                         "<div class='cp-header'>" +
@@ -172,152 +170,157 @@ function makeUnit(coursePlan, year, yearCount, semCount)
         animation: 150,
 
         // drag end event
-        onEnd: function(event) 
+        onEnd: function (event) 
         {
-            // sorry spaghetti code atm. will improve later
 
-            // rules here     
-            let unit_code = event.item.getElementsByClassName("cp-header")[0].firstChild.textContent;
-            let toTable_id = event.to.id;
-            let toYear = toTable_id.substring(4, 8);
-            let toSem = toTable_id.substring(11);
-            let messageObj = {
-                unit: "",
-                msg_SemAvai: "",
-                msg_PreReq: ""
-            };
+            updatePlan(coursePlan, event);
 
-            // checks the message in the courseplan JSON if the messages already exsits for that chosen unit (removes duplication of messages)
-            coursePlan.message.forEach(function(item)
+            // loop for all the units inside the course plan
+            coursePlan.schedule.forEach(function(yearItem)
             {
-                if (item.unit == unit_code)
+                yearItem.semesters.forEach(function(semesterItem)
                 {
-                    console.log("Message already exists for " + unit_code);
-                    messageObj = item;
-                }
+                    semesterItem.units.forEach(function(unitItem)
+                    {
+                        // used to store rules message for a unit
+                        let msgObj = {
+                            code: unitItem.code,
+                            msg: ""
+                        };
+                        let message = '';
+
+                        // rules
+                        if (!checkSemAvailability(coursePlan, unitItem, semesterItem))
+                        {
+                            message += '<h3>' + unitItem.code + '</h3>';
+                            message += '<p> is not available for Year ' + event.to.id.substring(4, 8) + ' Semester ' + event.to.id.substring(11);
+                            message += '.<br>It is only available during <h4>Semester ' + unitItem.semester.substring(1) + '</h4>.</p>';    
+                            message += '<br><br>';     
+                        }
+
+                        let preReqs;
+                        if (!checkPrereqsMet(coursePlan, unitItem, semesterItem, yearItem, preReqs))
+                        {
+                            message += '<h3>' + unitItem.code + '</h3>';
+                            message += "<p> needs prerequisite unit(s): <br>";
+
+                            // grab prereq units and put it into the message
+                            unitItem.prerequisites.forEach(function(operatorItem)
+                            {
+                                operatorItem.items.forEach(function(preReqItem)
+                                {
+                                    message += '<h4>' + preReqItem.code + '</h4>';
+
+                                    // dont add the operator if last element
+                                    if (operatorItem.items[operatorItem.items.length-1]!== preReqItem) 
+                                    {
+                                        message += ' <h5>' + operatorItem.operator + '</h5> ';
+                                    }
+
+                                });
+
+                                message += '<br>'
+                            });
+
+                            message += '</p>'
+                            message += '<br>'
+                        }
+
+                        
+                        // there's a message (invalid unit)
+                        if (message != '')
+                        {
+                            //add red border on its draggable item
+                            $("#" + unitItem.code).css({"border-style": "solid", "border-width": "4px", "border-color": "red"});
+
+                            if (updateMsg(coursePlan, unitItem, message))
+                            {
+                                console.log("Rule message UPDATED for " + unitItem.code);
+                            }
+                            else
+                            {
+                                newMsg(coursePlan, unitItem, message, msgObj);
+                                console.log("Rule message CREATED for " + unitItem.code);
+                            }
+
+                            
+                        }
+                        // no messages are created (valid unit)
+                        else
+                        {
+                            // delete if message exists for that unit
+                            let index = coursePlan.message.findIndex((msgItem => msgItem.code == unitItem.code));
+                            if (index >= 0)
+                            {               
+                                coursePlan.message.splice(index, 1);
+                            }
+
+                            // remove red border
+                            $("#" + unitItem.code).css({"border-style": "", "border-width": "", "border-color": ""});
+                        }
+                    });                                        
+                });                   
             });
-
-            $("#message").show();
-
-			if (!checkSemAvailability(coursePlan, event))
-            {              
-                // makes the message if it doesnt exist
-                if(messageObj.unit == "")
-                {
-                    // make message obj
-                    messageObj.unit = unit_code;
-                    messageObj.msg_SemAvai = '<p id="msg-highalert">* ' + unit_code + ' is not available in Year ' + toYear + ' Semester ' + toSem + '</p>';
-
-                     // save message to the json
-                     coursePlan.message.push(messageObj);
-                     console.log(coursePlan);
-                }
-                // update message for that unit
-                else if (messageObj.unit == unit_code)
-                {
-                     // update message
-                     let index = coursePlan.message.findIndex((item => item.unit == unit_code));
-                     coursePlan.message[index].msg_SemAvai= '<p id="msg-highalert">* ' + unit_code + ' is not available in Year ' + toYear + ' Semester ' + toSem + '</p>';
-                     console.log(coursePlan);
-                }
-
-            }
-            else 
-            {
-                // unit exists in the messages
-                if (messageObj.unit == unit_code)
-                {
-                    // remove check sem message for that unit
-                    let index = coursePlan.message.findIndex((item => item.unit == unit_code));
-                    coursePlan.message[index].msg_SemAvai = "";
-                    console.log(coursePlan);
-                }
-
-            }
             
-            if (!checkPrereqsMet(coursePlan, event))
-            {
-                // makes the message if it doesnt already exist
-                if(messageObj.unit == "")
-                {
-                    // make message obj
-                    messageObj.unit = unit_code;
-                    messageObj.msg_PreReq = '<p id="msg-highalert">* ' + unit_code + ' needs a prerequisite "unit_here"</p>';
-
-                        // save message to the json
-                        coursePlan.message.push(messageObj);
-                        console.log(coursePlan);
-                }
-                // update message for that unit
-                else if (messageObj.unit == unit_code)
-                {
-                        // update message
-                        let index = coursePlan.message.findIndex((item => item.unit == unit_code));
-                        coursePlan.message[index].msg_PreReq = '<p id="msg-highalert">* ' + unit_code + ' needs a prerequisite "unit_here"</p>';
-                        console.log(coursePlan);
-                
-                }
-            }
-            else
-            {
-                // unit exists in the messages
-                if (messageObj.unit == unit_code)
-                {
-                    // remove check preReq message for that unit
-                    let index = coursePlan.message.findIndex((item => item.unit == unit_code));
-                    coursePlan.message[index].msg_PreReq = "";
-                    console.log(coursePlan); 
-                }
-
-            }
-
-
+            // after loop. check if messages exists. if they do. show the message box.
             if (coursePlan.message.length > 0)
             {
-                // delete unit's message if both checkSem and preReq have no messages
-                let index = coursePlan.message.findIndex((item => item.unit == unit_code));
-                if (coursePlan.message[index].msg_SemAvai == "" && coursePlan.message[index].msg_PreReq == "")
-                {
-                    coursePlan.message.splice(index, 1);
-                }
-            }
 
-            if (coursePlan.message.length == 0)
+                $("#message").show();
+
+                $("#message").html('<h2>Message</h2>');
+                coursePlan.message.forEach(function(messageItem)
+                {
+                    $("#message").append(messageItem.msg);
+                });
+            }
+            else //  if not. hide the message box
             {
                 $("#message").hide();
             }
-            else
-            {                
-                // update messages on the front-end
-                let messages = ""
-                coursePlan.message.forEach(function(item)
-                {
-                    messages += item.msg_SemAvai;
-                    messages += item.msg_PreReq;
-                });
-                $("#message").html('<p>Message:</p>' + messages);
-            }
 
-        }
+            console.log(coursePlan);
+
+        } // end of onEnd()
 
     });  
 }
 
+function newMsg(coursePlan, unitItem, message, msgObj)
+{
+    msgObj.unit = unitItem.code;
+    msgObj.msg = message;
+    coursePlan.message.push(msgObj);
+
+}
+
+function updateMsg(coursePlan, unitItem, message)
+{
+    let index = coursePlan.message.findIndex((msgItem => msgItem.code == unitItem.code));
+    if (index >= 0)
+    {
+        coursePlan.message[index].msg = message;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 //Checks if the dragged unit is available in the semester it was moved to.
 //Returns true, false, or null.
-function checkSemAvailability(coursePlan, event)
+function checkSemAvailability(coursePlan, unitItem, semesterItem)
 {
-	// grab unit code from the draggable item
-    let unit_code = event.item.getElementsByClassName("cp-header")[0].firstChild.textContent;
-	let unit_type = "DECIDED";
-	if(event.item.getElementsByClassName("cp-subheader")[0].firstChild.textContent.toUpperCase() == "UNDECIDED")
-	{
-		unit_type = "UNDECIDED";
-	};
-	let plannedSem = event.to.id.substring(11)
+	// grab unit info
+    let unit_code = unitItem.code;
+	let unit_type = unitItem.type;
 
-	let available = false;
-	
+    // grab the semester of the current unitItem
+	let plannedSem = semesterItem.semester;
+
+    // undecided units are automatically available
+	let available = false;	
 	if(unit_type.toUpperCase() == "UNDECIDED")
 	{
 		available = true;
@@ -340,47 +343,50 @@ function checkSemAvailability(coursePlan, event)
 		}
 	}
 	
-	console.log("checkSemAvailability for "+ unit_code + " in sem " + plannedSem + " returns: " + available);
+	//console.log("checkSemAvailability for "+ unit_code + " in sem " + plannedSem + " returns: " + available);
 	return available;
 }
 
+
 //Checks if the prerequisites for the dragged item are satisfied in its new location
-function checkPrereqsMet(coursePlan, event)
+function checkPrereqsMet(coursePlan, unitItem, semesterItem, yearItem)
 {
-    if(event.item.getElementsByClassName("cp-subheader")[0].firstChild.textContent.toUpperCase() != "UNDECIDED")
+    // grab unit info
+    let unit_code = unitItem.code;
+    let unit_type = unitItem.type;
+
+    if(unit_type.toUpperCase() != "UNDECIDED")
 	{
-        //Get the unit code of the dragged item
-		let unit_code = event.item.getElementsByClassName("cp-header")[0].firstChild.textContent;
-        
+
         //Get the year and semester the item has been dragged to
-        let toYear = event.to.id.substring(4, 8);
-        let toSem = event.to.id.substring(11);
+        let toYear = yearItem.year;
+        let toSem = semesterItem.semester;;
 
         //Get the unit's prerequisites
-        let prereqs = getFullUnit(unit_code, coursePlan).prerequisites;
+        let preReqs = getFullUnit(unit_code, coursePlan).prerequisites;
 
         //prereqs is an array of prereqNode, which in turn contains
         //other prereqNodes and units.
         //Assumption: relationship between top-level prereqNodes in array is
         //"OR", i.e. only one top-level prereqNode need be satisfied.
-        if(prereqs.length > 0)
+        if(preReqs.length > 0)
         {
-            for(let prereq in prereqs)
+            for(let prereq in preReqs)
             {
-                if(prereqItemMet(prereqs[prereq], toYear, toSem, coursePlan))
+                if(prereqItemMet(preReqs[prereq], toYear, toSem, coursePlan))
                 {
-                    console.log("checkPrereqsMet for" + unit_code + " returns true");
+                    //console.log("checkPrereqsMet for" + unit_code + " returns true");
                     return true;
                 }
             }
-            console.log("checkPrereqsMet for " + unit_code + " returns false");
+            //console.log("checkPrereqsMet for " + unit_code + " returns false");
             return false;
         }
-        console.log("checkPrereqsMet: " + unit_code + " has no prereqs; checkPrereqsMet returns true");
+        //console.log("checkPrereqsMet: " + unit_code + " has no prereqs; checkPrereqsMet returns true");
         return true;
         
 	}
-    console.log("checkPrereqsMet: undecided elective has no prereqs");
+   // console.log("checkPrereqsMet: undecided elective has no prereqs");
     return true;
 }
 
