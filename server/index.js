@@ -24,6 +24,7 @@ handle["/logout"] = loginHandlers.logout;
 handle["/complete"] = requestHandlers.reqComplete;
 handle["/submit"] = requestHandlers.reqSubmit;
 handle["/viewPlan"] = requestHandlers.reqViewPlan;
+handle["/savePlan"] = requestHandlers.reqSavePlan;
 
 // pass handle object (and route function) to server
 server.startServer(router.route, handle);

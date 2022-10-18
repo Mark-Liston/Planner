@@ -124,6 +124,30 @@ function showPlan()
     }
 }
 
+function SavePlan(){
+	//If there is no warning messages then allow save
+
+	let changes = "Manual save"; //TODO Allow this to be interpreted in a readable manner dynamically
+	$.ajax(
+    {
+    type: "POST",
+        url: "/savePlan",
+        dataType: "text",
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: `{"email":"${login.email}", "changes":"${changes}", "plan":"${coursePlan}"}`,
+        success: function(response)
+        {
+            alert("Your plan has been saved!");
+        },
+        error: function(response)
+        {
+            alert(response.responseText);
+        }
+    });
+}
+
 function makeRow(year, yearCount)
 {
     let html = "";
