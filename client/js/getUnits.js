@@ -250,13 +250,37 @@ function makeUnit(coursePlan, year, yearCount, semCount)
                             unitItem.prerequisites.forEach(function(operatorItem)
                             {
                                 operatorItem.items.forEach(function(preReqItem)
+                                
                                 {
-                                    message += '<h4>' + preReqItem.code + '</h4>';
 
-                                    // dont add the operator if last element
-                                    if (operatorItem.items[operatorItem.items.length-1]!== preReqItem) 
+                                    if (hasUnitCode(preReqItem))
                                     {
-                                        message += ' <h5>' + operatorItem.operator + '</h5> ';
+                                        message += '<h4>' + preReqItem.code + '</h4>';
+
+                                        // dont add the operator if last element
+                                        if (operatorItem.items[operatorItem.items.length-1].code !== preReqItem.code) 
+                                        {
+                                            message += ' <h5>' + operatorItem.operator + '</h5> ';
+                                        }
+                                    }
+                                    else
+                                    {
+                                        preReqItem.items.forEach(function(extraItem)
+                                        {
+                                            message += '<h4>' + extraItem.code + '</h4>';
+
+                                            // dont add the operator if last element
+                                            if (preReqItem.items[preReqItem.items.length-1].code !== extraItem.code) 
+                                            {                                                                         
+
+                                                message += ' <h5>' + preReqItem.operator + '</h5> ';
+                                            }
+                                            else
+                                            {
+                                                message += ' <h5>' + operatorItem.operator + '</h5> ';
+                                            }
+                                        });
+
                                     }
 
                                 });
