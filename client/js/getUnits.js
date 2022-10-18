@@ -277,7 +277,11 @@ function makeUnit(coursePlan, year, yearCount, semCount)
                                             }
                                             else
                                             {
-                                                message += ' <h5>' + operatorItem.operator + '</h5> ';
+                                                if (preReqItem.items.length == 1)
+                                                {
+                                                    message += ' <h5>' + operatorItem.operator + '</h5> ';
+                                                }
+                                                
                                             }
                                         });
 
