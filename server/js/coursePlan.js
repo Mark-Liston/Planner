@@ -278,7 +278,7 @@ function getOptions(input, plan, degree)
         {
             // Gets chars before '-' in option code
             // e.g., MJ-CMSC => MJ.
-            let prefix = input["extraInput" + i].trim().split("-")[0];
+            let prefix = input["extraInput" + i].trim().split("-")[0].toUpperCase();
             let table = "";
             switch (prefix)
             {
@@ -484,8 +484,6 @@ function fillSemester(semester, units, itr)
     semester.credit_points += units[itr].credit_points;
     return units[itr].credit_points;
 }
-
-
 
 function generateSchedule(plan)
 {
