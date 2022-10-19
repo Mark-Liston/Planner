@@ -55,8 +55,7 @@
 			<div class="container subcontent d-grid gap-2 mx-auto">
 
 				<button type="button" class="btn btn-primary btn-lg" onclick="MakeNewPlan()">Create New Plan</button>
-				<button type="button" class="btn btn-primary btn-lg" onclick="showPlan()" id="viewPlanBtn">View Plan</button>
-				<button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#loginModal" id="landingLoginBtn">Login</button>
+				<button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
 
 			</div>
 		</article>
@@ -69,11 +68,24 @@
 				This website will help retreive your course details and display them
 				</p>
 				<form enctype="multipart/form-data" id="StudyDetails" class="row g-3">
-                    <label for="studentEmailInput">Student Email:</label>
-                    <input type="text" id="studentEmailInput" name="studentEmailInput" class="form-control" placeholder="e.g. 23858265@student.murdoch.edu.au">
-
                     <label for="studentIDInput">Student ID:</label>
                     <input type="text" id="studentIDInput" name="studentIDInput" class="form-control" placeholder="e.g. 23858265">
+
+					<p>Enter the first year and semester of the course plan:</p>
+					<button type="button" id="setEarliestSem" class="btn btn-primary" onclick="calcEarliestStartSem()">Earliest possible year and semester</button>
+
+					<label for="startYear">First year of the course plan:</label>
+					<input type="number" id="startYear" name="startYear" class="form-control" placeholder="e.g. 2023" min="1973" max="9999" onkeypress="return (event.charCode !=8 && event.charCode ==0 || (event.charCode >= 48 && event.charCode <= 57))">
+
+					<p>First semester of the course plan:</p>
+					
+					<label class="form-check-label" for="semester1">
+						<input type="radio" id="semester1" name="startSemester" class="form-check-input" value="1" checked> Semester 1
+					</label>
+									
+					<label class="form-check-label" for="semester2">
+						<input type="radio" id="semester2" name="startSemester" class="form-check-input" value="2"> Semester 2
+					</label>
 
                     <label for="degreeInput">Course/Degree code:</label>
                     <input type="text" id="degreeInput" name="degreeInput" class="form-control" placeholder="e.g. B1356">
