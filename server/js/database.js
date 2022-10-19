@@ -7,70 +7,53 @@ const scrape = require("./scrape.js");
 const coursePlan = require("./coursePlan.js");
 const planDef = require("./planDef.js");
 const { promises } = require('stream');
-const fs = require("fs");
 
 const sqlite = require("sqlite3").verbose();
 
 const dbPath = "./database/Planner.db";
-const schemaPath = "./database/Schema.db.sql";
 
-//Ensure The database exists/is setup correctly
-DatabaseConnect();
+//Ensure account table is created
+createAccountTable();
 
-function DatabaseConnect() {
-	// Create/connect to the database
-    let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE | sqlite.OPEN_CREATE, function(err) {
-		if (err){
-			console.error("Database failed to open/create: "+err.message);
-		}
-		else{
-			console.log("Database connection created successfully");
-		}
-	});
+function createAccountTable() {
+    let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE | sqlite.OPEN_CREATE, function(error)
+        {
+            if (error)
+            {
+                console.error(error.message);
+            }
+        }
+    );
 
-	//Run Schema setup
-    fs.readFile(schemaPath, function(err, data) {
-		if(err){
-			console.error("Schema could not be found: " + err);
-		} else{
-			console.log("Schema loaded");
+    let query = `
+    CREATE TABLE IF NOT EXISTS Users (
+        email TEXT PRIMARY KEY,
+        username TEXT,
+        password VARCHAR(60)
+    );
+    `;
 
-			//Execute Schema
-			let schemaArr = data.toString().split(");");
-			db.serialize(() =>{
-				db.run("BEGIN TRANSACTION;");
-				schemaArr.forEach(query => {
-					if (query) {
-						query += ");";
-						db.run(query, err => {
-							if (err){
-								console.error("Your SQL broken: "+query);
-								throw err;
-							}
-					  	});
-					}
-				});
-				db.run("COMMIT;");
-			});
+    // Create user table 
+    db.run(query, (err) => {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+    });
 
-			console.log("Schema Applied");
+    db.close((err) => {
+        if (err) {
+            console.error(err.message);
+        }
+    });
 
-			//Close connection
-			db.close(function(err) {
-				if (err) {
-					console.error(err.message);
-				} else{
-					// For testing add test account
-					// email: test@testmail.com
-					// pass: test1234567890
-					createAccount('test@testmail.com', 'tester0', 'test1234567890');
-				}
-			});
-		}		
-	});
+    // For testing add test account
+    // email: test@testmail.com
+    // pass: test1234567890
+    createAccount('test@testmail.com', 'tester0', 'test1234567890');
 }
 
-async function createAccount(email, username, password){
+function createAccount(email, username, password){
     let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
         {
             if (error)
@@ -89,11 +72,10 @@ async function createAccount(email, username, password){
               [email, username, hashPwd],
         (err) => {
             if (err) {
-                console.error("Failed to create account: " + err);
+                console.log(err);
+                console.log("Failed to create account");
                 throw err;
-            } else{
-				console.log("An account has been made");
-			}
+            }
         }
     );
 
@@ -106,15 +88,16 @@ async function createAccount(email, username, password){
 
 async function getAccount(email) {
     return new Promise((resolve, reject) => {
-        let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
-        {
-            if (error)
+            let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
             {
-                console.error(error.message);
+                if (error)
+                {
+                    console.error(error.message);
+                }
             }
-        });
+        );
 
-        // Get matching account
+        // Get matchign account
         db.get(`SELECT *
                 FROM Users
                 WHERE email  = ?`,
@@ -325,7 +308,7 @@ function getDegree(searchDegree)
             }
             else
             {
-                reject("No matching degree with code " + searchDegree + " could be found.");
+                reject("No matching degree could be found.");
             }
         })
         .catch(errorMsg =>
@@ -435,104 +418,16 @@ async function getOption(searchOption, type, degree)
                 if ((type.toUpperCase() == "MAJOR" || type.toUpperCase() == "MINOR") &&
                     !degreeHasOption(degree, searchOption, type))
                 {
-                    option.message = "Degree " + degree.code + " does not contain " + type.toLowerCase() + " " + option.code;
+                    option.message = "Degree does not contain " + type.toLowerCase();
                 }
                 resolve(option);
             }
             else
             {
-                if (type == "")
-                {
-                    reject("No matching item could be found with code " + searchOption);
-                }
-                else
-                {
-                    reject("No matching " + type.toLowerCase() + " could be found with code " + searchOption);
-                }
+                reject("No matching " + type.toLowerCase() + " could be found.");
             }
         })
         .catch(errorMsg => reject(errorMsg));
-    });
-}
-
-function saveCoursePlan(email, changes, plan)
-{
-    return new Promise(function(resolve, reject)
-    {
-        let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
-        {
-            if (error)
-            {
-                console.error(error.message);
-            }
-        });
-        
-        // Gets all items of the given type containing the matchString.
-        let qry = "INSERT INTO CoursePlan (email, timeChanged, changes, data)" +
-                " VALUES(?, datetime('now', 'localtime'), ?, ?)";
-        db.all(qry, [email, changes, JSON.stringify(plan)], function(error, rows)
-        {
-            if (error)
-            {
-                console.error(error.message);
-            }
-
-            else
-            {
-                console.log("Course plan added to database");
-            }
-
-            db.close(function(error)
-            {
-                if (error)
-                {
-                    console.error(error.message);
-                }
-            });
-
-            resolve();
-        });
-    });
-}
-
-function getCoursePlan(email)
-{
-    return new Promise(function(resolve, reject)
-    {
-        let coursePlan = null;
-        let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
-        {
-            if (error)
-            {
-                console.error(error.message);
-            }
-        });
-        
-        // Gets all items of the given type containing the matchString.
-        let qry = "SELECT * FROM CoursePlan WHERE email = ?" +
-                    "ORDER BY timeChanged DESC";
-        db.all(qry, [email], function(error, rows)
-        {
-            if (error)
-            {
-                console.error(error.message);
-            }
-
-            else
-            {
-                coursePlan = rows[0];
-            }
-
-            db.close(function(error)
-            {
-                if (error)
-                {
-                    console.error(error.message);
-                }
-            });
-
-            resolve(coursePlan);
-        });
     });
 }
 
@@ -543,5 +438,4 @@ exports.getOption = getOption;
 exports.cacheSearch = cacheSearch;
 exports.getAccount = getAccount;
 exports.createAccount = createAccount;
-exports.saveCoursePlan = saveCoursePlan;
-exports.getCoursePlan = getCoursePlan;
+

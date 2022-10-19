@@ -223,14 +223,11 @@ async function fetchItem(contentType, version, code)
 function searchJSONArr(arr, checkMatch)
 {
     let targetIndex = -1;
-    if (arr["length"])
+    for (let i = 0; i < arr.length && targetIndex == -1; ++i)
     {
-        for (let i = 0; i < arr.length && targetIndex == -1; ++i)
+        if (checkMatch(arr[i]))
         {
-            if (checkMatch(arr[i]))
-            {
-                targetIndex = i;
-            }
+            targetIndex = i;
         }
     }
     return targetIndex;

@@ -16,6 +16,8 @@ class Plan
     planned_units = [];
     schedule = [];
     message = "";
+    startYear = 0;
+    startSemester = 0;
 }
 
 class Option

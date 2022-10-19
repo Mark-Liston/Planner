@@ -105,8 +105,7 @@ function reqSubmit(request, response)
             coursePlan.generatePlan(field)
             .then(function(plan)
             {
-                database.saveCoursePlan(field.studentEmailInput, "Generated course plan", plan);
-                response.writeHead(200, {"Content-Type": "application/json"});
+                response.writeHead(200, {"Content-Type": "text/plain"});
                 response.end(JSON.stringify(plan));
             })
             .catch(errorMsg =>
@@ -118,38 +117,7 @@ function reqSubmit(request, response)
     });
 }
 
-function reqViewPlan(request, response)
-{
-    console.log("Request handler 'viewPlan' was called.");
-
-    let data = "";
-    request.on("data", function(chunk)
-    {
-        data += chunk;
-    });
-    request.on("end", function()
-    {
-        let parsedData = JSON.parse(data);
-
-        database.getCoursePlan(parsedData.email)
-        .then(function(coursePlan)
-        {
-            if (coursePlan != null)
-            {
-                response.writeHead(200, {"Content-Type": "application/json"});
-                response.end(JSON.stringify(coursePlan));
-            }
-            else
-            {
-                response.writeHead(404, {"Content-Type": "text/plain"});
-                response.end("Course plan unavailable");
-            }
-        });
-    });
-}
-
 exports.reqStart = reqStart;
 exports.reqFile = reqFile;
 exports.reqComplete = reqComplete;
 exports.reqSubmit = reqSubmit;
-exports.reqViewPlan = reqViewPlan;
