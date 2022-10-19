@@ -485,8 +485,14 @@ function fillSemester(semester, units, itr)
     return units[itr].credit_points;
 }
 
+function removeDoneUnits(plan, completed_units)
+{
+
+}
+
 function generateSchedule(plan)
 {
+    plan.schedule = [];
     // Sorts planned units according to level
     // e.g., ICT100, ICT200, ICT300, ICT400, etc.
     plan.planned_units.sort(function(a, b)

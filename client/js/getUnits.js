@@ -12,13 +12,13 @@ function autoComplete(type, inputField)
         {
             func.push(new Promise(function(resolve, reject)
             {
+                let data = {"type": entry, "data": inputField.val()};
                 $.ajax(
                 {
                     type: "POST",
                     url: "/complete",
-                    // data is sent as JSON in text form and parsed server-side.
                     dataType: "text",
-                    data: '{"type": "\'' + entry + '\'", "data": "' + inputField.val() + '"}',
+                    data: JSON.stringify(data),
                     success: function(response)
                     {
                         // Appends results to array of suggestions.
@@ -84,6 +84,29 @@ function submitCourse()
                 {
                     event.preventDefault();
 
+                    let doneUnits = [];
+
+                    // Puts all input grade data into JSON arr.
+                    $(".unitGradeInput").each(function(i, obj)
+                    {
+                        // Extracts unit code from obj's id.
+                        let code = $(obj).attr("id").split("_")[0];
+                        doneUnits.push({"code": code, "grade": Number($(obj).val())});
+                    });
+
+                    let data = {"done_units": doneUnits, "course_plan": coursePlan};
+                    $.ajax(
+                    {
+                        type: "POST",
+                        url: "/removeDoneUnits",
+                        dataType: "application/json; charset=utf-8",
+                        data: JSON.stringify(data),
+                        success: function(response)
+                        {
+
+                        }
+                    });
+
                     displayPlan(coursePlan);
                     displayTotalCredits(coursePlan);
                 });
@@ -103,14 +126,13 @@ function getGrades()
     {
         type: "POST",
         url: "/getUnit",
-        // data is sent as JSON in text form and parsed server-side.
         dataType: "text",
-        data: '{"code": "' + code + '"}',
+        data: JSON.stringify({"code": code}),
         success: function(response)
         {
             response = JSON.parse(response);
             let unitElement = "<label for='" + response.code + "_grade'>" + response.code + "</label>" +
-                "<input type='text' id='" + response.code + "_grade' class='form-control'>";
+                "<input type='text' id='" + response.code + "_grade' class='form-control unitGradeInput'>";
             $("#doneUnits").append(unitElement);
         },
         error: function(response)

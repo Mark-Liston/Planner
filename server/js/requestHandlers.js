@@ -145,8 +145,55 @@ function reqSubmit(request, response)
     });
 }
 
+function reqRemoveDoneUnits(request, response)
+{
+    console.log("Request handler 'remove done units' was called.");
+    
+    let data = "";
+    request.on("data", function(chunk)
+    {
+        data += chunk;
+    });
+    request.on("end", function()
+    {
+        let parsedData = JSON.parse(data);
+        //console.log(parsedData);
+        let doneUnits = [];
+
+        let func = [];
+        for (let doneUnit of parsedData.done_units)
+        {
+            func.push(new Promise(function(resolve, reject)
+            {
+                database.getUnit(doneUnit.code)
+                .then(function(unit)
+                {
+                    doneUnits.push({"code": unit.code,
+                        "name": unit.title,
+                        "credit_points": unit.creditPoints,
+                        "grade": doneUnit.grade});
+                    resolve();
+                })
+                .catch(errorMsg =>
+                {
+                    reject(errorMsg);
+                });
+            }));
+        }
+        Promise.all(func).then(function()
+        {
+            console.log(doneUnits);
+        })
+        .catch(errorMsg => console.log(errorMsg));
+    });
+
+    response.writeHead(200, {"Content-Type": "text/plain"});
+    response.end();
+}
+
 exports.reqStart = reqStart;
 exports.reqFile = reqFile;
 exports.reqComplete = reqComplete;
 exports.reqGetUnit = reqGetUnit;
 exports.reqSubmit = reqSubmit;
+exports.reqRemoveDoneUnits = reqRemoveDoneUnits;
