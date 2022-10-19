@@ -5,6 +5,7 @@ $(document).ready(function()
 	// Hides all non immediate articles.
 	$(".page").hide();
 	$("#landing").show();
+    $("#viewPlanBtn").hide();
 
     $("#submitCourse").on("click", function()
     {
@@ -25,7 +26,6 @@ $(document).ready(function()
         {
             alert("Start year is not valid");
         }
-        
     });
 
     //$("#unitCodeInput").on("input", function()
@@ -56,60 +56,38 @@ $(document).ready(function()
             autoComplete(["Major", "Minor", "Co-Major"], $(this));
         }
     });
-    // Refreshes every 5 seconds.
+    // Checks login every second.
     setTimeout(function()
     {
-      //Check if login cookie persists
-      var login = CheckLogin()
-      if(login != null)
-      {
-        $("#username").html(login.username);
-        $("#loginButton").replaceWith('<a href="#" onclick="LogOut()" class="dropdown-item">Logout</a>');
-      }
-    }, 5000);
+        $("#studentEmailInput").prop("readonly", false);
+
+        //Check if login cookie persists
+        var login = CheckLogin()
+        if(login != null)
+        {
+            $("#username").html(login.username);
+            $("#loginButton").replaceWith('<a href="#" onclick="LogOut()" class="dropdown-item">Logout</a>');
+            $("#studentEmailInput").prop("readonly", true);
+            $("#studentEmailInput").val(login.email);
+            $("#viewPlanBtn").show();
+            $("#landingLoginBtn").hide();
+        }
+        else
+        {
+            $("#viewPlanBtn").hide();
+            $("#landingLoginBtn").show();
+        }
+    }, 1000);
 });
 
-function checkYear()
+function validateInputField(inputField)
 {
-    let year = document.getElementById("startYear").value;
-    if(year < 1973 || year > 9999)
+    let valid = true;
+    if (!/^([^@$%&\\\/:*?"'<>|~`#^+={}\[\];!]+)$/.test(inputField.val()))
     {
-        return false;
+        valid = false;
     }
-
-    return true;
-}
-
-function calcEarliestStartSem()
-{
-    let startYearInput = document.getElementById("startYear");
-    startYearInput.value = new Date().getFullYear();
-
-    let sem1RadButton = document.getElementById("semester1");
-    sem1RadButton.checked = true;
-
-    let sem2RadButton = document.getElementById("semester2");
-
-    // The last day that a student may enrol for semester 1. This is typically the
-    // 11 of March.
-    const lastDayToEnrolS1 = new Date(new Date().getFullYear() + "-03-11");
-    // The last day that a student may enrol for semester 2. This is typically the
-    // 12 of August.
-    const lastDayToEnrolS2 = new Date(new Date().getFullYear() + "-08-12");
-
-    let today = new Date();
-
-    //If today is too late to enrol for semester 2, skip to next year.
-    if (today > lastDayToEnrolS2)
-    {
-        startYearInput.value++;
-    }
-    // If today is too late to enrol for semester 1, skip to semester 2 for
-    // the first year.
-    else if (today > lastDayToEnrolS1)
-    {
-        sem2RadButton.checked = true;
-    }
+    return valid;
 }
 
 function extractCode(text)
@@ -169,4 +147,47 @@ function RemoveStudy(item)
     {
 		$("#AddStudyBtn").show();
 	}
+}
+
+function checkYear()
+{
+    let year = document.getElementById("startYear").value;
+    if(year < 1973 || year > 9999)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+function calcEarliestStartSem()
+{
+    let startYearInput = document.getElementById("startYear");
+    startYearInput.value = new Date().getFullYear();
+
+    let sem1RadButton = document.getElementById("semester1");
+    sem1RadButton.checked = true;
+
+    let sem2RadButton = document.getElementById("semester2");
+
+    // The last day that a student may enrol for semester 1. This is typically the
+    // 11 of March.
+    const lastDayToEnrolS1 = new Date(new Date().getFullYear() + "-03-11");
+    // The last day that a student may enrol for semester 2. This is typically the
+    // 12 of August.
+    const lastDayToEnrolS2 = new Date(new Date().getFullYear() + "-08-12");
+
+    let today = new Date();
+
+    //If today is too late to enrol for semester 2, skip to next year.
+    if (today > lastDayToEnrolS2)
+    {
+        startYearInput.value++;
+    }
+    // If today is too late to enrol for semester 1, skip to semester 2 for
+    // the first year.
+    else if (today > lastDayToEnrolS1)
+    {
+        sem2RadButton.checked = true;
+    }
 }
