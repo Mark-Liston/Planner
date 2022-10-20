@@ -62,16 +62,11 @@ function SubmitCourse()
         success: function(response)
         {
             let coursePlan = JSON.parse(response);
-            let cont = true;
             if (coursePlan["message"])
             {
-                if (confirm(coursePlan.message + "\n" +
-                    "Would you like to generate a course plan anyway?") == false)
-                {
-                    cont = false;
-                }
+                alert(coursePlan.message);
             }
-            if (cont)
+            else
             {
                 displayPlan(coursePlan);
                 displayTotalCredits(coursePlan);
