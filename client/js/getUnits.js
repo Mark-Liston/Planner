@@ -191,7 +191,7 @@ function makeRow(year, yearCount)
     // make row
     html += "<tr id='" + year + "_row'>" + 
                 // make y-axis label
-                "<th id='cp-ylabel'>" + year + "</th>" +
+                "<th id='cp-ylabel'>" + year + "<div id='" + year + "Cred'>Credits:</div></th>" +
             "</tr>";
 
     $("#courseplan").append(html);
@@ -272,10 +272,12 @@ function makeUnit(coursePlan, year, yearCount, semCount)
         {
             updatePlan(coursePlan_Edited, event);
             checkPlanRules(coursePlan_Edited);
-
+            displayYearSemCredits(coursePlan_Edited);
         } // end of onEnd()
-
-    });  
+        
+    });
+    
+    displayYearSemCredits(coursePlan);
 }
 
 function checkPlanRules(coursePlan)
@@ -658,6 +660,26 @@ function displayPlan(coursePlan)
     // make copy of courseplan for draft
     coursePlan_Edited = JSON.parse(JSON.stringify(coursePlan_Original));
     console.log(coursePlan_Edited);
+}
+
+function displayYearSemCredits(coursePlan)
+{
+    for(let schedYear of coursePlan.schedule)
+    {
+        let yearCred = 0;
+
+        for(let schedSem of schedYear.semesters)
+        {
+            let col_id = "year" + schedYear.year + "sem" + schedSem.semester;
+            let unitsHTML = $("#" + col_id).children();
+            $("#" + col_id).text("Semester credits: " + schedSem.credit_points).append(unitsHTML);
+            
+            yearCred += schedSem.credit_points;
+        }
+
+        $("#" + schedYear.year + "Cred").html("Credits: " + yearCred);
+    }
+
 }
 
 function displayTotalCredits(coursePlan)
