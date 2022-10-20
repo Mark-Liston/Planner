@@ -1,4 +1,14 @@
+function callCoursePlan(coursePlan)
+{
+    // coursePlan
+    displayPlan(coursePlan);
+    displayTotalCredits(coursePlan);
+    checkPlanRules(coursePlan);
 
+    // hide not needed buttons
+    $("#cancelChangesPlan").hide();
+    $("#applyChangesPlan").hide();
+}
 
 function autoComplete(type, inputField)
 {
@@ -78,9 +88,7 @@ function submitCourse()
 
                 if (cont)
                 {
-                    displayPlan(coursePlan);
-                    displayTotalCredits(coursePlan);
-                    checkPlanRules(coursePlan);
+                    callCoursePlan(coursePlan);
                 }
             },
             error: function(response)
@@ -107,9 +115,9 @@ function showPlan()
             data: '{"email": "' + login.email + '"}',
             success: function(response)
             {
-                let coursePlan = JSON.parse(response);
-                displayPlan(JSON.parse(coursePlan.data));
-                displayTotalCredits(JSON.parse(coursePlan.data));
+                let savedPlan = JSON.parse(response);
+                let coursePlan = JSON.parse(savedPlan.data);
+                callCoursePlan(coursePlan);
             },
             error: function(response)
             {

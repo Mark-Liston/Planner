@@ -106,8 +106,6 @@ function MakeNewPlan()
 {
 	$(".page").hide();
 	$("#search").show();
-    $("#cancelChangesPlan").hide();
-    $("#applyChangesPlan").hide();
 }
 
 // Functionality for dynamically adding and removing additional majors.
