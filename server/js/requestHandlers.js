@@ -148,8 +148,32 @@ function reqViewPlan(request, response)
     });
 }
 
+function reqSavePlan(request, response){
+	console.log("Request handler 'savePlan' was called.");
+
+    let data = "";
+    request.on("data", function(chunk)
+    {
+        data += chunk;
+    });
+    request.on("end", function()
+    {
+        let parsedData = JSON.parse(data);
+		
+		database.saveCoursePlan(parsedData.email, parsedData.changes, parsedData.plan)
+		.then(() =>{
+			response.writeHead(200);
+			response.end();
+		}).catch(()=>{
+			response.writeHead(500, {"Content-Type": "text/plain"});
+            response.end("Saving failed");
+		});
+	});
+}
+
 exports.reqStart = reqStart;
 exports.reqFile = reqFile;
 exports.reqComplete = reqComplete;
 exports.reqSubmit = reqSubmit;
 exports.reqViewPlan = reqViewPlan;
+exports.reqSavePlan = reqSavePlan;

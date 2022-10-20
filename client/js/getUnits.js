@@ -122,6 +122,62 @@ function showPlan()
     }
 }
 
+function BtnSavePlan(){
+
+	if(coursePlan_Edited.message.length > 0){
+		if(confirm('This plan has errors, are you sure you want to save it?')){
+			SavePlan();
+		}
+	} else{
+		SavePlan();
+	}
+}
+
+function SavePlan(){
+	let login = CheckLogin();
+	if(login != null){
+		//Get user to describe changes
+		let chg = prompt("Please describe your changes");
+
+		let data = {
+			email: login.email,
+			changes: changes = chg,
+			plan: coursePlan_Edited
+		};
+
+		$.ajax(
+		{
+			type: "POST",
+			url: "/savePlan",
+			dataType: "text",
+			cache: false,
+			contentType: false,
+			processData: false,
+			data: JSON.stringify(data),
+			success: function(response)
+			{
+				alert("Your plan has been saved!");
+				coursePlan_Original = coursePlan_Edited;
+				// buttons
+				$("#editPlan").show();
+				$('.cp-dragButton').hide();
+				$("#cancelChangesPlan").hide();
+				$("#applyChangesPlan").hide();
+		
+				// revert plan to original form here
+				callCoursePlan(coursePlan_Original);
+			},
+			error: function(response)
+			{
+				alert(response.responseText);
+			}
+		});
+	} else{
+		alert("Please be logged in to save a plan");
+	}
+	
+}
+
 function makeRow(year, yearCount)
 {
     let html = "";
@@ -224,144 +280,125 @@ function makeUnit(coursePlan, year, yearCount, semCount)
 
 function checkPlanRules(coursePlan)
 {
-            // loop for all the units inside the course plan
-            coursePlan.schedule.forEach(function(yearItem)
+	//Reset Warnings
+	$("#messages").html('');
+
+	// loop for all the units inside the course plan
+    coursePlan.schedule.forEach(function(yearItem)
+    {
+        yearItem.semesters.forEach(function(semesterItem)
+        {
+            semesterItem.units.forEach(function(unitItem)
             {
-                yearItem.semesters.forEach(function(semesterItem)
+                // used to store rules message for a unit
+                let msgObj = {
+                    code: unitItem.code,
+                    msg: ""
+                };
+                let message = '';
+                // rules
+                let itemDOM = document.getElementById(unitItem.code);
+				
+                if (!checkSemAvailability(coursePlan, unitItem, semesterItem))
                 {
-                    semesterItem.units.forEach(function(unitItem)
+                    message += '<div id="message"><h3>' + unitItem.code + '</h3>';
+                    // grab the courseplan column id where the item is sitting on
+                    let parentOf_itemDOM_ID = itemDOM.parentNode.id;
+                    message += '<p> is not available for Year ' + parentOf_itemDOM_ID.substring(4, 8) + ' Semester ' + parentOf_itemDOM_ID.substring(11);
+                    message += '.<br>It is only available during <h4>Semester ' + unitItem.semester.substring(1) + '</h4>.</p>';    
+					message += '</div>';
+				}
+                let preReqs;
+                if (!checkPrereqsMet(coursePlan, unitItem, semesterItem, yearItem, preReqs))
+                {
+					message += '<div class="message"><h3>' + unitItem.code + '</h3>';
+                    message += "<p> needs prerequisite unit(s): <br>";
+                    // grab prereq units and put it into the message
+                    unitItem.prerequisites.forEach(function(operatorItem)
                     {
-                        // used to store rules message for a unit
-                        let msgObj = {
-                            code: unitItem.code,
-                            msg: ""
-                        };
-                        let message = '';
-
-                        // rules
-                        let itemDOM = document.getElementById(unitItem.code);
-                        if (!checkSemAvailability(coursePlan, unitItem, semesterItem))
-                        {
-                            message += '<h3>' + unitItem.code + '</h3>';
-
-                            // grab the courseplan column id where the item is sitting on
-                            let parentOf_itemDOM_ID = itemDOM.parentNode.id;
-                            message += '<p> is not available for Year ' + parentOf_itemDOM_ID.substring(4, 8) + ' Semester ' + parentOf_itemDOM_ID.substring(11);
-
-                            message += '.<br>It is only available during <h4>Semester ' + unitItem.semester.substring(1) + '</h4>.</p>';    
-                            message += '<br><br>';     
-                        }
-
-                        let preReqs;
-                        if (!checkPrereqsMet(coursePlan, unitItem, semesterItem, yearItem, preReqs))
-                        {
-                            message += '<h3>' + unitItem.code + '</h3>';
-                            message += "<p> needs prerequisite unit(s): <br>";
-
-                            // grab prereq units and put it into the message
-                            unitItem.prerequisites.forEach(function(operatorItem)
-                            {
-                                operatorItem.items.forEach(function(preReqItem)
-                                
-                                {
-
-                                    if (hasUnitCode(preReqItem))
-                                    {
-                                        message += '<h4>' + preReqItem.code + '</h4>';
-
-                                        // dont add the operator if last element
-                                        if (operatorItem.items[operatorItem.items.length-1].code !== preReqItem.code) 
-                                        {
-                                            message += ' <h5>' + operatorItem.operator + '</h5> ';
-                                        }
-                                    }
-                                    else
-                                    {
-                                        preReqItem.items.forEach(function(extraItem)
-                                        {
-                                            message += '<h4>' + extraItem.code + '</h4>';
-
-                                            // dont add the operator if last element
-                                            if (preReqItem.items[preReqItem.items.length-1].code !== extraItem.code) 
-                                            {                                                                         
-
-                                                message += ' <h5>' + preReqItem.operator + '</h5> ';
-                                            }
-                                            else
-                                            {
-                                                if (operatorItem.items.length > 1)
-                                                {
-                                                    message += ' <h5>' + operatorItem.operator + '</h5> ';
-                                                }
-                                                
-                                            }
-                                        });
-
-                                    }
-
-                                });
-
-                                message += '<br>'
-                            });
-
-                            message += '</p>'
-                            message += '<br>'
-                        }
-
+                        operatorItem.items.forEach(function(preReqItem)
                         
-                        // there's a message (invalid unit)
-                        if (message != '')
                         {
-                            //add red border on its draggable item
-                            $("#" + unitItem.code).css({"border-style": "solid", "border-width": "4px", "border-color": "red"});
-
-                            if (updateMsg(coursePlan, unitItem, message))
+                            if (hasUnitCode(preReqItem))
                             {
-                                console.log("Rule message UPDATED for " + unitItem.code);
+                                message += '<h4>' + preReqItem.code + '</h4>';
+                                // dont add the operator if last element
+                                if (operatorItem.items[operatorItem.items.length-1].code !== preReqItem.code) 
+                                {
+                                    message += ' <h5>' + operatorItem.operator + '</h5> ';
+                                }
                             }
                             else
                             {
-                                newMsg(coursePlan, unitItem, message, msgObj);
-                                console.log("Rule message CREATED for " + unitItem.code);
+                                preReqItem.items.forEach(function(extraItem)
+                                {
+                                    message += '<h4>' + extraItem.code + '</h4>';
+                                    // dont add the operator if last element
+                                    if (preReqItem.items[preReqItem.items.length-1].code !== extraItem.code) 
+                                    {                                                                         
+                                        message += ' <h5>' + preReqItem.operator + '</h5> ';
+                                    }
+                                    else
+                                    {
+                                        if (operatorItem.items.length > 1)
+                                        {
+                                            message += ' <h5>' + operatorItem.operator + '</h5> ';
+                                        }
+                                        
+                                    }
+                                });
                             }
-
-                            
-                        }
-                        // no messages are created (valid unit)
-                        else
-                        {
-                            // delete if message exists for that unit
-                            let index = coursePlan.message.findIndex((msgItem => msgItem.code == unitItem.code));
-                            if (index >= 0)
-                            {               
-                                coursePlan.message.splice(index, 1);
-                            }
-
-                            // remove red border
-                            $("#" + unitItem.code).css({"border-style": "", "border-width": "", "border-color": ""});
-                        }
-                    });                                        
-                });                   
-            });
-            
-            // after loop. check if messages exists. if they do. show the message box.
-            if (coursePlan.message.length > 0)
-            {
-
-                $("#message").show();
-
-                $("#message").html('<h2>Message</h2>');
-                coursePlan.message.forEach(function(messageItem)
+                        });
+                    });
+					message += '</div>';
+                }
+                
+                // there's a message (invalid unit)
+                if (message != '')
                 {
-                    $("#message").append(messageItem.msg);
-                });
-            }
-            else //  if not. hide the message box
-            {
-                $("#message").hide();
-            }
-
-            console.log(coursePlan);
+                    //add red border on its draggable item
+                    $("#" + unitItem.code).css({"border-style": "solid", "border-width": "4px", "border-color": "red"});
+                    if (updateMsg(coursePlan, unitItem, message))
+                    {
+                        console.log("Rule message UPDATED for " + unitItem.code);
+                    }
+                    else
+                    {
+                        newMsg(coursePlan, unitItem, message, msgObj);
+                        console.log("Rule message CREATED for " + unitItem.code);
+                    }
+                    
+                }
+                // no messages are created (valid unit)
+                else
+                {
+                    // delete if message exists for that unit
+                    let index = coursePlan.message.findIndex((msgItem => msgItem.code == unitItem.code));
+                    if (index >= 0)
+                    {               
+                        coursePlan.message.splice(index, 1);
+                    }
+                    // remove red border
+                    $("#" + unitItem.code).css({"border-style": "", "border-width": "", "border-color": ""});
+                }
+            });                                        
+        });                   
+    });
+    
+    // after loop. check if messages exists. if they do. show the message box.
+    if (coursePlan.message.length > 0)
+    {
+        $("#messagesContainer").show();
+        coursePlan.message.forEach(function(messageItem)
+        {
+            $("#messages").append(messageItem.msg);
+        });
+    }
+    else //  if not. hide the message box
+    {
+        $("#messagesContainer").hide();
+    }
+    console.log(coursePlan);
 }
 
 function newMsg(coursePlan, unitItem, message, msgObj)
@@ -589,7 +626,8 @@ function displayPlan(coursePlan)
 
     // reset html of courseplan
     $("#courseplan").html('');
-    $("#message").html('');
+	$("#messagesContainer").hide();
+    $("#messages").html('');
     $("#totalcreditspoints").html('');
 
 
