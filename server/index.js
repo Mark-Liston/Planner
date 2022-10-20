@@ -26,6 +26,7 @@ handle["/getUnit"] = requestHandlers.reqGetUnit;
 handle["/submit"] = requestHandlers.reqSubmit;
 handle["/removeDoneUnits"] = requestHandlers.reqRemoveDoneUnits;
 handle["/viewPlan"] = requestHandlers.reqViewPlan;
+handle["/savePlan"] = requestHandlers.reqSavePlan;
 
 // pass handle object (and route function) to server
 server.startServer(router.route, handle);

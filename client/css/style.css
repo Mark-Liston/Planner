@@ -220,7 +220,25 @@ h2{
 	font-size: 20px;
 }
 
+#messagesContainer{
+	margin-top: 20px;
+	border: solid red 1px;
+	border-radius: 50px;
+	padding-bottom: 30px;
+}
 
+#messages{
+	display: flex;
+	justify-content: space-evenly;
+    flex-wrap: wrap;
+    align-content: space-around;
+}
+
+.message{
+	border: solid black 1px;
+	border-radius: 30px;
+	padding: 5px;
+}
 
 @font-face {
 	font-family: Ginger;
