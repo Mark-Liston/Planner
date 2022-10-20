@@ -80,6 +80,7 @@ function submitCourse()
                 {
                     displayPlan(coursePlan);
                     displayTotalCredits(coursePlan);
+                    checkPlanRules(coursePlan);
                 }
             },
             error: function(response)
@@ -216,7 +217,17 @@ function makeUnit(coursePlan, year, yearCount, semCount)
         {
 
             updatePlan(coursePlan, event);
+            checkPlanRules(coursePlan);
 
+
+
+        } // end of onEnd()
+
+    });  
+}
+
+function checkPlanRules(coursePlan)
+{
             // loop for all the units inside the course plan
             coursePlan.schedule.forEach(function(yearItem)
             {
@@ -232,10 +243,15 @@ function makeUnit(coursePlan, year, yearCount, semCount)
                         let message = '';
 
                         // rules
+                        let itemDOM = document.getElementById(unitItem.code);
                         if (!checkSemAvailability(coursePlan, unitItem, semesterItem))
                         {
                             message += '<h3>' + unitItem.code + '</h3>';
-                            message += '<p> is not available for Year ' + event.to.id.substring(4, 8) + ' Semester ' + event.to.id.substring(11);
+
+                            // grab the courseplan column id where the item is sitting on
+                            let parentOf_itemDOM_ID = itemDOM.parentNode.id;
+                            message += '<p> is not available for Year ' + parentOf_itemDOM_ID.substring(4, 8) + ' Semester ' + parentOf_itemDOM_ID.substring(11);
+
                             message += '.<br>It is only available during <h4>Semester ' + unitItem.semester.substring(1) + '</h4>.</p>';    
                             message += '<br><br>';     
                         }
@@ -350,10 +366,6 @@ function makeUnit(coursePlan, year, yearCount, semCount)
             }
 
             console.log(coursePlan);
-
-        } // end of onEnd()
-
-    });  
 }
 
 function newMsg(coursePlan, unitItem, message, msgObj)
