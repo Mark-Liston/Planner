@@ -7,27 +7,6 @@ $(document).ready(function()
 	$("#landing").show();
     $("#viewPlanBtn").hide();
 
-    $("#submitCourse").on("click", function()
-    {
-        event.preventDefault();
-        
-        if(checkYear())
-        {
-            if (duplicateOptions())
-            {
-                submitCourse();
-            }
-            else
-            {
-                alert("All majors/minors/co-majors must be unique");
-            }
-        }
-        else
-        {
-            alert("Start year is not valid");
-        }
-    });
-
     //$("#unitCodeInput").on("input", function()
     //{
     //    if ($("#unitCodeInput").val() != "")
@@ -79,6 +58,17 @@ $(document).ready(function()
         }
     }, 1000);
 });
+
+function SubmitCourseBtn(){
+	if (duplicateOptions())
+	{
+		SubmitCourse();
+	}
+	else
+	{
+		alert("All majors/minors/co-majors must be unique");
+	}
+}
 
 function validateInputField(inputField)
 {
@@ -147,17 +137,6 @@ function RemoveStudy(item)
     {
 		$("#AddStudyBtn").show();
 	}
-}
-
-function checkYear()
-{
-    let year = document.getElementById("startYear").value;
-    if(year < 1973 || year > 9999)
-    {
-        return false;
-    }
-
-    return true;
 }
 
 function calcEarliestStartSem()

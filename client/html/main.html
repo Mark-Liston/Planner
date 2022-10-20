@@ -60,7 +60,7 @@
 
 			</div>
 		</article>
-		<!-- For creating a temporary course plan -->
+		<!-- For creating a course plan -->
 		<article id="search" class="page">
 			<h1>Course Info</h1>
 			<h2>Please enter your course code and details</h2>
@@ -68,9 +68,9 @@
 				<p class="text-center">Please enter your course info here below,<br/>
 				This website will help retreive your course details and display them
 				</p>
-				<form enctype="multipart/form-data" id="StudyDetails" class="row g-3">
+				<form enctype="multipart/form-data" id="StudyDetails" class="row g-3" onsubmit="SubmitCourseBtn()" action="#">
                     <label for="studentEmailInput">Student Email:</label>
-                    <input type="text" id="studentEmailInput" name="studentEmailInput" class="form-control" placeholder="e.g. 23858265@student.murdoch.edu.au">
+                    <input type="text" id="studentEmailInput" name="studentEmailInput" class="form-control" placeholder="e.g. 23858265@student.murdoch.edu.au" required>
 
                     <label for="studentIDInput">Student ID:</label>
                     <input type="text" id="studentIDInput" name="studentIDInput" class="form-control" placeholder="e.g. 23858265">
@@ -79,7 +79,7 @@
 					<button type="button" id="setEarliestSem" class="btn btn-primary" onclick="calcEarliestStartSem()">Earliest possible year and semester</button>
 
 					<label for="startYear">First year of the course plan:</label>
-					<input type="number" id="startYear" name="startYear" class="form-control" placeholder="e.g. 2023" min="1973" max="9999" onkeypress="return (event.charCode !=8 && event.charCode ==0 || (event.charCode >= 48 && event.charCode <= 57))">
+					<input type="number" id="startYear" name="startYear" class="form-control" placeholder="e.g. 2023" min="1973" max="9999" required>
 
 					<p>First semester of the course plan:</p>
 					
@@ -92,10 +92,10 @@
 					</label>
 
                     <label for="degreeInput">Course/Degree code:</label>
-                    <input type="text" id="degreeInput" name="degreeInput" class="form-control" placeholder="e.g. B1356">
+                    <input type="text" id="degreeInput" name="degreeInput" class="form-control" placeholder="e.g. B1356" required>
 
                     <label for="majorInput">Major:</label>
-                    <input type="text" id="majorInput" name="majorInput" class="optionInput form-control" placeholder="e.g. MJ-3625">
+                    <input type="text" id="majorInput" name="majorInput" class="optionInput form-control" placeholder="e.g. MJ-3625" required>
 
 					<!-- For dynamic addition of additional subjects being studied -->
 					<div class="container col-auto">

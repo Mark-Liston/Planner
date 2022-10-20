@@ -47,49 +47,41 @@ document.addEventListener("dragstart", function(event) {
 // todo a listener to listen when an item is dropped then update JSON
 
 
-function submitCourse()
+function SubmitCourse()
 {
-    if ($("#studentEmailInput").val() == "")
+    let formData = new FormData($("#StudyDetails")[0]);
+    $.ajax(
     {
-        alert("A student email is required");
-    }
-    else
-    {
-        let formData = new FormData($("#StudyDetails")[0]);
-        $.ajax(
+        type: "POST",
+        url: "/submit",
+        dataType: "html",
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: formData,
+        success: function(response)
         {
-            type: "POST",
-            url: "/submit",
-            dataType: "html",
-            cache: false,
-            contentType: false,
-            processData: false,
-            data: formData,
-            success: function(response)
+            let coursePlan = JSON.parse(response);
+            let cont = true;
+            if (coursePlan["message"])
             {
-                let coursePlan = JSON.parse(response);
-                let cont = true;
-                if (coursePlan["message"])
+                if (confirm(coursePlan.message + "\n" +
+                    "Would you like to generate a course plan anyway?") == false)
                 {
-                    if (confirm(coursePlan.message + "\n" +
-                        "Would you like to generate a course plan anyway?") == false)
-                    {
-                        cont = false;
-                    }
+                    cont = false;
                 }
-
-                if (cont)
-                {
-                    displayPlan(coursePlan);
-                    displayTotalCredits(coursePlan);
-                }
-            },
-            error: function(response)
-            {
-                alert(response.responseText);
             }
-        });
-    }
+            if (cont)
+            {
+                displayPlan(coursePlan);
+                displayTotalCredits(coursePlan);
+            }
+        },
+        error: function(response)
+        {
+            alert(response.responseText);
+        }
+    });
 }
 
 function showPlan()
