@@ -491,9 +491,70 @@ function fillSemester(semester, units, itr)
     return units[itr].credit_points;
 }
 
-function removeDoneUnits(plan, completed_units)
+function addDoneUnit(doneUnit, doneUnits)
 {
+    return new Promise(function(resolve, reject)
+    {
+        database.getUnit(doneUnit.code)
+        .then(function(unit)
+        {
+            let completedUnit = new planDef.CompletedUnit();
+            completedUnit.code = unit.code;
+            completedUnit.name = unit.title;
+            completedUnit.credit_points = unit.creditPoints;
+            completedUnit.grade = doneUnit.grade;
 
+            doneUnits.push(completedUnit);
+            resolve();
+        })
+        .catch(errorMsg =>
+        {
+            reject(errorMsg);
+        });
+    });
+}
+
+function subtractUnits(arr1, arr2)
+{
+    let returnArr;
+    let j = 0;
+    let arr1Length = arr1.length;
+    let found = false;
+    for (let i = 0; i < arr1Length; ++i)
+    {
+        found = false;
+        for (j = 0; j < arr2.length && !found; ++j)
+        {
+            if (arr1[i].code == arr2[j].code)
+            {
+                found = true;
+                arr1Length = arr1.length;
+                returnArr = arr1.splice(i, 1);
+            }
+        }
+    }
+    return returnArr;
+}
+
+function removeDoneUnits(input)
+{
+    return new Promise(function(resolve, reject)
+    {
+        let doneUnits = [];
+        let func = [];
+        for (let doneUnit of input.done_units)
+        {
+            func.push(addDoneUnit(doneUnit, doneUnits));
+        }
+        Promise.all(func).then(function()
+        {
+            input.course_plan.completed_units = doneUnits;
+            subtractUnits(input.course_plan.planned_units, doneUnits);
+            generateSchedule(input.course_plan);
+            resolve(input.course_plan);
+        })
+        .catch(errorMsg => reject(errorMsg));
+    });
 }
 
 function generateSchedule(plan)
@@ -663,6 +724,5 @@ function generatePlan(input)
     });
 }
 
-//exports.getDegreeUnits = getDegreeUnits;
-//exports.getOptionUnits = getOptionUnits;
+exports.removeDoneUnits = removeDoneUnits;
 exports.generatePlan = generatePlan;

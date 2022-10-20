@@ -98,24 +98,23 @@ function SubmitCourse()
                         doneUnits.push({"code": code, "grade": Number($(obj).val())});
                     });
 
-                    let data = {"done_units": doneUnits, "course_plan": coursePlan_Original};
+                    let data = {"email": CheckLogin().email, "done_units": doneUnits, "course_plan": coursePlan_Original};
                     $.ajax(
                     {
                         type: "POST",
                         url: "/removeDoneUnits",
-                        dataType: "application/json; charset=utf-8",
+                        dataType: "text",
                         data: JSON.stringify(data),
                         success: function(response)
                         {
-
+                            callCoursePlan(JSON.parse(response));
+                        },
+                        error: function(response)
+                        {
+                            alert(response.responseText);
                         }
                     });
-
-                    //displayPlan(coursePlan);
-                    //displayTotalCredits(coursePlan);
-                    callCoursePlan(coursePlan_Original);
                 });
-                //callCoursePlan(coursePlan_Original);
             }
         },
         error: function(response)
@@ -161,24 +160,31 @@ function showPlan()
 function getGrades()
 {
     let code = extractCode($("#doneUnitInput").val());
-    $.ajax(
+    if (!$("#" + code.toUpperCase() + "_grade").length)
     {
-        type: "POST",
-        url: "/getUnit",
-        dataType: "text",
-        data: JSON.stringify({"code": code}),
-        success: function(response)
+        $.ajax(
         {
-            response = JSON.parse(response);
-            let unitElement = "<label for='" + response.code + "_grade'>" + response.code + "</label>" +
-                "<input type='text' id='" + response.code + "_grade' class='form-control unitGradeInput'>";
-            $("#doneUnits").append(unitElement);
-        },
-        error: function(response)
-        {
-            alert(response.responseText);
-        }
-    });
+            type: "POST",
+            url: "/getUnit",
+            dataType: "text",
+            data: JSON.stringify({"code": code}),
+            success: function(response)
+            {
+                response = JSON.parse(response);
+                let unitElement = "<label for='" + response.code + "_grade'>" + response.code + "</label>" +
+                    "<input type='text' id='" + response.code + "_grade' class='form-control unitGradeInput'>";
+                $("#doneUnits").append(unitElement);
+            },
+            error: function(response)
+            {
+                alert(response.responseText);
+            }
+        });
+    }
+    else
+    {
+        alert("That unit has already been entered");
+    }
 }
 
 function BtnSavePlan(){

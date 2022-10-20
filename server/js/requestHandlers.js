@@ -158,38 +158,17 @@ function reqRemoveDoneUnits(request, response)
     request.on("end", function()
     {
         let parsedData = JSON.parse(data);
-        //console.log(parsedData);
-        let doneUnits = [];
-
-        let func = [];
-        for (let doneUnit of parsedData.done_units)
+        coursePlan.removeDoneUnits(parsedData)
+        .then(function(plan)
         {
-            func.push(new Promise(function(resolve, reject)
+            if (parsedData.email != null)
             {
-                database.getUnit(doneUnit.code)
-                .then(function(unit)
-                {
-                    doneUnits.push({"code": unit.code,
-                        "name": unit.title,
-                        "credit_points": unit.creditPoints,
-                        "grade": doneUnit.grade});
-                    resolve();
-                })
-                .catch(errorMsg =>
-                {
-                    reject(errorMsg);
-                });
-            }));
-        }
-        Promise.all(func).then(function()
-        {
-            console.log(doneUnits);
-        })
-        .catch(errorMsg => console.log(errorMsg));
+                database.saveCoursePlan(parsedData.email, "Added completed units", plan);
+            }
+            response.writeHead(200, {"Content-Type": "application/json"});
+            response.end(JSON.stringify(plan));
+        });      
     });
-
-    response.writeHead(200, {"Content-Type": "text/plain"});
-    response.end();
 }
 
 function reqViewPlan(request, response)
