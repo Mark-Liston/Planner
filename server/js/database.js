@@ -354,9 +354,12 @@ function getUnit(searchUnit)
     });
 }
 
+// Checks whether degree contains option of given type (e.g., major, minor),
+// matching searchOption (e.g., MJ-CMSC).
 function degreeHasOption(degree, searchOption, type)
 {
     let result = false;
+    let message = null;
     // Checks if degree has a curriculum structure.
     if (degree["CurriculumStructure"])
     {
@@ -422,6 +425,57 @@ function degreeHasOption(degree, searchOption, type)
     return result;
 }
 
+// Checks whether degree contains option of given type e.g., major, minor.
+// TODO: optimise this method to reduce duplication of degreeHasOption().
+function degreeHasOptionCat(degree, type)
+{
+    let result = false;
+    let message = null;
+    // Checks if degree has a curriculum structure.
+    if (degree["CurriculumStructure"])
+    {
+        let degreeStructure = JSON.parse(degree.CurriculumStructure).container;
+
+        // Finds index of element containing all relevant options in a degree.
+        let index = scrape.searchJSONArr(degreeStructure, function(entry)
+        {
+            return entry.title.toUpperCase() == type.toUpperCase();
+        });
+        if (index != -1)
+        {
+            result = true;
+        }
+
+        // If option isn't in first level of degree's structure
+        // i.e., if option is in 'Option' level of structure.
+        else
+        {
+            // Finds index of element containing all option parent objects in
+            // a degree e.g., Additional Majors, Recommended Co-Majors,
+            // Recommended Minors, General Electives.
+            index = scrape.searchJSONArr(degreeStructure, function(entry)
+            {
+                return entry.title.toUpperCase() == "OPTION";
+            });
+            if (index != -1)
+            {
+                let optionStructure = degreeStructure[index].container;
+                // Finds index of option parent object.
+                index = scrape.searchJSONArr(optionStructure, function(entry)
+                {
+                    return entry.title.toUpperCase().search(" " + type.toUpperCase()) != -1;
+                });
+                if (index != -1)
+                {
+                    result = true;
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
 async function getOption(searchOption, type, degree)
 {
     return new Promise(function(resolve, reject)
@@ -431,6 +485,7 @@ async function getOption(searchOption, type, degree)
         {
             if (option != null)
             {
+                let message = degreeHasOption(degree, searchOption, type)
                 // For majors and minors, check if they are part of the degree.
                 if ((type.toUpperCase() == "MAJOR" || type.toUpperCase() == "MINOR") &&
                     !degreeHasOption(degree, searchOption, type))
@@ -455,11 +510,94 @@ async function getOption(searchOption, type, degree)
     });
 }
 
+function saveCoursePlan(email, changes, plan)
+{
+    return new Promise(function(resolve, reject)
+    {
+        let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
+        {
+            if (error)
+            {
+                console.error(error.message);
+            }
+        });
+        
+        // Gets all items of the given type containing the matchString.
+        let qry = "INSERT INTO CoursePlan (email, timeChanged, changes, data)" +
+                " VALUES(?, datetime('now', 'localtime'), ?, ?)";
+        db.all(qry, [email, changes, JSON.stringify(plan)], function(error, rows)
+        {
+            if (error)
+            {
+                console.error(error.message);
+            }
+
+            else
+            {
+                console.log("Course plan added to database");
+            }
+
+            db.close(function(error)
+            {
+                if (error)
+                {
+                    console.error(error.message);
+                }
+            });
+
+            resolve();
+        });
+    });
+}
+
+function getCoursePlan(email)
+{
+    return new Promise(function(resolve, reject)
+    {
+        let coursePlan = null;
+        let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
+        {
+            if (error)
+            {
+                console.error(error.message);
+            }
+        });
+        
+        // Gets all items of the given type containing the matchString.
+        let qry = "SELECT * FROM CoursePlan WHERE email = ?" +
+                    "ORDER BY timeChanged DESC";
+        db.all(qry, [email], function(error, rows)
+        {
+            if (error)
+            {
+                console.error(error.message);
+            }
+
+            else
+            {
+                coursePlan = rows[0];
+            }
+
+            db.close(function(error)
+            {
+                if (error)
+                {
+                    console.error(error.message);
+                }
+            });
+
+            resolve(coursePlan);
+        });
+    });
+}
+
 exports.getSuggestions = getSuggestions;
 exports.getDegree = getDegree;
 exports.getUnit = getUnit;
+exports.degreeHasOptionCat = degreeHasOptionCat;
 exports.getOption = getOption;
 exports.cacheSearch = cacheSearch;
 exports.getAccount = getAccount;
 exports.createAccount = createAccount;
-
+exports.saveCoursePlan = saveCoursePlan;
+exports.getCoursePlan = getCoursePlan;

@@ -18,6 +18,7 @@ function LogIn(){
 			if (status == "success") {
 				let account = {};
 				account.username = data.username;
+                account.email = data.email;
 				// TODO - implement type and cookie storing
 				json_str = JSON.stringify(account);
 				createCookie("login", json_str, 1);

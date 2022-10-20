@@ -38,3 +38,10 @@ CREATE TABLE IF NOT EXISTS "Users" (
 	"password"	VARCHAR(60),
 	PRIMARY KEY("email")
 );
+CREATE TABLE IF NOT EXISTS "CoursePlan" (
+	"email" TEXT NOT NULL,
+	"timeChanged" datetime NOT NULL,
+	"changes" text,
+	"data" text NOT NULL,
+	PRIMARY KEY (email, timeChanged)
+);
