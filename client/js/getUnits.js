@@ -60,47 +60,39 @@ document.addEventListener("dragstart", function(event) {
 
 function submitCourse()
 {
-    if ($("#studentEmailInput").val() == "")
+    let formData = new FormData($("#StudyDetails")[0]);
+    $.ajax(
     {
-        alert("A student email is required");
-    }
-    else
-    {
-        let formData = new FormData($("#StudyDetails")[0]);
-        $.ajax(
+        type: "POST",
+        url: "/submit",
+        dataType: "html",
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: formData,
+        success: function(response)
         {
-            type: "POST",
-            url: "/submit",
-            dataType: "html",
-            cache: false,
-            contentType: false,
-            processData: false,
-            data: formData,
-            success: function(response)
+            coursePlan_Original = JSON.parse(response);
+            let cont = true;
+            if (coursePlan_Original["message"])
             {
-                coursePlan_Original = JSON.parse(response);
-                let cont = true;
-                if (coursePlan_Original["message"])
+                if (confirm(coursePlan_Original.message + "\n" +
+                    "Would you like to generate a course plan anyway?") == false)
                 {
-                    if (confirm(coursePlan_Original.message + "\n" +
-                        "Would you like to generate a course plan anyway?") == false)
-                    {
-                        cont = false;
-                    }
+                    cont = false;
                 }
-
-                if (cont)
-                {
-                    callCoursePlan(coursePlan_Original);
-
-                }
-            },
-            error: function(response)
-            {
-                alert(response.responseText);
             }
-        });
-    }
+            if (cont)
+            {
+                callCoursePlan(coursePlan_Original);
+            }
+        },
+        error: function(response)
+        {
+            alert(response.responseText);
+        }
+    });
+    
 }
 
 function showPlan()

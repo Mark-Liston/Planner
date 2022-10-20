@@ -260,7 +260,9 @@ h2{
 	color: black;
 	display: inline;
 }
-
+.form-check-label {
+	display: inline-block;
+}
 
 @font-face {
 	font-family: Ginger;
