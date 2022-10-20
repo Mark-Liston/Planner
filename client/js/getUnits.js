@@ -98,7 +98,7 @@ function SubmitCourse()
                         doneUnits.push({"code": code, "grade": Number($(obj).val())});
                     });
 
-                    let data = {"done_units": doneUnits, "course_plan": coursePlan};
+                    let data = {"done_units": doneUnits, "course_plan": coursePlan_Original};
                     $.ajax(
                     {
                         type: "POST",
@@ -111,10 +111,11 @@ function SubmitCourse()
                         }
                     });
 
-                    displayPlan(coursePlan);
-                    displayTotalCredits(coursePlan);
+                    //displayPlan(coursePlan);
+                    //displayTotalCredits(coursePlan);
+                    callCoursePlan(coursePlan_Original);
                 });
-                callCoursePlan(coursePlan_Original);
+                //callCoursePlan(coursePlan_Original);
             }
         },
         error: function(response)
