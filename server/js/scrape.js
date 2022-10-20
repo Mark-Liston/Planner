@@ -223,7 +223,7 @@ async function fetchItem(contentType, version, code)
 function searchJSONArr(arr, checkMatch)
 {
     let targetIndex = -1;
-    if (arr["length"])
+    try
     {
         for (let i = 0; i < arr.length && targetIndex == -1; ++i)
         {
@@ -232,6 +232,10 @@ function searchJSONArr(arr, checkMatch)
                 targetIndex = i;
             }
         }
+    }
+    catch(error)
+    {
+        console.log(error);
     }
     return targetIndex;
 }

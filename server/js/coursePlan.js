@@ -520,18 +520,26 @@ function subtractUnits(arr1, arr2)
     let j = 0;
     let arr1Length = arr1.length;
     let found = false;
-    for (let i = 0; i < arr1Length; ++i)
+    try
     {
-        found = false;
-        for (j = 0; j < arr2.length && !found; ++j)
+        for (let i = 0; i < arr1Length; ++i)
         {
-            if (arr1[i].code == arr2[j].code)
+            found = false;
+            for (j = 0; j < arr2.length && !found; ++j)
             {
-                found = true;
-                arr1Length = arr1.length;
-                returnArr = arr1.splice(i, 1);
+                if (arr1[i].code == arr2[j].code)
+                {
+                    found = true;
+                    arr1Length = arr1.length;
+                    returnArr = arr1.splice(i, 1);
+                }
             }
         }
+    }
+    catch(error)
+    {
+        console.log(error);
+        returnArr = arr1;
     }
     return returnArr;
 }
