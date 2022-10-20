@@ -73,9 +73,9 @@ function SubmitCourse()
         success: function(response)
         {
             coursePlan_Original = JSON.parse(response);
-            if (coursePlan["message"])
+            if (coursePlan_Original["message"])
             {
-                alert(coursePlan.message);
+                alert(coursePlan_Original.message);
             }
             else
             {
