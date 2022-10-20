@@ -277,7 +277,7 @@ function makeUnit(coursePlan, year, yearCount, semCount)
                                             }
                                             else
                                             {
-                                                if (preReqItem.items.length == 1)
+                                                if (operatorItem.items.length > 1)
                                                 {
                                                     message += ' <h5>' + operatorItem.operator + '</h5> ';
                                                 }
