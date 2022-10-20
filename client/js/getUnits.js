@@ -1,3 +1,6 @@
+let coursePlan_Original;
+let coursePlan_Edited;
+
 function callCoursePlan(coursePlan)
 {
     // coursePlan
@@ -75,11 +78,11 @@ function submitCourse()
             data: formData,
             success: function(response)
             {
-                let coursePlan = JSON.parse(response);
+                coursePlan_Original = JSON.parse(response);
                 let cont = true;
-                if (coursePlan["message"])
+                if (coursePlan_Original["message"])
                 {
-                    if (confirm(coursePlan.message + "\n" +
+                    if (confirm(coursePlan_Original.message + "\n" +
                         "Would you like to generate a course plan anyway?") == false)
                     {
                         cont = false;
@@ -88,7 +91,8 @@ function submitCourse()
 
                 if (cont)
                 {
-                    callCoursePlan(coursePlan);
+                    callCoursePlan(coursePlan_Original);
+
                 }
             },
             error: function(response)
@@ -116,8 +120,8 @@ function showPlan()
             success: function(response)
             {
                 let savedPlan = JSON.parse(response);
-                let coursePlan = JSON.parse(savedPlan.data);
-                callCoursePlan(coursePlan);
+                coursePlan_Original = JSON.parse(savedPlan.data);
+                callCoursePlan(coursePlan_Original);
             },
             error: function(response)
             {
@@ -223,11 +227,8 @@ function makeUnit(coursePlan, year, yearCount, semCount)
         // drag end event
         onEnd: function (event) 
         {
-
-            updatePlan(coursePlan, event);
-            checkPlanRules(coursePlan);
-
-
+            updatePlan(coursePlan_Edited, event);
+            checkPlanRules(coursePlan_Edited);
 
         } // end of onEnd()
 
@@ -437,7 +438,6 @@ function checkSemAvailability(coursePlan, unitItem, semesterItem)
 	return available;
 }
 
-
 //Checks if the prerequisites for the dragged item are satisfied in its new location
 function checkPrereqsMet(coursePlan, unitItem, semesterItem, yearItem)
 {
@@ -590,19 +590,22 @@ function updatePlan(coursePlan, event)
 	
 	console.log("copied == " + copied);
 
-    // debug - UPDATED JSON HERE
+    // Make draft of updated JSON
     console.log("course plan is succesfully updated!");
     console.log(coursePlan.schedule);
 }
-
 
 function displayPlan(coursePlan)
 {
     $(".page").hide();
 	$("#results").show();
 
-    // debug
-    //console.log(coursePlan);
+    // reset html of courseplan
+    $("#courseplan").html('');
+    $("#message").html('');
+    $("#totalcreditspoints").html('');
+
+
 
     // make course coursePlan
     for (let i = 0; i < coursePlan.schedule.length; i++)
@@ -626,6 +629,10 @@ function displayPlan(coursePlan)
 
     // debug
     console.log("course plan is displayed!");
+
+    // make copy of courseplan for draft
+    coursePlan_Edited = JSON.parse(JSON.stringify(coursePlan_Original));
+    console.log(coursePlan_Edited);
 }
 
 function displayTotalCredits(coursePlan)

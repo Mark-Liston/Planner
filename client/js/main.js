@@ -153,12 +153,24 @@ function editPlan()
 
 function cancelChangesPlan()
 {
-    $("#editPlan").show();
 
-    $('.cp-dragButton').hide();
-    $("#cancelChangesPlan").hide();
-    $("#applyChangesPlan").hide();
+    if (confirm("Would you like to cancel without applying changes?") == true) 
+    {
+        // buttons
+        $("#editPlan").show();
+        $('.cp-dragButton').hide();
+        $("#cancelChangesPlan").hide();
+        $("#applyChangesPlan").hide();
 
-    // revert plan to original form here
-    displayPlan();
+        // revert plan to original form here
+        callCoursePlan(coursePlan_Original);
+
+    } 
+
+    // debug
+    console.log("Orignal:");
+    console.log(coursePlan_Original);
+    console.log("Edited:");
+    console.log(coursePlan_Edited);
+
 }
