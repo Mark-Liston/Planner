@@ -139,6 +139,39 @@ function RemoveStudy(item)
 	}
 }
 
+function editPlan()
+{
+    $("#editPlan").hide();
+
+    $('.cp-dragButton').show();
+    $("#cancelChangesPlan").show();
+    $("#applyChangesPlan").show();
+}
+
+function cancelChangesPlan()
+{
+
+    if (confirm("Would you like to cancel without applying changes?") == true) 
+    {
+        // buttons
+        $("#editPlan").show();
+        $('.cp-dragButton').hide();
+        $("#cancelChangesPlan").hide();
+        $("#applyChangesPlan").hide();
+
+        // revert plan to original form here
+        callCoursePlan(coursePlan_Original);
+
+    } 
+
+    // debug
+    console.log("Orignal:");
+    console.log(coursePlan_Original);
+    console.log("Edited:");
+    console.log(coursePlan_Edited);
+
+}
+
 function calcEarliestStartSem()
 {
     let startYearInput = document.getElementById("startYear");

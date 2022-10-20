@@ -84,10 +84,14 @@ h2{
 /*Course Plan - Drag and Drop*/
 #courseplan tr {
 	display: flex;
+	flex: 1;
 	flex-direction: row;
 	flex-wrap: wrap;
 	width: 100%;
-	align-items: center;
+	align-items: stretch;
+	height: auto;
+	text-align: center;
+
 }
 
 #courseplan td {
@@ -97,8 +101,8 @@ h2{
 	flex: 1;
 	align-items: center;
 
-	width: 500px;
-	height: 240px;
+	min-height: 260px;
+	margin: -1px;
 
 	padding-top: 10px;
 	padding-bottom: 10px;
@@ -106,6 +110,8 @@ h2{
 	border-style: solid;
 	border-width: 2px;
 	border-color: lightgrey;
+
+
 }
 
 #cp-xlabel {
@@ -124,15 +130,19 @@ h2{
 
 #cp-ylabel {
 	padding-right: 15px;
+	display: flex;
+	justify-content: center;
+	align-content: center;
+	flex-direction: column;
 }
 
 .cp-unit {
 	display: flex;
-	height: 50px;
-	width: 350px;
+	min-height: 50px;
 	background: black;
 	border-radius: 14px;
 	margin-bottom: 5px;
+	padding-right: 10px;
 }
 
 .cp-dragButton {
@@ -210,9 +220,7 @@ h2{
 	font-size: 20px;
 }
 
-.form-check-label {
-	display: inline-block;
-}
+
 
 @font-face {
 	font-family: Ginger;
