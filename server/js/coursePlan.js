@@ -272,6 +272,12 @@ function getOptions(input, plan, degree)
         {
             func.push(addOption(input.majorInput, "major", plan, degree));
         }
+        else
+        {
+            let degreeHasMajor = database.degreeHasOptionCat(degree, "major");
+            if (degreeHasMajor)
+                reject("Degree " + degree.code + " requires a primary major");
+        }
 
         // Adds all input additional options.
         for (let i = 0; input["extraInput" + i]; ++i)
@@ -494,13 +500,6 @@ function generateSchedule(plan)
         return a.level - b.level;
     });
 
-    // The last day that a student may enrol for semester 1. This is typically the
-    // 11 of March.
-    const lastDayToEnrolS1 = new Date(new Date().getFullYear() + "-03-11");
-    // The last day that a student may enrol for semester 2. This is typically the
-    // 12 of August.
-    const lastDayToEnrolS2 = new Date(new Date().getFullYear() + "-08-12");
-
     // Arrays for storing units available in semester 1, semester 2, and
     // both semesters.
     let s1Units = [], s2Units = [], bothUnits = [];
@@ -524,16 +523,10 @@ function generateSchedule(plan)
     }
 
     let skipS1 = false;
-    let today = new Date();
-    let currentYear = new Date().getFullYear();
-    // If today is too late to enrol for semester 2, skip to next year.
-    if (today > lastDayToEnrolS2)
-    {
-        ++currentYear;
-    }
-    // If today is too late to enrol for semester 1, skip to semester 2 for
-    // the first year.
-    else if (new Date() > lastDayToEnrolS1)
+  
+    let currentYear = plan.startYear;
+   
+    if(plan.startSemester == 2)
     {
         skipS1 = true;
     }
@@ -542,7 +535,7 @@ function generateSchedule(plan)
     // Loops until there are no units left to schedule or schedule reaches
     // 10 years. It is assumed a student won't study for more than 10 years
     // at a time.
-    while (count > 0 && currentYear < new Date().getFullYear() + 10)
+    while (count > 0 && currentYear < plan.startYear + 10)
     {
         let year = new planDef.Year();
         year.year = currentYear;
@@ -624,6 +617,8 @@ function generatePlan(input)
         plan.completed_credit_points = 0;
         plan.completed_units = []; // Add completed units input.
         plan.completed_credit_points = aggregateCP(plan.completed_units);
+        plan.startYear = input.startYear;
+        plan.startSemester = input.startSemester;        
         
         database.getDegree(extractCode(input.degreeInput))
         .then(function(degree)

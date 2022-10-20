@@ -1,3 +1,18 @@
+let coursePlan_Original;
+let coursePlan_Edited;
+
+function callCoursePlan(coursePlan)
+{
+    // coursePlan
+    displayPlan(coursePlan);
+    displayTotalCredits(coursePlan);
+    checkPlanRules(coursePlan);
+
+    // hide not needed buttons
+    $("#cancelChangesPlan").hide();
+    $("#applyChangesPlan").hide();
+}
+
 function autoComplete(type, inputField)
 {
     if (validateInputField(inputField))
@@ -43,53 +58,36 @@ document.addEventListener("dragstart", function(event) {
     event.dataTransfer.setDragImage(img, 0, 0);
 }, false);
 
-
-// todo a listener to listen when an item is dropped then update JSON
-
-
-function submitCourse()
+function SubmitCourse()
 {
-    if ($("#studentEmailInput").val() == "")
+    let formData = new FormData($("#StudyDetails")[0]);
+    $.ajax(
     {
-        alert("A student email is required");
-    }
-    else
-    {
-        let formData = new FormData($("#StudyDetails")[0]);
-        $.ajax(
+        type: "POST",
+        url: "/submit",
+        dataType: "html",
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: formData,
+        success: function(response)
         {
-            type: "POST",
-            url: "/submit",
-            dataType: "html",
-            cache: false,
-            contentType: false,
-            processData: false,
-            data: formData,
-            success: function(response)
+            coursePlan_Original = JSON.parse(response);
+            if (coursePlan_Original["message"])
             {
-                let coursePlan = JSON.parse(response);
-                let cont = true;
-                if (coursePlan["message"])
-                {
-                    if (confirm(coursePlan.message + "\n" +
-                        "Would you like to generate a course plan anyway?") == false)
-                    {
-                        cont = false;
-                    }
-                }
-
-                if (cont)
-                {
-                    displayPlan(coursePlan);
-                    displayTotalCredits(coursePlan);
-                }
-            },
-            error: function(response)
-            {
-                alert(response.responseText);
+                alert(coursePlan_Original.message);
             }
-        });
-    }
+            else
+            {
+                callCoursePlan(coursePlan_Original);
+            }
+        },
+        error: function(response)
+        {
+            alert(response.responseText);
+        }
+    });
+    
 }
 
 function showPlan()
@@ -108,9 +106,9 @@ function showPlan()
             data: '{"email": "' + login.email + '"}',
             success: function(response)
             {
-                let coursePlan = JSON.parse(response);
-                displayPlan(JSON.parse(coursePlan.data));
-                displayTotalCredits(JSON.parse(coursePlan.data));
+                let savedPlan = JSON.parse(response);
+                coursePlan_Original = JSON.parse(savedPlan.data);
+                callCoursePlan(coursePlan_Original);
             },
             error: function(response)
             {
@@ -207,8 +205,8 @@ function makeUnit(coursePlan, year, yearCount, semCount)
         }
 
         // make draggable unit
-        html += "<div class='cp-unit'>" +
-                    "<a class='cp-dragButton'><img src='../images/drag icon.png' id='dragicon'></a>" +
+        html += "<div class='cp-unit'" + "id='" + code + "'" + ">" +
+                    "<a class='cp-dragButton' style='display: none;'><img src='../images/drag icon.png' id='dragicon'></a>" +
                     "<div class='cp-info'>" +
                         "<div class='cp-header'>" +
                             "<h1>" + code + "</h1>" +
@@ -225,6 +223,10 @@ function makeUnit(coursePlan, year, yearCount, semCount)
 
     $("#year" + year + "sem" + semNum).append(html);
 
+    // assign an array to courseplan's message to be used for rules messaging
+    let messages = [];
+    coursePlan.message = messages;
+
     // enable draggable
     let col_id = document.getElementById("year" + year + "sem" + semNum);
     Sortable.create(col_id,
@@ -234,35 +236,193 @@ function makeUnit(coursePlan, year, yearCount, semCount)
         animation: 150,
 
         // drag end event
-        onEnd: function(event) 
+        onEnd: function (event) 
         {
-            // rules here       
+            updatePlan(coursePlan_Edited, event);
+            checkPlanRules(coursePlan_Edited);
 
-			//Is only returning true/false/null. Use as you deem appropriate.
-			checkSemAvailability(coursePlan, event);
-            checkPrereqsMet(coursePlan, event);
-			
-            updatePlan(coursePlan, event);
-        }
+        } // end of onEnd()
 
     });  
 }
 
+function checkPlanRules(coursePlan)
+{
+            // loop for all the units inside the course plan
+            coursePlan.schedule.forEach(function(yearItem)
+            {
+                yearItem.semesters.forEach(function(semesterItem)
+                {
+                    semesterItem.units.forEach(function(unitItem)
+                    {
+                        // used to store rules message for a unit
+                        let msgObj = {
+                            code: unitItem.code,
+                            msg: ""
+                        };
+                        let message = '';
+
+                        // rules
+                        let itemDOM = document.getElementById(unitItem.code);
+                        if (!checkSemAvailability(coursePlan, unitItem, semesterItem))
+                        {
+                            message += '<h3>' + unitItem.code + '</h3>';
+
+                            // grab the courseplan column id where the item is sitting on
+                            let parentOf_itemDOM_ID = itemDOM.parentNode.id;
+                            message += '<p> is not available for Year ' + parentOf_itemDOM_ID.substring(4, 8) + ' Semester ' + parentOf_itemDOM_ID.substring(11);
+
+                            message += '.<br>It is only available during <h4>Semester ' + unitItem.semester.substring(1) + '</h4>.</p>';    
+                            message += '<br><br>';     
+                        }
+
+                        let preReqs;
+                        if (!checkPrereqsMet(coursePlan, unitItem, semesterItem, yearItem, preReqs))
+                        {
+                            message += '<h3>' + unitItem.code + '</h3>';
+                            message += "<p> needs prerequisite unit(s): <br>";
+
+                            // grab prereq units and put it into the message
+                            unitItem.prerequisites.forEach(function(operatorItem)
+                            {
+                                operatorItem.items.forEach(function(preReqItem)
+                                
+                                {
+
+                                    if (hasUnitCode(preReqItem))
+                                    {
+                                        message += '<h4>' + preReqItem.code + '</h4>';
+
+                                        // dont add the operator if last element
+                                        if (operatorItem.items[operatorItem.items.length-1].code !== preReqItem.code) 
+                                        {
+                                            message += ' <h5>' + operatorItem.operator + '</h5> ';
+                                        }
+                                    }
+                                    else
+                                    {
+                                        preReqItem.items.forEach(function(extraItem)
+                                        {
+                                            message += '<h4>' + extraItem.code + '</h4>';
+
+                                            // dont add the operator if last element
+                                            if (preReqItem.items[preReqItem.items.length-1].code !== extraItem.code) 
+                                            {                                                                         
+
+                                                message += ' <h5>' + preReqItem.operator + '</h5> ';
+                                            }
+                                            else
+                                            {
+                                                if (operatorItem.items.length > 1)
+                                                {
+                                                    message += ' <h5>' + operatorItem.operator + '</h5> ';
+                                                }
+                                                
+                                            }
+                                        });
+
+                                    }
+
+                                });
+
+                                message += '<br>'
+                            });
+
+                            message += '</p>'
+                            message += '<br>'
+                        }
+
+                        
+                        // there's a message (invalid unit)
+                        if (message != '')
+                        {
+                            //add red border on its draggable item
+                            $("#" + unitItem.code).css({"border-style": "solid", "border-width": "4px", "border-color": "red"});
+
+                            if (updateMsg(coursePlan, unitItem, message))
+                            {
+                                console.log("Rule message UPDATED for " + unitItem.code);
+                            }
+                            else
+                            {
+                                newMsg(coursePlan, unitItem, message, msgObj);
+                                console.log("Rule message CREATED for " + unitItem.code);
+                            }
+
+                            
+                        }
+                        // no messages are created (valid unit)
+                        else
+                        {
+                            // delete if message exists for that unit
+                            let index = coursePlan.message.findIndex((msgItem => msgItem.code == unitItem.code));
+                            if (index >= 0)
+                            {               
+                                coursePlan.message.splice(index, 1);
+                            }
+
+                            // remove red border
+                            $("#" + unitItem.code).css({"border-style": "", "border-width": "", "border-color": ""});
+                        }
+                    });                                        
+                });                   
+            });
+            
+            // after loop. check if messages exists. if they do. show the message box.
+            if (coursePlan.message.length > 0)
+            {
+
+                $("#message").show();
+
+                $("#message").html('<h2>Message</h2>');
+                coursePlan.message.forEach(function(messageItem)
+                {
+                    $("#message").append(messageItem.msg);
+                });
+            }
+            else //  if not. hide the message box
+            {
+                $("#message").hide();
+            }
+
+            console.log(coursePlan);
+}
+
+function newMsg(coursePlan, unitItem, message, msgObj)
+{
+    msgObj.unit = unitItem.code;
+    msgObj.msg = message;
+    coursePlan.message.push(msgObj);
+
+}
+
+function updateMsg(coursePlan, unitItem, message)
+{
+    let index = coursePlan.message.findIndex((msgItem => msgItem.code == unitItem.code));
+    if (index >= 0)
+    {
+        coursePlan.message[index].msg = message;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 //Checks if the dragged unit is available in the semester it was moved to.
 //Returns true, false, or null.
-function checkSemAvailability(coursePlan, event)
+function checkSemAvailability(coursePlan, unitItem, semesterItem)
 {
-	// grab unit code from the draggable item
-    let unit_code = event.item.getElementsByClassName("cp-header")[0].firstChild.textContent;
-	let unit_type = "DECIDED";
-	if(event.item.getElementsByClassName("cp-subheader")[0].firstChild.textContent.toUpperCase() == "UNDECIDED")
-	{
-		unit_type = "UNDECIDED";
-	};
-	let plannedSem = event.to.id.substring(11)
+	// grab unit info
+    let unit_code = unitItem.code;
+	let unit_type = unitItem.type;
 
-	let available = false;
-	
+    // grab the semester of the current unitItem
+	let plannedSem = semesterItem.semester;
+
+    // undecided units are automatically available
+	let available = false;	
 	if(unit_type.toUpperCase() == "UNDECIDED")
 	{
 		available = true;
@@ -285,47 +445,49 @@ function checkSemAvailability(coursePlan, event)
 		}
 	}
 	
-	console.log("checkSemAvailability for "+ unit_code + " in sem " + plannedSem + " returns: " + available);
+	//console.log("checkSemAvailability for "+ unit_code + " in sem " + plannedSem + " returns: " + available);
 	return available;
 }
 
 //Checks if the prerequisites for the dragged item are satisfied in its new location
-function checkPrereqsMet(coursePlan, event)
+function checkPrereqsMet(coursePlan, unitItem, semesterItem, yearItem)
 {
-    if(event.item.getElementsByClassName("cp-subheader")[0].firstChild.textContent.toUpperCase() != "UNDECIDED")
+    // grab unit info
+    let unit_code = unitItem.code;
+    let unit_type = unitItem.type;
+
+    if(unit_type.toUpperCase() != "UNDECIDED")
 	{
-        //Get the unit code of the dragged item
-		let unit_code = event.item.getElementsByClassName("cp-header")[0].firstChild.textContent;
-        
+
         //Get the year and semester the item has been dragged to
-        let toYear = event.to.id.substring(4, 8);
-        let toSem = event.to.id.substring(11);
+        let toYear = yearItem.year;
+        let toSem = semesterItem.semester;;
 
         //Get the unit's prerequisites
-        let prereqs = getFullUnit(unit_code, coursePlan).prerequisites;
+        let preReqs = getFullUnit(unit_code, coursePlan).prerequisites;
 
         //prereqs is an array of prereqNode, which in turn contains
         //other prereqNodes and units.
         //Assumption: relationship between top-level prereqNodes in array is
         //"OR", i.e. only one top-level prereqNode need be satisfied.
-        if(prereqs.length > 0)
+        if(preReqs.length > 0)
         {
-            for(let prereq in prereqs)
+            for(let prereq in preReqs)
             {
-                if(prereqItemMet(prereqs[prereq], toYear, toSem, coursePlan))
+                if(prereqItemMet(preReqs[prereq], toYear, toSem, coursePlan))
                 {
-                    console.log("checkPrereqsMet for" + unit_code + " returns true");
+                    //console.log("checkPrereqsMet for" + unit_code + " returns true");
                     return true;
                 }
             }
-            console.log("checkPrereqsMet for " + unit_code + " returns false");
+            //console.log("checkPrereqsMet for " + unit_code + " returns false");
             return false;
         }
-        console.log("checkPrereqsMet: " + unit_code + " has no prereqs; checkPrereqsMet returns true");
+        //console.log("checkPrereqsMet: " + unit_code + " has no prereqs; checkPrereqsMet returns true");
         return true;
         
 	}
-    console.log("checkPrereqsMet: undecided elective has no prereqs");
+   // console.log("checkPrereqsMet: undecided elective has no prereqs");
     return true;
 }
 
@@ -439,19 +601,22 @@ function updatePlan(coursePlan, event)
 	
 	console.log("copied == " + copied);
 
-    // debug - UPDATED JSON HERE
+    // Make draft of updated JSON
     console.log("course plan is succesfully updated!");
     console.log(coursePlan.schedule);
 }
-
 
 function displayPlan(coursePlan)
 {
     $(".page").hide();
 	$("#results").show();
 
-    // debug
-    //console.log(coursePlan);
+    // reset html of courseplan
+    $("#courseplan").html('');
+    $("#message").html('');
+    $("#totalcreditspoints").html('');
+
+
 
     // make course coursePlan
     for (let i = 0; i < coursePlan.schedule.length; i++)
@@ -475,6 +640,10 @@ function displayPlan(coursePlan)
 
     // debug
     console.log("course plan is displayed!");
+
+    // make copy of courseplan for draft
+    coursePlan_Edited = JSON.parse(JSON.stringify(coursePlan_Original));
+    console.log(coursePlan_Edited);
 }
 
 function displayTotalCredits(coursePlan)
