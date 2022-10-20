@@ -58,7 +58,7 @@ document.addEventListener("dragstart", function(event) {
     event.dataTransfer.setDragImage(img, 0, 0);
 }, false);
 
-function submitCourse()
+function SubmitCourse()
 {
     let formData = new FormData($("#StudyDetails")[0]);
     $.ajax(

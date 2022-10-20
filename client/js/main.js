@@ -171,6 +171,7 @@ function cancelChangesPlan()
     console.log(coursePlan_Edited);
 
 }
+
 function calcEarliestStartSem()
 {
     let startYearInput = document.getElementById("startYear");
