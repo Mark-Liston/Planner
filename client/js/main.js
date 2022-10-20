@@ -7,20 +7,6 @@ $(document).ready(function()
 	$("#landing").show();
     $("#viewPlanBtn").hide();
 
-    $("#submitCourse").on("click", function()
-    {
-        event.preventDefault();
-        
-        if (duplicateOptions())
-        {
-            submitCourse();
-        }
-        else
-        {
-            alert("All majors/minors/co-majors must be unique");
-        }
-    });
-
     //$("#unitCodeInput").on("input", function()
     //{
     //    if ($("#unitCodeInput").val() != "")
@@ -72,6 +58,17 @@ $(document).ready(function()
         }
     }, 1000);
 });
+
+function SubmitCourseBtn(){
+	if (duplicateOptions())
+	{
+		SubmitCourse();
+	}
+	else
+	{
+		alert("All majors/minors/co-majors must be unique");
+	}
+}
 
 function validateInputField(inputField)
 {
@@ -140,4 +137,36 @@ function RemoveStudy(item)
     {
 		$("#AddStudyBtn").show();
 	}
+}
+
+function calcEarliestStartSem()
+{
+    let startYearInput = document.getElementById("startYear");
+    startYearInput.value = new Date().getFullYear();
+
+    let sem1RadButton = document.getElementById("semester1");
+    sem1RadButton.checked = true;
+
+    let sem2RadButton = document.getElementById("semester2");
+
+    // The last day that a student may enrol for semester 1. This is typically the
+    // 11 of March.
+    const lastDayToEnrolS1 = new Date(new Date().getFullYear() + "-03-11");
+    // The last day that a student may enrol for semester 2. This is typically the
+    // 12 of August.
+    const lastDayToEnrolS2 = new Date(new Date().getFullYear() + "-08-12");
+
+    let today = new Date();
+
+    //If today is too late to enrol for semester 2, skip to next year.
+    if (today > lastDayToEnrolS2)
+    {
+        startYearInput.value++;
+    }
+    // If today is too late to enrol for semester 1, skip to semester 2 for
+    // the first year.
+    else if (today > lastDayToEnrolS1)
+    {
+        sem2RadButton.checked = true;
+    }
 }
