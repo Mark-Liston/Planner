@@ -73,16 +73,11 @@ function SubmitCourse()
         success: function(response)
         {
             coursePlan_Original = JSON.parse(response);
-            let cont = true;
-            if (coursePlan_Original["message"])
+            if (coursePlan["message"])
             {
-                if (confirm(coursePlan_Original.message + "\n" +
-                    "Would you like to generate a course plan anyway?") == false)
-                {
-                    cont = false;
-                }
+                alert(coursePlan.message);
             }
-            if (cont)
+            else
             {
                 callCoursePlan(coursePlan_Original);
             }

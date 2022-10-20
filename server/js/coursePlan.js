@@ -272,6 +272,12 @@ function getOptions(input, plan, degree)
         {
             func.push(addOption(input.majorInput, "major", plan, degree));
         }
+        else
+        {
+            let degreeHasMajor = database.degreeHasOptionCat(degree, "major");
+            if (degreeHasMajor)
+                reject("Degree " + degree.code + " requires a primary major");
+        }
 
         // Adds all input additional options.
         for (let i = 0; input["extraInput" + i]; ++i)
