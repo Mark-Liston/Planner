@@ -32,7 +32,7 @@ $(document).ready(function()
     {
         if ($(this).val() != "")
         {
-            autoComplete(["Major", "Minor", "Co-Major"], $(this));
+            autoComplete(["Major", "Minor", "\'Co-Major\'"], $(this));
         }
     });
     $("#doneUnitInput").on("input", function()
