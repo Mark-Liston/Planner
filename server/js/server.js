@@ -12,7 +12,7 @@ function startServer(route, handle)
         route(pathname, handle, request, response);
     }
 
-    http.createServer(onRequest).listen(80);
+    http.createServer(onRequest).listen(40018);
 	console.log("===================");
     console.log("Server has started.");
 	console.log('Current directory: ' + process.cwd());
