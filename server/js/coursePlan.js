@@ -238,27 +238,9 @@ function addOption(input, type, plan, degree)
         })
         .catch(errorMsg =>
         {
-            reject("Error at addOption():\n" + errorMsg);
+            reject(errorMsg);
         });
     });
-}
-
-function removeDuplicates(arr, areItemsEqual)
-{
-    let returnArr;
-    let j = 0;
-    for (let i = 0; i < arr.length; ++i)
-    {
-        for (j = i + 1; j < arr.length; ++j)
-        {
-            if (areItemsEqual(arr[i], arr[j]))
-            {
-                returnArr = arr.splice(j, 1);
-                --i;
-            }
-        }
-    }
-    return returnArr;
 }
 
 function getOptions(input, plan, degree)
@@ -305,22 +287,28 @@ function getOptions(input, plan, degree)
 
         Promise.all(func).then(function()
         {
-            removeDuplicates(plan.planned_units, function(item1, item2)
+            plan.planned_units = plan.planned_units.filter(function(value, index, arr)
             {
-                // Undecided units cannot be compared.
-                if (item1.type.toUpperCase() != "UNDECIDED" &&
-                    item2.type.toUpperCase() != "UNDECIDED")
-                {
-                    return item1.code.toUpperCase() == item2.code.toUpperCase();
-                }
-                else
-                {
-                    return false;
-                }
+                if (value.type.toUpperCase() != "UNDECIDED")
+		{
+		    let found = false;
+		    for (let i = 0; i < arr.length && !found; ++i)
+		    {
+	                if (i != index && value.code.toUpperCase() == arr[i].code.toUpperCase())
+			{
+			    found = true;
+			}
+		    }
+		    return !found;
+		}
+		else
+		{
+	            return true;
+		}
             });
             resolve();
         })
-        .catch(errorMsg => reject("Error at getOptions():\n" + errorMsg));
+        .catch(errorMsg => reject(errorMsg));
     });
 }
 
@@ -509,7 +497,7 @@ function addDoneUnit(doneUnit, doneUnits)
         })
         .catch(errorMsg =>
         {
-            reject("Error at addDoneUnit():\n" + errorMsg);
+            reject(errorMsg);
         });
     });
 }
@@ -561,7 +549,7 @@ function removeDoneUnits(input)
             generateSchedule(input.course_plan);
             resolve(input.course_plan);
         })
-        .catch(errorMsg => reject("Error at removeDoneUntis():\n" + errorMsg));
+        .catch(errorMsg => reject(errorMsg));
     });
 }
 
@@ -726,9 +714,9 @@ function generatePlan(input)
                 //console.log(util.inspect(plan.schedule, false, null, true));
                 resolve(plan);
             })
-            .catch(errorMsg => reject("Error at generatePlan():\n" + errorMsg));
+            .catch(errorMsg => reject(errorMsg));
         })
-        .catch(errorMsg => reject("Error at generatePlan():\n" + errorMsg));
+        .catch(errorMsg => reject(errorMsg));
     });
 }
 
