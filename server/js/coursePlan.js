@@ -238,7 +238,7 @@ function addOption(input, type, plan, degree)
         })
         .catch(errorMsg =>
         {
-            reject(errorMsg);
+            reject("Error at addOption():\n" + errorMsg);
         });
     });
 }
@@ -320,7 +320,7 @@ function getOptions(input, plan, degree)
             });
             resolve();
         })
-        .catch(errorMsg => reject(errorMsg));
+        .catch(errorMsg => reject("Error at getOptions():\n" + errorMsg));
     });
 }
 
@@ -509,7 +509,7 @@ function addDoneUnit(doneUnit, doneUnits)
         })
         .catch(errorMsg =>
         {
-            reject(errorMsg);
+            reject("Error at addDoneUnit():\n" + errorMsg);
         });
     });
 }
@@ -561,7 +561,7 @@ function removeDoneUnits(input)
             generateSchedule(input.course_plan);
             resolve(input.course_plan);
         })
-        .catch(errorMsg => reject(errorMsg));
+        .catch(errorMsg => reject("Error at removeDoneUntis():\n" + errorMsg));
     });
 }
 
@@ -726,9 +726,9 @@ function generatePlan(input)
                 //console.log(util.inspect(plan.schedule, false, null, true));
                 resolve(plan);
             })
-            .catch(errorMsg => reject(errorMsg));
+            .catch(errorMsg => reject("Error at generatePlan():\n" + errorMsg));
         })
-        .catch(errorMsg => reject(errorMsg));
+        .catch(errorMsg => reject("Error at generatePlan():\n" + errorMsg));
     });
 }
 
