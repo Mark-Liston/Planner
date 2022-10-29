@@ -107,7 +107,8 @@ function SubmitCourse()
                         data: JSON.stringify(data),
                         success: function(response)
                         {
-                            callCoursePlan(JSON.parse(response));
+			    coursePlan_Original = JSON.parse(response);
+                            callCoursePlan(coursePlan_Original);
                         },
                         error: function(response)
                         {
