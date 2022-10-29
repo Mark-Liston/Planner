@@ -126,13 +126,25 @@
 		</article>
         <!-- For inserting completed units and their grades -->
         <article id="completedUnits" class="page">
+	    <h1>Advanced Standing</h1>
+	    <p>Please enter any credit points of advanced standing for each year</p>
+	    <label for="year1CPInput">1st Year:</label>
+	    <input type="text" id="year1CPInput" name="year1CPInput" placeholder="e.g. 3">
+	    <label for="year2CPInput">2nd Year:</label>
+	    <input type="text" id="year2CPInput" name="year2CPInput" placeholder="e.g. 6">
+	    <label for="year3CPInput">3rd Year:</label>
+	    <input type="text" id="year3CPInput" name="year3CPInput" placeholder="e.g. 9">
+	    <br/>
+	    <br/>
             <h1>Completed Units</h1>
             <p>Please enter any units (and number grade) you have completed, or received credit for (leave grade input empty for advanced standing)</p>
             <label for="doneUnitInput">Completed Unit:</label>
             <input type="text" id="doneUnitInput" name="doneUnitInput" class="form-control" placeholder="e.g. ICT283">
-            <button id="addDoneUnitBtn" type="button" class="btn btn-primary">Add</button>
+	    <button id="addDoneUnitBtn" type="button" class="btn btn-primary">Add</button><br/>
+	    <br/>
             <div id="doneUnits">
             </div>
+	    <br/>
             <button type="submit" id="submitDoneUnits" class="btn btn-primary">Submit</button>
         </article>
 		<!--Course Plan Results Page-->

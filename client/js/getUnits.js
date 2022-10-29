@@ -172,8 +172,8 @@ function getGrades()
             success: function(response)
             {
                 response = JSON.parse(response);
-                let unitElement = "<label for='" + response.code + "_grade'>" + response.code + "</label>" +
-                    "<input type='text' id='" + response.code + "_grade' class='form-control unitGradeInput'>";
+                let unitElement = "<label for='" + response.code + "_grade'>Grade for " + response.code + ":&nbsp;</label>" +
+                    "<input type='text' id='" + response.code + "_grade' class='unitGradeInput' placeholder='e.g. 67'><br/>";
                 $("#doneUnits").append(unitElement);
             },
             error: function(response)
