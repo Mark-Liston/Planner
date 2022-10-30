@@ -10,6 +10,7 @@ class Plan
     credit_points = 0;
     options = [];
     study_load = 0;
+    advanced_standing = 0;
     completed_credit_points = 0;
     planned_credit_points = 0;
     completed_units = [];
@@ -31,12 +32,20 @@ class OptionItem
     credit_points = 0;
 }
 
+class AdvancedStanding
+{
+    year1CP = 0;
+    year2CP = 0;
+    year3CP = 0;
+}
+
 class CompletedUnit
 {
     code = "";
     name = "";
     credit_points = 0;
-    grade = 0;
+    // The default value 'AS' stands for Advanced Standing.
+    grade = "AS";
 }
 
 class Unit
@@ -98,6 +107,7 @@ module.exports =
     Plan: Plan,
     Option: Option,
     OptionItem: OptionItem,
+    AdvancedStanding: AdvancedStanding,
     CompletedUnit: CompletedUnit,
     Unit: Unit,
     PrerequisiteNode: PrerequisiteNode,

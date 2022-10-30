@@ -158,6 +158,7 @@ function reqRemoveDoneUnits(request, response)
     request.on("end", function()
     {
         let parsedData = JSON.parse(data);
+	coursePlan.assignAdvancedStanding(parsedData);
         coursePlan.removeDoneUnits(parsedData)
         .then(function(plan)
         {

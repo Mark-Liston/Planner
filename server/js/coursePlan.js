@@ -6,7 +6,8 @@ const scrape = require("./scrape.js");
 const planDef = require("./planDef.js"); 
 const database = require("./database.js");
 
-const util = require("util");
+// For debugging.
+//const util = require("util");
 
 function extractCode(text)
 {
@@ -669,6 +670,18 @@ function generateSchedule(plan)
     }
 }
 
+function assignAdvancedStanding(input)
+{
+    let advancedStanding = new planDef.AdvancedStanding();
+    if (!isNaN(input.CP_input.year1))
+        advancedStanding.year1CP = Number(input.CP_input.year1);
+    if (!isNaN(input.CP_input.year2))
+        advancedStanding.year2CP = Number(input.CP_input.year2);
+    if (!isNaN(input.CP_input.year3))
+        advancedStanding.year3CP = Number(input.CP_input.year3);
+    input.course_plan.advanced_standing = advancedStanding;
+}
+
 function generatePlan(input)
 {
     return new Promise(function(resolve, reject)
@@ -678,7 +691,8 @@ function generatePlan(input)
         plan.student_name = "placeholdername"; // Add field for student name.
         plan.study_load = 12; // Add field for study load.
         plan.completed_credit_points = 0;
-        plan.completed_units = []; // Add completed units input.
+        plan.advanced_standing = [];
+        plan.completed_units = [];
         plan.completed_credit_points = aggregateCP(plan.completed_units);
         plan.startYear = input.startYear;
         plan.startSemester = input.startSemester;        
@@ -711,6 +725,7 @@ function generatePlan(input)
                 // Schedules all units into years and semesters based on when
                 // units are available.
                 generateSchedule(plan);
+		// For dubugging; to view the entire JSON of the plan.
                 //console.log(util.inspect(plan.schedule, false, null, true));
                 resolve(plan);
             })
@@ -721,4 +736,5 @@ function generatePlan(input)
 }
 
 exports.removeDoneUnits = removeDoneUnits;
+exports.assignAdvancedStanding = assignAdvancedStanding;
 exports.generatePlan = generatePlan;

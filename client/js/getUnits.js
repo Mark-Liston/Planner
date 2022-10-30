@@ -89,32 +89,59 @@ function SubmitCourse()
                     event.preventDefault();
 
                     let doneUnits = [];
-
+		    let validInput = true;
                     // Puts all input grade data into JSON arr.
                     $(".unitGradeInput").each(function(i, obj)
                     {
                         // Extracts unit code from obj's id.
                         let code = $(obj).attr("id").split("_")[0];
-                        doneUnits.push({"code": code, "grade": Number($(obj).val())});
+			let grade = "AS";
+			if (!isNaN($(obj).val()) && $(obj).val() != "" && Number($(obj).val()) >= 0)
+			    grade = Number($(obj).val());
+			else if ($(obj).val() != "")
+			    validInput = false;
+		        doneUnits.push({"code": code, "grade": grade});
                     });
-
-                    let data = {"email": CheckLogin().email, "done_units": doneUnits, "course_plan": coursePlan_Original};
-                    $.ajax(
-                    {
-                        type: "POST",
-                        url: "/removeDoneUnits",
-                        dataType: "text",
-                        data: JSON.stringify(data),
-                        success: function(response)
-                        {
-			    coursePlan_Original = JSON.parse(response);
-                            callCoursePlan(coursePlan_Original);
-                        },
-                        error: function(response)
-                        {
-                            alert(response.responseText);
-                        }
-                    });
+		    if (!validInput)
+		    {
+	                alert("Grade input must be a positive integer or blank");
+                    }
+		    else
+		    {
+		        if (isNaN($("#year1CPInput").val()) ||
+		            isNaN($("#year2CPInput").val()) ||
+		            isNaN($("#year3CPInput").val()))
+		        {
+                            alert("Advanced standing input must be of type integer");
+		        }
+	                else
+		        {
+		            let data = {"email": CheckLogin().email,
+		                "CP_input": {
+		                    year1: $("#year1CPInput").val(),
+		                    year2: $("#year2CPInput").val(),
+		                    year3: $("#year3CPInput").val()
+		                },
+		                "done_units": doneUnits,
+		                "course_plan": coursePlan_Original};
+                            $.ajax(
+                            {
+                                type: "POST",
+                                url: "/removeDoneUnits",
+                                dataType: "text",
+                                data: JSON.stringify(data),
+                                success: function(response)
+                                {
+		                    coursePlan_Original = JSON.parse(response);
+                                    callCoursePlan(coursePlan_Original);
+                                },
+                                error: function(response)
+                                {
+                                    alert(response.responseText);
+                                }
+                            });
+	                }
+		    }
                 });
             }
         },
