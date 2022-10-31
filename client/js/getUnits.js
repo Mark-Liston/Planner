@@ -126,15 +126,16 @@ function SubmitCourse()
                         // Extracts unit code from obj's id.
                         let code = $(obj).attr("id").split("_")[0];
 			let grade = "AS";
-			if (!isNaN($(obj).val()) && $(obj).val() != "" && Number($(obj).val()) >= 0)
-			    grade = Number($(obj).val());
+			let numGrade = Number($(obj).val());
+			if (!isNaN($(obj).val()) && $(obj).val() != "" && numGrade >= 0 && numGrade <= 100)
+			    grade = numGrade;
 			else if ($(obj).val() != "")
 			    validInput = false;
 		        doneUnits.push({"code": code, "grade": grade});
                     });
 		    if (!validInput)
 		    {
-	                alert("Grade input must be a positive integer or blank");
+	                alert("Grade input must be 0-100 or blank");
                     }
 		    else
 		    {

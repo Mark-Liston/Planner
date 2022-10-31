@@ -694,7 +694,7 @@ function generatePlan(input)
         plan.student_name = "placeholdername"; // Add field for student name.
         plan.study_load = 12; // Add field for study load.
         plan.completed_credit_points = 0;
-        plan.advanced_standing = [];
+        plan.advanced_standing = new planDef.AdvancedStanding();
         plan.completed_units = [];
         plan.completed_credit_points = aggregateCP(plan.completed_units);
         plan.startYear = input.startYear;
