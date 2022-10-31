@@ -503,7 +503,7 @@ function addDoneUnit(doneUnit, doneUnits)
     });
 }
 
-function subtractUnits(arr1, arr2)
+function subtractDoneUnits(arr1, arr2)
 {
     let returnArr;
     let j = 0;
@@ -516,7 +516,10 @@ function subtractUnits(arr1, arr2)
             found = false;
             for (j = 0; j < arr2.length && !found; ++j)
             {
-                if (arr1[i].code == arr2[j].code)
+                // If units match and unit has been successfully completed
+		// (either advanced standing or a grade >= 50%)
+                if (arr1[i].code == arr2[j].code &&
+		    (arr2[j].grade == "AS" || (!isNaN(arr2[j].grade) && arr2[j].grade >= 50)))
                 {
                     found = true;
                     arr1Length = arr1.length;
@@ -546,7 +549,7 @@ function removeDoneUnits(input)
         Promise.all(func).then(function()
         {
             input.course_plan.completed_units = doneUnits;
-            subtractUnits(input.course_plan.planned_units, doneUnits);
+            subtractDoneUnits(input.course_plan.planned_units, doneUnits);
             generateSchedule(input.course_plan);
             resolve(input.course_plan);
         })
