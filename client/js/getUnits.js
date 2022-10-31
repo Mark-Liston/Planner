@@ -8,9 +8,39 @@ function callCoursePlan(coursePlan)
     displayTotalCredits(coursePlan);
     checkPlanRules(coursePlan);
 
+    displayAdvancedStanding(coursePlan);
+
     // hide not needed buttons
     $("#cancelChangesPlan").hide();
     $("#applyChangesPlan").hide();
+}
+
+function displayAdvancedStanding(coursePlan)
+{
+    $("#ASCreditPoints").children(".body").val("");
+    $("#ASCompletedUnits").children(".body").val("");
+
+    let creditPoints = "Year 1: " + coursePlan.advanced_standing.year1CP +
+		        "CP, Year 2: " + coursePlan.advanced_standing.year2CP +
+		        "CP, Year 3: " + coursePlan.advanced_standing.year3CP + "CP";
+    $("#ASCreditPoints").children(".body").append(creditPoints);
+
+    let completedUnits = "";
+    let units = coursePlan.completed_units;
+    for (let i = 0; i < units.length; ++i)
+    {
+	let grade = units[i].grade;
+	if (grade != "AS")
+	    grade += "%";
+        if (i != 0)
+	    completedUnits += ", ";
+	completedUnits += "<b>" + units[i].code + "</b> - " +
+	                units[i].name +
+	                ": <span style='color: red;'>" + grade + "</span>";
+    }
+    if (completedUnits == "")
+        completedUnits = "None"
+    $("#ASCompletedUnits").children(".body").append(completedUnits);
 }
 
 function autoComplete(type, inputField)
