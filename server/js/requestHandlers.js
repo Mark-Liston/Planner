@@ -76,13 +76,41 @@ function reqComplete(request, response)
     {
         (async function()
         {
-            console.log("about to search");
             let parsedData = JSON.parse(data);
             database.getSuggestions(parsedData.type, "%" + parsedData.data + "%")
             .then(function(result)
             {
                 response.writeHead(200, {"Content-Type": "application/json"});
                 response.end(JSON.stringify(result));
+            });
+        })();
+    });
+}
+
+function reqGetUnit(request, response)
+{
+    console.log("Request handler 'get unit' was called.");
+
+    let data = "";
+    request.on("data", function(chunk)
+    {
+        data += chunk;
+    });
+    request.on("end", function()
+    {
+        (async function()
+        {
+            let parsedData = JSON.parse(data);
+            database.getUnit(parsedData.code)
+            .then(function(result)
+            {
+                response.writeHead(200, {"Content-Type": "application/json"});
+                response.end(JSON.stringify(result));
+            })
+            .catch(function(errorMsg)
+            {
+                response.writeHead(404, {"Content-Type": "text/plain"});
+                response.end(errorMsg.toString());
             });
         })();
     });
@@ -118,6 +146,32 @@ function reqSubmit(request, response)
     });
 }
 
+function reqRemoveDoneUnits(request, response)
+{
+    console.log("Request handler 'remove done units' was called.");
+    
+    let data = "";
+    request.on("data", function(chunk)
+    {
+        data += chunk;
+    });
+    request.on("end", function()
+    {
+        let parsedData = JSON.parse(data);
+	coursePlan.assignAdvancedStanding(parsedData);
+        coursePlan.removeDoneUnits(parsedData)
+        .then(function(plan)
+        {
+            if (parsedData.email != null)
+            {
+                database.saveCoursePlan(parsedData.email, "Added completed units", plan);
+            }
+            response.writeHead(200, {"Content-Type": "application/json"});
+            response.end(JSON.stringify(plan));
+        });      
+    });
+}
+
 function reqViewPlan(request, response)
 {
     console.log("Request handler 'viewPlan' was called.");
@@ -130,7 +184,6 @@ function reqViewPlan(request, response)
     request.on("end", function()
     {
         let parsedData = JSON.parse(data);
-
         database.getCoursePlan(parsedData.email)
         .then(function(coursePlan)
         {
@@ -174,6 +227,8 @@ function reqSavePlan(request, response){
 exports.reqStart = reqStart;
 exports.reqFile = reqFile;
 exports.reqComplete = reqComplete;
+exports.reqGetUnit = reqGetUnit;
 exports.reqSubmit = reqSubmit;
+exports.reqRemoveDoneUnits = reqRemoveDoneUnits;
 exports.reqViewPlan = reqViewPlan;
 exports.reqSavePlan = reqSavePlan;
