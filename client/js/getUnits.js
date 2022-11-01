@@ -8,9 +8,39 @@ function callCoursePlan(coursePlan)
     displayTotalCredits(coursePlan);
     checkPlanRules(coursePlan);
 
+    displayAdvancedStanding(coursePlan);
+
     // hide not needed buttons
     $("#cancelChangesPlan").hide();
     $("#applyChangesPlan").hide();
+}
+
+function displayAdvancedStanding(coursePlan)
+{
+    $("#ASCreditPoints").children(".body").val("");
+    $("#ASCompletedUnits").children(".body").val("");
+
+    let creditPoints = "Year 1: " + coursePlan.advanced_standing.year1CP +
+		        "CP, Year 2: " + coursePlan.advanced_standing.year2CP +
+		        "CP, Year 3: " + coursePlan.advanced_standing.year3CP + "CP";
+    $("#ASCreditPoints").children(".body").append(creditPoints);
+
+    let completedUnits = "";
+    let units = coursePlan.completed_units;
+    for (let i = 0; i < units.length; ++i)
+    {
+	let grade = units[i].grade;
+	if (grade != "AS")
+	    grade += "%";
+        if (i != 0)
+	    completedUnits += ", ";
+	completedUnits += "<b>" + units[i].code + "</b> - " +
+	                units[i].name +
+	                ": <span style='color: red;'>" + grade + "</span>";
+    }
+    if (completedUnits == "")
+        completedUnits = "None"
+    $("#ASCompletedUnits").children(".body").append(completedUnits);
 }
 
 function autoComplete(type, inputField)
@@ -27,13 +57,13 @@ function autoComplete(type, inputField)
         {
             func.push(new Promise(function(resolve, reject)
             {
+                let data = {"type": entry, "data": inputField.val()};
                 $.ajax(
                 {
                     type: "POST",
                     url: "/complete",
-                    // data is sent as JSON in text form and parsed server-side.
                     dataType: "text",
-                    data: '{"type": "\'' + entry + '\'", "data": "' + inputField.val() + '"}',
+                    data: JSON.stringify(data),
                     success: function(response)
                     {
                         // Appends results to array of suggestions.
@@ -79,7 +109,71 @@ function SubmitCourse()
             }
             else
             {
-                callCoursePlan(coursePlan_Original);
+                $(".page").hide();
+                $("#completedUnits").show();
+
+                $("#addDoneUnitBtn").on("click", getGrades);
+
+                $("#submitDoneUnits").on("click", function()
+                {
+                    event.preventDefault();
+
+                    let doneUnits = [];
+		    let validInput = true;
+                    // Puts all input grade data into JSON arr.
+                    $(".unitGradeInput").each(function(i, obj)
+                    {
+                        // Extracts unit code from obj's id.
+                        let code = $(obj).attr("id").split("_")[0];
+			let grade = "AS";
+			let numGrade = Number($(obj).val());
+			if (!isNaN($(obj).val()) && $(obj).val() != "" && numGrade >= 0 && numGrade <= 100)
+			    grade = numGrade;
+			else if ($(obj).val() != "")
+			    validInput = false;
+		        doneUnits.push({"code": code, "grade": grade});
+                    });
+		    if (!validInput)
+		    {
+	                alert("Grade input must be 0-100 or blank");
+                    }
+		    else
+		    {
+		        if (isNaN($("#year1CPInput").val()) ||
+		            isNaN($("#year2CPInput").val()) ||
+		            isNaN($("#year3CPInput").val()))
+		        {
+                            alert("Advanced standing input must be of type integer");
+		        }
+	                else
+		        {
+		            let data = {"email": $("#studentEmailInput").val(),
+		                "CP_input": {
+		                    year1: $("#year1CPInput").val(),
+		                    year2: $("#year2CPInput").val(),
+		                    year3: $("#year3CPInput").val()
+		                },
+		                "done_units": doneUnits,
+		                "course_plan": coursePlan_Original};
+                            $.ajax(
+                            {
+                                type: "POST",
+                                url: "/removeDoneUnits",
+                                dataType: "text",
+                                data: JSON.stringify(data),
+                                success: function(response)
+                                {
+		                    coursePlan_Original = JSON.parse(response);
+                                    callCoursePlan(coursePlan_Original);
+                                },
+                                error: function(response)
+                                {
+                                    alert(response.responseText);
+                                }
+                            });
+	                }
+		    }
+                });
             }
         },
         error: function(response)
@@ -119,6 +213,36 @@ function showPlan()
     else
     {
         $("#viewPlanBtn").hide();
+    }
+}
+
+function getGrades()
+{
+    let code = extractCode($("#doneUnitInput").val());
+    if (!$("#" + code.toUpperCase() + "_grade").length)
+    {
+        $.ajax(
+        {
+            type: "POST",
+            url: "/getUnit",
+            dataType: "text",
+            data: JSON.stringify({"code": code}),
+            success: function(response)
+            {
+                response = JSON.parse(response);
+                let unitElement = "<label for='" + response.code + "_grade'>Grade for " + response.code + ":&nbsp;</label>" +
+                    "<input type='text' id='" + response.code + "_grade' class='unitGradeInput' placeholder='e.g. 67'><br/>";
+                $("#doneUnits").append(unitElement);
+            },
+            error: function(response)
+            {
+                alert(response.responseText);
+            }
+        });
+    }
+    else
+    {
+        alert("That unit has already been entered");
     }
 }
 

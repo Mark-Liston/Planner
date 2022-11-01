@@ -22,7 +22,9 @@ handle["/logout"] = loginHandlers.logout;
 
 //Course Handlers
 handle["/complete"] = requestHandlers.reqComplete;
+handle["/getUnit"] = requestHandlers.reqGetUnit;
 handle["/submit"] = requestHandlers.reqSubmit;
+handle["/removeDoneUnits"] = requestHandlers.reqRemoveDoneUnits;
 handle["/viewPlan"] = requestHandlers.reqViewPlan;
 handle["/savePlan"] = requestHandlers.reqSavePlan;
 

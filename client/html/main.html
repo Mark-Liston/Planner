@@ -92,10 +92,10 @@
 					</label>
 
                     <label for="degreeInput">Course/Degree code:</label>
-                    <input type="text" id="degreeInput" name="degreeInput" class="form-control" placeholder="e.g. B1356" required>
+                    <input type="text" id="degreeInput" name="degreeInput" class="form-control" placeholder="e.g. B1390 - Bachelor of Information Technology" required>
 
                     <label for="majorInput">Major:</label>
-                    <input type="text" id="majorInput" name="majorInput" class="optionInput form-control" placeholder="e.g. MJ-3625">
+                    <input type="text" id="majorInput" name="majorInput" class="optionInput form-control" placeholder="e.g. 'MJ-CMSC - Computer Science', or area of study">
 
 					<!-- For dynamic addition of additional subjects being studied -->
 					<div class="container col-auto">
@@ -124,8 +124,44 @@
 				</form>
 			</div>
 		</article>
+        <!-- For inserting completed units and their grades -->
+        <article id="completedUnits" class="page">
+	    <h1>Advanced Standing</h1>
+	    <p>Please enter any credit points of advanced standing for each year</p>
+	    <label for="year1CPInput">1st Year:</label>
+	    <input type="text" id="year1CPInput" name="year1CPInput" placeholder="e.g. 3">
+	    <label for="year2CPInput">2nd Year:</label>
+	    <input type="text" id="year2CPInput" name="year2CPInput" placeholder="e.g. 6">
+	    <label for="year3CPInput">3rd Year:</label>
+	    <input type="text" id="year3CPInput" name="year3CPInput" placeholder="e.g. 9">
+	    <br/>
+	    <br/>
+            <h1>Completed Units</h1>
+            <p>Please enter any units (and number grade) you have completed, or received credit for (leave grade input empty for advanced standing)</p>
+            <label for="doneUnitInput">Completed Unit:</label>
+            <input type="text" id="doneUnitInput" name="doneUnitInput" class="form-control" placeholder="e.g. ICT283">
+	    <button id="addDoneUnitBtn" type="button" class="btn btn-primary">Add</button><br/>
+	    <br/>
+            <div id="doneUnits">
+            </div>
+	    <br/>
+            <button type="submit" id="submitDoneUnits" class="btn btn-primary">Submit</button>
+        </article>
 		<!--Course Plan Results Page-->
 		<article id="results" class="page">
+	                <div id="advancedStanding" class="container subcontent" style="padding: 0;">
+			    <h1>Advanced Standing</h1>
+			    <div id="ASCreditPoints">
+			        <h2>Credit Points</h2>
+				<p class="body"></p>
+		            </div>
+			    <div id="ASCompletedUnits">
+			        <h2>Completed Units</h2>
+				<p>Grades appear in <span style="color: red;">red</span>. 'AS' stands for Advanced Standing.</p>
+				<p class="body"></p>
+		            </div>
+			</div>
+
 			<h1>Course Planner</h1>
 			<h2>Here is your course plan</h2>
 

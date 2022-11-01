@@ -20,7 +20,7 @@ function startServer(route, handle)
         route(pathname, handle, request, response);
     }
 
-    https.createServer(options,onRequest).listen(80);
+    https.createServer(options,onRequest).listen(40018);
 	console.log("===================");
     console.log("Server has started.");
 	console.log('Current directory: ' + process.cwd());

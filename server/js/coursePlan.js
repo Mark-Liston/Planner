@@ -6,7 +6,8 @@ const scrape = require("./scrape.js");
 const planDef = require("./planDef.js"); 
 const database = require("./database.js");
 
-const util = require("util");
+// For debugging.
+//const util = require("util");
 
 function extractCode(text)
 {
@@ -243,24 +244,6 @@ function addOption(input, type, plan, degree)
     });
 }
 
-function removeDuplicates(arr, areItemsEqual)
-{
-    let returnArr;
-    let j = 0;
-    for (let i = 0; i < arr.length; ++i)
-    {
-        for (j = i + 1; j < arr.length; ++j)
-        {
-            if (areItemsEqual(arr[i], arr[j]))
-            {
-                returnArr = arr.splice(j, 1);
-                --i;
-            }
-        }
-    }
-    return returnArr;
-}
-
 function getOptions(input, plan, degree)
 {
     return new Promise(function(resolve, reject)
@@ -305,18 +288,24 @@ function getOptions(input, plan, degree)
 
         Promise.all(func).then(function()
         {
-            removeDuplicates(plan.planned_units, function(item1, item2)
+            plan.planned_units = plan.planned_units.filter(function(value, index, arr)
             {
-                // Undecided units cannot be compared.
-                if (item1.type.toUpperCase() != "UNDECIDED" &&
-                    item2.type.toUpperCase() != "UNDECIDED")
-                {
-                    return item1.code.toUpperCase() == item2.code.toUpperCase();
-                }
-                else
-                {
-                    return false;
-                }
+                if (value.type.toUpperCase() != "UNDECIDED")
+		{
+		    let found = false;
+		    for (let i = 0; i < arr.length && !found; ++i)
+		    {
+	                if (i != index && value.code.toUpperCase() == arr[i].code.toUpperCase())
+			{
+			    found = true;
+			}
+		    }
+		    return !found;
+		}
+		else
+		{
+	            return true;
+		}
             });
             resolve();
         })
@@ -491,8 +480,86 @@ function fillSemester(semester, units, itr)
     return units[itr].credit_points;
 }
 
+function addDoneUnit(doneUnit, doneUnits)
+{
+    return new Promise(function(resolve, reject)
+    {
+        database.getUnit(doneUnit.code)
+        .then(function(unit)
+        {
+            let completedUnit = new planDef.CompletedUnit();
+            completedUnit.code = unit.code;
+            completedUnit.name = unit.title;
+            completedUnit.credit_points = unit.creditPoints;
+            completedUnit.grade = doneUnit.grade;
+
+            doneUnits.push(completedUnit);
+            resolve();
+        })
+        .catch(errorMsg =>
+        {
+            reject(errorMsg);
+        });
+    });
+}
+
+function subtractDoneUnits(arr1, arr2)
+{
+    let returnArr;
+    let j = 0;
+    let arr1Length = arr1.length;
+    let found = false;
+    try
+    {
+        for (let i = 0; i < arr1Length; ++i)
+        {
+            found = false;
+            for (j = 0; j < arr2.length && !found; ++j)
+            {
+                // If units match and unit has been successfully completed
+		// (either advanced standing or a grade >= 50%)
+                if (arr1[i].code == arr2[j].code &&
+		    (arr2[j].grade == "AS" || (!isNaN(arr2[j].grade) && arr2[j].grade >= 50)))
+                {
+                    found = true;
+                    arr1Length = arr1.length;
+                    returnArr = arr1.splice(i, 1);
+                }
+            }
+        }
+    }
+    catch(error)
+    {
+        console.log(error);
+        returnArr = arr1;
+    }
+    return returnArr;
+}
+
+function removeDoneUnits(input)
+{
+    return new Promise(function(resolve, reject)
+    {
+        let doneUnits = [];
+        let func = [];
+        for (let doneUnit of input.done_units)
+        {
+            func.push(addDoneUnit(doneUnit, doneUnits));
+        }
+        Promise.all(func).then(function()
+        {
+            input.course_plan.completed_units = doneUnits;
+            subtractDoneUnits(input.course_plan.planned_units, doneUnits);
+            generateSchedule(input.course_plan);
+            resolve(input.course_plan);
+        })
+        .catch(errorMsg => reject(errorMsg));
+    });
+}
+
 function generateSchedule(plan)
 {
+    plan.schedule = [];
     // Sorts planned units according to level
     // e.g., ICT100, ICT200, ICT300, ICT400, etc.
     plan.planned_units.sort(function(a, b)
@@ -606,6 +673,18 @@ function generateSchedule(plan)
     }
 }
 
+function assignAdvancedStanding(input)
+{
+    let advancedStanding = new planDef.AdvancedStanding();
+    if (!isNaN(input.CP_input.year1))
+        advancedStanding.year1CP = Number(input.CP_input.year1);
+    if (!isNaN(input.CP_input.year2))
+        advancedStanding.year2CP = Number(input.CP_input.year2);
+    if (!isNaN(input.CP_input.year3))
+        advancedStanding.year3CP = Number(input.CP_input.year3);
+    input.course_plan.advanced_standing = advancedStanding;
+}
+
 function generatePlan(input)
 {
     return new Promise(function(resolve, reject)
@@ -615,7 +694,8 @@ function generatePlan(input)
         plan.student_name = "placeholdername"; // Add field for student name.
         plan.study_load = 12; // Add field for study load.
         plan.completed_credit_points = 0;
-        plan.completed_units = []; // Add completed units input.
+        plan.advanced_standing = new planDef.AdvancedStanding();
+        plan.completed_units = [];
         plan.completed_credit_points = aggregateCP(plan.completed_units);
         plan.startYear = input.startYear;
         plan.startSemester = input.startSemester;        
@@ -648,6 +728,7 @@ function generatePlan(input)
                 // Schedules all units into years and semesters based on when
                 // units are available.
                 generateSchedule(plan);
+		// For dubugging; to view the entire JSON of the plan.
                 //console.log(util.inspect(plan.schedule, false, null, true));
                 resolve(plan);
             })
@@ -657,6 +738,6 @@ function generatePlan(input)
     });
 }
 
-//exports.getDegreeUnits = getDegreeUnits;
-//exports.getOptionUnits = getOptionUnits;
+exports.removeDoneUnits = removeDoneUnits;
+exports.assignAdvancedStanding = assignAdvancedStanding;
 exports.generatePlan = generatePlan;
