@@ -147,7 +147,7 @@ function SubmitCourse()
 		        }
 	                else
 		        {
-		            let data = {"email": CheckLogin().email,
+		            let data = {"email": $("#studentEmailInput").val(),
 		                "CP_input": {
 		                    year1: $("#year1CPInput").val(),
 		                    year2: $("#year2CPInput").val(),
