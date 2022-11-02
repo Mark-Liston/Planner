@@ -82,6 +82,11 @@ function getPlannedUnitYearSem(unitCode, schedule)
 	return null;
 }
 
+/**
+ * Returns the total number of credit points a student has gained from Advanced Standing.
+ * @param {*} coursePlan The student's course plan.
+ * @returns Number
+ */
 function getAdvancedStandingPoints(coursePlan)
 {
     let points = coursePlan.advanced_standing.year1CP + coursePlan.advanced_standing.year2CP + coursePlan.advanced_standing.year3CP;
@@ -89,6 +94,11 @@ function getAdvancedStandingPoints(coursePlan)
     return points;
 }
 
+/**
+ * Returns the total credit points from units the student has been passed.
+ * @param {*} coursePlan The student's course plan.
+ * @returns Number
+ */
 function getPassedUnitCredPoints(coursePlan)
 {
 	let passedCred = 0;
@@ -103,6 +113,11 @@ function getPassedUnitCredPoints(coursePlan)
 	return passedCred;
 }
 
+/**
+ * Returns the total credit points for units that are planned for a student.
+ * @param {*} coursePlan The student's course plan.
+ * @returns Number
+ */
 function getPlannedUnitCredPoints(coursePlan)
 {
 	let plannedCred = 0;
