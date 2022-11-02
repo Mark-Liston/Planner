@@ -1,3 +1,6 @@
+//Needed this for testing
+//var coursePlanHelper = require('./coursePlanHelper.js');
+
 /**
  * Checks if a unit is available in a semester.
  * @param unit - unit from a coursePlan
@@ -117,3 +120,26 @@ function prereqItemMet(prereqItem, plannedYearNum, plannedSemNum, coursePlan)
 		}
 	}
 }
+
+
+/**
+ * Checks if a specified amount of credit points has been met before a specified year and semester.
+ * @param {*} coursePlan Student's course plan.
+ * @param {*} yearNum The year containing the specified semester.
+ * @param {*} semNum The semester of the year that the credits should have been accrued by.
+ * @param {*} creditReq The number of credit points that should have been accumulated.
+ * @returns True if the specified number of credits have been accumulated before the specified year and semester.
+ */
+function creditReqMetByYearSem(coursePlan, yearNum, semNum, creditReq)
+{
+	if(creditsCompByYearSem(coursePlan, yearNum, semNum) >= creditReq)
+	{
+		return true;
+	}
+	return false;
+}
+
+/* Needed these for testing:
+exports.creditReqMetByYearSem = creditReqMetByYearSem;
+exports.unitPassedBeforeYearSem = unitPassedBeforeYearSem;
+*/

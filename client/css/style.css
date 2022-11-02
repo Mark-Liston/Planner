@@ -260,6 +260,16 @@ h2{
 	padding: 5px;
 }
 
+#totalcreditspoints table {
+    width: auto;
+    margin-right: 0px;
+    margin-left: auto;
+}
+
+#totalcreditspoints th {
+	text-align: center;
+}
+
 @font-face {
 	font-family: Ginger;
 	src: url(../font/F37\ Ginger\ Regular.ttf);

@@ -494,6 +494,7 @@ function checkPlanRules(coursePlan)
         {
             semesterItem.units.forEach(function(unitItem)
             {
+                console.log("CHECK PLAN RULES UNIT ITEM" + unitItem);
                 // used to store rules message for a unit
                 let msgObj = {
                     code: unitItem.code,
@@ -512,6 +513,15 @@ function checkPlanRules(coursePlan)
                     message += '.<br>It is only available during <h4>Semester ' + unitItem.semester.substring(1) + '</h4>.</p>';    
 					message += '</div>';
 				}
+                if(!twelvePointsCompCheck(coursePlan, unitItem, semesterItem, yearItem))
+                {
+                    message += '<div id="message"><h3>' + unitItem.code + '</h3>';
+                    // grab the courseplan column id where the item is sitting on
+                    let parentOf_itemDOM_ID = itemDOM.parentNode.id;
+                    message += '<p>does not meet credit<br>point requirements';
+                    message += '.<br><h4>Units higher than<br>level 100<br>need at least<br>12 completed credit points</h4> before they can be studied.</p>';    
+					message += '</div>';
+                }
                 let preReqs;
                 if (!checkPrereqsMet(coursePlan, unitItem, semesterItem, yearItem, preReqs))
                 {
@@ -708,6 +718,20 @@ function checkPrereqsMet(coursePlan, unitItem, semesterItem, yearItem)
     return true;
 }
 
+function twelvePointsCompCheck(coursePlan, unitItem, semesterItem, yearItem)
+{
+    console.log("unit item is: " + unitItem.code);
+    if(unitItem.type.toUpperCase() != "UNDECIDED")
+    {
+        if(parseInt(unitItem.code.charAt(3)) > 1)
+        {
+            return creditReqMetByYearSem(coursePlan, yearItem.year, semesterItem.semester, 12);
+        }
+    }
+    
+    return true;
+}
+
 function updatePlan(coursePlan, event)
 {
     // grab unit code from the draggable item
@@ -883,7 +907,39 @@ function displayYearSemCredits(coursePlan)
 
 }
 
+
+
 function displayTotalCredits(coursePlan)
 {
-    $("#totalcreditspoints").html("Total Credit Points: " + coursePlan.credit_points);
+    let advStandCred = getAdvancedStandingPoints(coursePlan);
+    let passedUnitCred = getPassedUnitCredPoints(coursePlan);
+    let plannedUnitCred = getPlannedUnitCredPoints(coursePlan);    
+
+    $("#totalcreditspoints").html("Credit Points Tally<br>" +
+    "<table>" +
+        "<thead>" +
+            "<tr>" +
+                "<th scope='col'>Source</th>" +
+                "<th scope='col'>&emsp;CP</th>"+
+            "</tr>" +
+        "</thead>" +
+        "<tr>" +
+            "<td>Advanced Standing:</td>" +
+            "<td>" + advStandCred + "</td>" +
+        "</tr>" +
+        "<tr>" +
+            "<td>Passed units:</td>" +
+            "<td>" + passedUnitCred + "</td>" +
+        "</tr>" +
+        "<tr>" + 
+            "<td>Planned units:</td>" +
+            "<td>" + plannedUnitCred +"</td>" +
+        "</tr>" +
+        "<tfoot>" +
+            "<tr>" +
+                "<td>Total credit points:</td>" +
+                "<td>" + (advStandCred + passedUnitCred + plannedUnitCred) + "</td>" +
+            "</tr>" + 
+        "</tfoot>" +
+    "</table>")
 }
