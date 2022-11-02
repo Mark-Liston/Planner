@@ -7,20 +7,59 @@ function CheckLogin(key)
 	return cookies.login != undefined ? JSON.parse(cookies.login) : undefined;
 }
 
-function SignUp()
+function StaffSignUpWrapper()
 {
-    $.post("/signup",
-        {
-	    student_id
+    SignUp($("#staffSignupIDInput").val(), $("#staffSignupEmailInput").val(), "admin", $("#staffSignupPasswordInput").val());
 }
 
-function LogIn()
+function StudentSignUpWrapper()
+{
+    SignUp($("#signupIDInput").val(), $("#signupEmailInput").val(), "student", $("#signupPasswordInput").val())
+}
+
+function SignUp(IDInput, emailInput, typeInput, passwordInput, loginFlag)
+{
+    if (IDInput == "" &&
+        emailInput == "" &&
+        passwordInput == "")
+    {
+        alert("Please populate all signup input fields");
+    }
+    else
+    {
+        $.post("/register",
+            {
+                username: IDInput,
+                email: emailInput,
+                type: typeInput,
+                password: passwordInput
+            },
+            function(data, status, xhr)
+            {
+		    console.log(data);
+                if (status == "success")
+                {
+            	    LogIn(emailInput, passwordInput);
+                }
+            }).fail(function(jqxhr, settings, ex)
+            {
+            	alert(jqxhr.responseJSON.reason);
+            });
+    }
+}
+
+function LogInWrapper()
+{
+    LogIn($("#emailInput").val(), $("#passwordInput").val());
+}
+
+function LogIn(emailInput, passwordInput)
 {
     $.post('/login',  //URL to send data to
     	//Data being sent
     	{
-	    email: $("#emailInput").val(),
-	    password: $("#passwordInput").val()
+	    email: emailInput,
+	    password: passwordInput
     	},
     	function(data, status, xhr)
 	{
@@ -29,6 +68,7 @@ function LogIn()
 	        let account = {};
 	        account.username = data.username;
 	        account.email = data.email;
+		account.type = data.type;
 	        // TODO - implement type and cookie storing
 	        json_str = JSON.stringify(account);
 	        createCookie("login", json_str, 1);

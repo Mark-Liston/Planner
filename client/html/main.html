@@ -57,6 +57,7 @@
 
 				<button type="button" class="btn btn-primary btn-lg" onclick="MakeNewPlan()">Create New Plan</button>
 				<button type="button" class="btn btn-primary btn-lg" onclick="showPlan()" id="viewPlanBtn">View Plan</button>
+				<button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#staffSignupModal" id="landingStaffSignupBtn" hidden="hidden">Staff Signup</button>
 				<button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#signupModal" id="landingSignupBtn">Signup</button>
 				<button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#loginModal" id="landingLoginBtn">Login</button>
 
@@ -189,6 +190,46 @@
 		</article>
 	</div>
 
+	<div class="modal" id="staffSignupModal" tabindex="-1">
+		
+		<div class="modal-dialog modal-dialog-centered">
+		  <div class="modal-content">
+			<div class="modal-header" id="staffSignupHeader">
+			  <h5 class="modal-title">Staff Signup</h5>
+			  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<form enctype="multipart/form-data" id="staffSignupDetails" method="post">
+					<div class="row mb-3">
+						<div class="row mb-3">
+							<label class="col-sm-2 col-form-label" for="staffSignupIDInput">Student&nbsp;ID:</label>
+							<div class="col-sm-10">
+								<input type="text" id="staffSignupIDInput" name="staffSignupIDInput" class="form-control" placeholder="12345678" required>
+							</div>
+						</div>
+						<div class="row mb-3">
+							<label class="col-sm-2 col-form-label" for="staffSignupEmailInput">Email:</label>
+							<div class="col-sm-10">
+								<input type="email" id="staffSignupEmailInput" name="staffSignupEmailInput" class="form-control" placeholder="12345678@student.murdoch.edu.au" required>
+							</div>
+						</div>
+						<div class="row mb-3">
+							<label class="col-sm-2 col-form-label"  for="staffSignupPasswordInput">Password:</label>
+							<div class="col-sm-10">
+								<input type="password" id="staffSignupPasswordInput" name="staffSignupPasswordInput" class="form-control" required>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+			  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+			  <button type="button" form="staffSignupDetails" class="btn btn-primary" onclick="StaffSignUpWrapper()">Signup Staff</button>
+			</div>
+		  </div>
+		</div>
+	  </div>
+
 	<div class="modal" id="signupModal" tabindex="-1">
 		
 		<div class="modal-dialog modal-dialog-centered">
@@ -223,7 +264,7 @@
 			</div>
 			<div class="modal-footer">
 			  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-			  <button type="button" form="signupDetails" class="btn btn-primary" onclick="SignUp()">Signup</button>
+			  <button type="button" form="signupDetails" class="btn btn-primary" onclick="studentSignUpWrapper()">Signup</button>
 			</div>
 		  </div>
 		</div>
@@ -256,7 +297,7 @@
 			</div>
 			<div class="modal-footer">
 			  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-			  <button type="button" form="loginDetails" class="btn btn-primary" onclick="LogIn()">Login</button>
+			  <button type="button" form="loginDetails" class="btn btn-primary" onclick="LogInWrapper()">Login</button>
 			</div>
 		  </div>
 		</div>

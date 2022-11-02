@@ -41,6 +41,8 @@ function DatabaseConnect() {
 				db.run("BEGIN TRANSACTION;");
 				schemaArr.forEach(query => {
 					if (query) {
+						if (/\S/.test(query))
+						{
 						query += ");";
 						db.run(query, err => {
 							if (err){
@@ -48,6 +50,7 @@ function DatabaseConnect() {
 								throw err;
 							}
 					  	});
+						}
 					}
 				});
 				db.run("COMMIT;");
@@ -63,14 +66,14 @@ function DatabaseConnect() {
 					// For testing add test account
 					// email: test@testmail.com
 					// pass: test1234567890
-					createAccount('test@testmail.com', 'tester0', 'test1234567890');
+					createAccount('test@testmail.com', 'tester0', 'student', 'test1234567890');
 				}
 			});
 		}		
 	});
 }
 
-async function createAccount(email, username, password){
+async function createAccount(email, username, type, password){
     let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
         {
             if (error)
@@ -84,9 +87,9 @@ async function createAccount(email, username, password){
     // now we set user password to hashed password
     let hashPwd = bcrypt.hashSync(password, salt);
 
-    db.run(`INSERT OR IGNORE INTO Users(email, username, password)
-              VALUES(?, ?, ?)`,
-              [email, username, hashPwd],
+    db.run(`INSERT OR IGNORE INTO Users(email, username, type, password)
+              VALUES(?, ?, ?, ?)`,
+              [email, username, type, hashPwd],
         (err) => {
             if (err) {
                 console.error("Failed to create account: " + err);

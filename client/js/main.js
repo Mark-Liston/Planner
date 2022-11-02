@@ -54,7 +54,6 @@ $(document).ready(function()
             $("#username").html(login.username);
 	    $("#signupButton").hide();
             $("#loginButton").replaceWith('<a href="#" onclick="LogOut()" class="dropdown-item">Logout</a>');
-            $("#studentEmailInput").prop("readonly", true);
             $("#studentEmailInput").val(login.email);
             $("#viewPlanBtn").show();
 	    $("#landingSignupBtn").hide();
@@ -67,6 +66,15 @@ $(document).ready(function()
             $("#landingLoginBtn").show();	
 	    $("#signupButton").hide();
         }
+
+	if (login?.type == "admin")
+	{
+            $("#landingStaffSignupBtn").attr("hidden", false);
+	}
+	else
+	{
+            $("#landingStaffSignupBtn").attr("hidden", true);
+	}
     }, 1000);
 });
 
