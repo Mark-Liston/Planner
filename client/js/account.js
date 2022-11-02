@@ -9,12 +9,12 @@ function CheckLogin(key)
 
 function StaffSignUpWrapper()
 {
-    SignUp($("#staffSignupIDInput").val(), $("#staffSignupEmailInput").val(), "admin", $("#staffSignupPasswordInput").val());
+    SignUp($("#staffSignupIDInput").val(), $("#staffSignupEmailInput").val(), "staff", $("#staffSignupPasswordInput").val(), false);
 }
 
 function StudentSignUpWrapper()
 {
-    SignUp($("#signupIDInput").val(), $("#signupEmailInput").val(), "student", $("#signupPasswordInput").val())
+    SignUp($("#signupIDInput").val(), $("#signupEmailInput").val(), "student", $("#signupPasswordInput").val(), true)
 }
 
 function SignUp(IDInput, emailInput, typeInput, passwordInput, loginFlag)
@@ -36,8 +36,11 @@ function SignUp(IDInput, emailInput, typeInput, passwordInput, loginFlag)
             },
             function(data, status, xhr)
             {
-		    console.log(data);
-                if (status == "success")
+		if (loginFlag == false)
+		{
+                    alert("Staff account created for " + emailInput);
+		}
+		else if (status == "success")
                 {
             	    LogIn(emailInput, passwordInput);
                 }

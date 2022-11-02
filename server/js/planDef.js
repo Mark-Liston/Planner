@@ -4,6 +4,7 @@
 
 class Plan
 {
+    draft_status = "draft";
     student_id = "";
     student_name = "";
     degree_code = "";

@@ -11,8 +11,47 @@ function callCoursePlan(coursePlan)
     displayAdvancedStanding(coursePlan);
 
     // hide not needed buttons
+    checkPerm();
     $("#cancelChangesPlan").hide();
     $("#applyChangesPlan").hide();
+    $("#approvePlan").hide();
+	
+    updateStatus();
+}
+
+// Checks permissions and displays what is available to the user.
+function checkPerm()
+{
+    var login = CheckLogin();
+    if (login?.type == "admin" || login?.type == "staff")
+        $("#editPlan").attr("hidden", false);
+    else
+        $("#editPlan").attr("hidden", true);
+    if (login?.type == "admin")
+        $("#landingStaffSignupBtn").attr("hidden", false);
+    else
+        $("#landingStaffSignupBtn").attr("hidden", true);
+}
+
+function updateStatus()
+{
+    if (coursePlan_Original?.draft_status.toUpperCase() == "DRAFT")
+    {
+        $("#planStatus").html("THIS PLAN IS A DRAFT AND MAY NOT SUIT YOUR INDIVIDUAL<br/>CIRCUMSTANCES. CONTACT A STAFF MEMBER FOR APPROVAL.");
+    }
+    if (coursePlan_Original?.draft_status.toUpperCase() == "APPROVED" ||
+    	coursePlan_Edited?.draft_status.toUpperCase() == "APPROVED")
+    {
+	$("#planStatus").html("THIS PLAN HAS BEEN APPROVED BY A STAFF MEMBER.");
+	$("#planStatus").css("background", "lime");
+	$("#planStatus").css("color", "green");
+    }
+}
+
+function approvePlan()
+{
+    coursePlan_Edited.draft_status = "approved";    
+    updateStatus();
 }
 
 function displayAdvancedStanding(coursePlan)
@@ -263,39 +302,43 @@ function SavePlan(){
 		//Get user to describe changes
 		let chg = prompt("Please describe your changes");
 
-		let data = {
-			email: login.email,
-			changes: changes = chg,
-			plan: coursePlan_Edited
-		};
+		if (chg != null)
+                {
+		    let data = {
+		    	email: login.email,
+		    	changes: changes = chg,
+		    	plan: coursePlan_Edited
+		    };
 
-		$.ajax(
-		{
-			type: "POST",
-			url: "/savePlan",
-			dataType: "text",
-			cache: false,
-			contentType: false,
-			processData: false,
-			data: JSON.stringify(data),
-			success: function(response)
-			{
-				alert("Your plan has been saved!");
-				coursePlan_Original = coursePlan_Edited;
-				// buttons
-				$("#editPlan").show();
-				$('.cp-dragButton').hide();
-				$("#cancelChangesPlan").hide();
-				$("#applyChangesPlan").hide();
-		
-				// revert plan to original form here
-				callCoursePlan(coursePlan_Original);
-			},
-			error: function(response)
-			{
-				alert(response.responseText);
-			}
-		});
+		    $.ajax(
+		    {
+		    	type: "POST",
+		    	url: "/savePlan",
+		    	dataType: "text",
+		    	cache: false,
+		    	contentType: false,
+		    	processData: false,
+		    	data: JSON.stringify(data),
+		    	success: function(response)
+		    	{
+		    		alert("Your plan has been saved!");
+		    		coursePlan_Original = coursePlan_Edited;
+		    		// buttons
+		    		$("#editPlan").show();
+		    		$('.cp-dragButton').hide();
+		    		$("#cancelChangesPlan").hide();
+		    		$("#applyChangesPlan").hide();
+				$("#approvePlan").hide();
+		    
+		    		// revert plan to original form here
+		    		callCoursePlan(coursePlan_Original);
+		    	},
+		    	error: function(response)
+		    	{
+		    		alert(response.responseText);
+		    	}
+		    });
+		}
 	} else{
 		alert("Please be logged in to save a plan");
 	}
@@ -755,7 +798,6 @@ function displayPlan(coursePlan)
 	$("#messagesContainer").hide();
     $("#messages").html('');
     $("#totalcreditspoints").html('');
-
 
 
     // make course coursePlan

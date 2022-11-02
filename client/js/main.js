@@ -2,9 +2,9 @@ let minors = 1;
 
 $(document).ready(function()
 {
-	// Hides all non immediate articles.
-	$(".page").hide();
-	$("#landing").show();
+    // Hides all non immediate articles.
+    $(".page").hide();
+    $("#landing").show();
     $("#viewPlanBtn").hide();
 
     //$("#unitCodeInput").on("input", function()
@@ -67,14 +67,7 @@ $(document).ready(function()
 	    $("#signupButton").hide();
         }
 
-	if (login?.type == "admin")
-	{
-            $("#landingStaffSignupBtn").attr("hidden", false);
-	}
-	else
-	{
-            $("#landingStaffSignupBtn").attr("hidden", true);
-	}
+	checkPerm();
     }, 1000);
 });
 
@@ -165,6 +158,7 @@ function editPlan()
     $('.cp-dragButton').show();
     $("#cancelChangesPlan").show();
     $("#applyChangesPlan").show();
+    $("#approvePlan").show();
 }
 
 function cancelChangesPlan()
@@ -177,6 +171,7 @@ function cancelChangesPlan()
         $('.cp-dragButton').hide();
         $("#cancelChangesPlan").hide();
         $("#applyChangesPlan").hide();
+	$("#approvePlan").hide();
 
         // revert plan to original form here
         callCoursePlan(coursePlan_Original);

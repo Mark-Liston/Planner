@@ -152,6 +152,11 @@
         </article>
 		<!--Course Plan Results Page-->
 		<article id="results" class="page">
+			<p id="planStatus"></p>
+			<button type="button" id="approvePlan" class="btn btn-primary" onclick="approvePlan();">Approve Plan</button>
+			<br/>
+			<br/>
+
 	                <div id="advancedStanding" class="container subcontent" style="padding: 0;">
 			    <h1>Advanced Standing</h1>
 			    <div id="ASCreditPoints">
@@ -202,7 +207,7 @@
 				<form enctype="multipart/form-data" id="staffSignupDetails" method="post">
 					<div class="row mb-3">
 						<div class="row mb-3">
-							<label class="col-sm-2 col-form-label" for="staffSignupIDInput">Student&nbsp;ID:</label>
+							<label class="col-sm-2 col-form-label" for="staffSignupIDInput">Staff&nbsp;ID:</label>
 							<div class="col-sm-10">
 								<input type="text" id="staffSignupIDInput" name="staffSignupIDInput" class="form-control" placeholder="12345678" required>
 							</div>
