@@ -134,3 +134,10 @@ function getPlannedUnitCredPoints(coursePlan)
 
 	return plannedCred;
 }
+
+exports.hasUnitCode = hasUnitCode;
+exports.getPlannedUnitYearSem = getPlannedUnitYearSem;
+exports.getFullUnit = getFullUnit;
+exports.getAdvancedStandingPoints = getAdvancedStandingPoints;
+exports.getPassedUnitCredPoints = getPassedUnitCredPoints;
+exports.getPlannedUnitCredPoints = getPlannedUnitCredPoints;

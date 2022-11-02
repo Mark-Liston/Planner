@@ -1,3 +1,5 @@
+var coursePlanHelper = require('./coursePlanHelper.js');
+
 /**
  * Checks if a unit is available in a semester.
  * @param unit - unit from a coursePlan
@@ -44,7 +46,7 @@ function unitPassedBeforeYearSem(unitCode, yearNum, semNum, coursePlan)
 	if(unit != undefined && unit.grade >= 50){ return true; }
 	
 	//Check if unit is planned for a semester before the one of interest
-	let yearSem = getPlannedUnitYearSem(unitCode, coursePlan.schedule);
+	let yearSem = coursePlanHelper.getPlannedUnitYearSem(unitCode, coursePlan.schedule);
 	if(yearSem != null)
 	{
 		if(yearSem.year < yearNum)
@@ -73,7 +75,7 @@ function prereqItemMet(prereqItem, plannedYearNum, plannedSemNum, coursePlan)
 	console.log("prereqItemMet checking:");
 	console.log(prereqItem);
 	//Check if prereqItem is a unit
-	if(hasUnitCode(prereqItem))
+	if(coursePlanHelper.hasUnitCode(prereqItem))
 	{
 		if(unitPassedBeforeYearSem(prereqItem.code, plannedYearNum, plannedSemNum, coursePlan))
 		{
@@ -117,3 +119,41 @@ function prereqItemMet(prereqItem, plannedYearNum, plannedSemNum, coursePlan)
 		}
 	}
 }
+
+function twelveCredCompBeforeYearSem(coursePlan, plannedYearNum, plannedSemNum)
+{
+	let compCredPoints = coursePlanHelper.getAdvancedStandingPoints(coursePlan);
+	compCredPoints += coursePlanHelper.getPassedUnitCredPoints(coursePlan);
+
+	if(compCredPoints >= 12)
+	{
+		return true;
+	}
+
+	for(let i = 0; i < coursePlan.schedule.length && coursePlan.schedule[i].year <= plannedYearNum; i++)
+	{
+		for(let sem of coursePlan.schedule[i].semesters)
+		{
+			if(coursePlan.schedule[i].year == plannedYearNum && sem.semester >= plannedSemNum)
+			{
+				break;
+			}
+
+			for(let unit of sem.units)
+			{
+				compCredPoints += unit.credit_points;
+			}
+		}
+	}
+
+	if(compCredPoints >= 12)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+
+exports.twelveCredCompBeforeYearSem = twelveCredCompBeforeYearSem;
+exports.unitPassedBeforeYearSem = unitPassedBeforeYearSem;

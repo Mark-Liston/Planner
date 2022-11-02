@@ -17,8 +17,8 @@ function callCoursePlan(coursePlan)
 
 function displayAdvancedStanding(coursePlan)
 {
-    $("#ASCreditPoints").children(".body").html("");
-    $("#ASCompletedUnits").children(".body").html("");
+    $("#ASCreditPoints").children(".body").val("");
+    $("#ASCompletedUnits").children(".body").val("");
 
     let creditPoints = "Year 1: " + coursePlan.advanced_standing.year1CP +
 		        "CP, Year 2: " + coursePlan.advanced_standing.year2CP +
