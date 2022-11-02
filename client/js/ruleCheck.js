@@ -1,4 +1,5 @@
-var coursePlanHelper = require('./coursePlanHelper.js');
+//Needed this for testing
+//var coursePlanHelper = require('./coursePlanHelper.js');
 
 /**
  * Checks if a unit is available in a semester.
@@ -46,7 +47,7 @@ function unitPassedBeforeYearSem(unitCode, yearNum, semNum, coursePlan)
 	if(unit != undefined && unit.grade >= 50){ return true; }
 	
 	//Check if unit is planned for a semester before the one of interest
-	let yearSem = coursePlanHelper.getPlannedUnitYearSem(unitCode, coursePlan.schedule);
+	let yearSem = getPlannedUnitYearSem(unitCode, coursePlan.schedule);
 	if(yearSem != null)
 	{
 		if(yearSem.year < yearNum)
@@ -75,7 +76,7 @@ function prereqItemMet(prereqItem, plannedYearNum, plannedSemNum, coursePlan)
 	console.log("prereqItemMet checking:");
 	console.log(prereqItem);
 	//Check if prereqItem is a unit
-	if(coursePlanHelper.hasUnitCode(prereqItem))
+	if(hasUnitCode(prereqItem))
 	{
 		if(unitPassedBeforeYearSem(prereqItem.code, plannedYearNum, plannedSemNum, coursePlan))
 		{
@@ -120,40 +121,25 @@ function prereqItemMet(prereqItem, plannedYearNum, plannedSemNum, coursePlan)
 	}
 }
 
-function twelveCredCompBeforeYearSem(coursePlan, plannedYearNum, plannedSemNum)
+
+/**
+ * Checks if a specified amount of credit points has been met before a specified year and semester.
+ * @param {*} coursePlan Student's course plan.
+ * @param {*} yearNum The year containing the specified semester.
+ * @param {*} semNum The semester of the year that the credits should have been accrued by.
+ * @param {*} creditReq The number of credit points that should have been accumulated.
+ * @returns True if the specified number of credits have been accumulated before the specified year and semester.
+ */
+function creditReqMetByYearSem(coursePlan, yearNum, semNum, creditReq)
 {
-	let compCredPoints = coursePlanHelper.getAdvancedStandingPoints(coursePlan);
-	compCredPoints += coursePlanHelper.getPassedUnitCredPoints(coursePlan);
-
-	if(compCredPoints >= 12)
+	if(creditsCompByYearSem(coursePlan, yearNum, semNum) >= creditReq)
 	{
 		return true;
 	}
-
-	for(let i = 0; i < coursePlan.schedule.length && coursePlan.schedule[i].year <= plannedYearNum; i++)
-	{
-		for(let sem of coursePlan.schedule[i].semesters)
-		{
-			if(coursePlan.schedule[i].year == plannedYearNum && sem.semester >= plannedSemNum)
-			{
-				break;
-			}
-
-			for(let unit of sem.units)
-			{
-				compCredPoints += unit.credit_points;
-			}
-		}
-	}
-
-	if(compCredPoints >= 12)
-	{
-		return true;
-	}
-
 	return false;
 }
 
-
-exports.twelveCredCompBeforeYearSem = twelveCredCompBeforeYearSem;
+/* Needed these for testing:
+exports.creditReqMetByYearSem = creditReqMetByYearSem;
 exports.unitPassedBeforeYearSem = unitPassedBeforeYearSem;
+*/

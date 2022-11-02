@@ -135,9 +135,43 @@ function getPlannedUnitCredPoints(coursePlan)
 	return plannedCred;
 }
 
+/**
+ * Returns the number of credit points that have been completed by a specified year and semester
+ * @param {*} coursePlan The student's course plan.
+ * @param {*} yearNum The year in which the specified semester lies.
+ * @param {*} semNum Function only counts credit points acquired before this semester.
+ * @returns Number of credits completed before the specified year and semester.
+ */
+function creditsCompByYearSem(coursePlan, yearNum, semNum)
+{
+	let compCredPoints = getAdvancedStandingPoints(coursePlan);
+	compCredPoints += getPassedUnitCredPoints(coursePlan);
+
+	for(let i = 0; i < coursePlan.schedule.length && coursePlan.schedule[i].year <= yearNum; i++)
+	{
+		for(let sem of coursePlan.schedule[i].semesters)
+		{
+			if(coursePlan.schedule[i].year == yearNum && sem.semester >= semNum)
+			{
+				break;
+			}
+
+			for(let unit of sem.units)
+			{
+				compCredPoints += unit.credit_points;
+			}
+		}
+	}
+
+	return compCredPoints;
+}
+
+/* Needed these for testing:
 exports.hasUnitCode = hasUnitCode;
 exports.getPlannedUnitYearSem = getPlannedUnitYearSem;
 exports.getFullUnit = getFullUnit;
 exports.getAdvancedStandingPoints = getAdvancedStandingPoints;
 exports.getPassedUnitCredPoints = getPassedUnitCredPoints;
 exports.getPlannedUnitCredPoints = getPlannedUnitCredPoints;
+exports.creditsCompByYearSem = creditsCompByYearSem;
+*/
