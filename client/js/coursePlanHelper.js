@@ -81,3 +81,41 @@ function getPlannedUnitYearSem(unitCode, schedule)
 	
 	return null;
 }
+
+function getAdvancedStandingPoints(coursePlan)
+{
+    let points = coursePlan.advanced_standing.year1CP + coursePlan.advanced_standing.year2CP + coursePlan.advanced_standing.year3CP;
+    console.log(points);
+    return points;
+}
+
+function getPassedUnitCredPoints(coursePlan)
+{
+	let passedCred = 0;
+	for(let unit of coursePlan.completed_units)
+	{
+		if(unit.grade == "AS" || (!isNaN(unit.grade) && unit.grade >= 50))
+		{
+			passedCred += unit.credit_points;
+		}
+	}
+
+	return passedCred;
+}
+
+function getPlannedUnitCredPoints(coursePlan)
+{
+	let plannedCred = 0;
+	for(let schedYear of coursePlan.schedule)
+    {
+        for(let schedSem of schedYear.semesters)
+        {
+			for(let unit of schedSem.units)
+			{
+				plannedCred += unit.credit_points;
+			}
+        }
+    }
+
+	return plannedCred;
+}
