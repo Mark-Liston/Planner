@@ -1,6 +1,31 @@
 let coursePlan_Original;
 let coursePlan_Edited;
 
+function planSearch()
+{
+    let inputID = $("#planSearchInput").val();
+
+    $.ajax(
+    {
+        type: "POST",
+        url: "/getEmail",
+        dataType: "text",
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: '{"username": "' + inputID + '"}',
+        success: function(response)
+        {
+	    showPlan(response);
+        },
+        error: function(response)
+        {
+            alert("The input user either doesn't exist or doesn't have a course plan");
+        }
+    });
+    
+}
+
 function callCoursePlan(coursePlan)
 {
     // coursePlan
@@ -24,9 +49,15 @@ function checkPerm()
 {
     var login = CheckLogin();
     if (login?.type == "admin" || login?.type == "staff")
+    {
+	$(".planSearch").attr("hidden", false);
         $("#editPlan").attr("hidden", false);
+    }
     else
+    {
+	$(".planSearch").attr("hidden", true);
         $("#editPlan").attr("hidden", true);
+    }
     if (login?.type == "admin")
         $("#landingStaffSignupBtn").attr("hidden", false);
     else
@@ -223,10 +254,14 @@ function SubmitCourse()
     
 }
 
-function showPlan()
+function showPlanWrapper()
 {
-    var login = CheckLogin()
-    if(login != null)
+    showPlan(CheckLogin().email);
+}
+
+function showPlan(email)
+{
+    if(email != null)
     {
         $.ajax(
         {
@@ -236,7 +271,7 @@ function showPlan()
             cache: false,
             contentType: false,
             processData: false,
-            data: '{"email": "' + login.email + '"}',
+            data: '{"email": "' + email + '"}',
             success: function(response)
             {
                 let savedPlan = JSON.parse(response);

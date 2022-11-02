@@ -594,6 +594,46 @@ function getCoursePlan(email)
     });
 }
 
+function getEmail(username)
+{
+    return new Promise(function(resolve, reject)
+    {
+        let email = null;
+        let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
+        {
+            if (error)
+            {
+                console.error(error.message);
+            }
+        });
+        
+        // Gets email of the user with a matching username.
+        let qry = "SELECT email FROM Users WHERE username = ?";
+        db.all(qry, [username], function(error, rows)
+        {
+            if (error)
+            {
+                console.error(error.message);
+            }
+
+            else
+            {
+                email = rows[0];
+            }
+
+            db.close(function(error)
+            {
+                if (error)
+                {
+                    console.error(error.message);
+                }
+            });
+
+            resolve(email);
+        });
+    });
+}
+
 exports.getSuggestions = getSuggestions;
 exports.getDegree = getDegree;
 exports.getUnit = getUnit;
@@ -604,3 +644,4 @@ exports.getAccount = getAccount;
 exports.createAccount = createAccount;
 exports.saveCoursePlan = saveCoursePlan;
 exports.getCoursePlan = getCoursePlan;
+exports.getEmail = getEmail;

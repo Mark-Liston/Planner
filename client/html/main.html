@@ -54,9 +54,11 @@
 			<h1>Welcome to the Course Planner!</h1>
 			<h2>Please choose to generate a new plan <br/>or login to see your existing plan</h2>
 			<div class="container subcontent d-grid gap-2 mx-auto">
-
+				<input type="text" hidden="hidden" id="planSearchInput" name="planSearchInput" class="planSearch form-control" placeholder="Search for a course plan using student ID">
+				<span><button type="button" style="width: 70px;" hidden="hidden" id="planSearchBtn" name="planSearchBtn" class="planSearch btn btn-primary" onclick="planSearch()">Search</button></span>
+				
 				<button type="button" class="btn btn-primary btn-lg" onclick="MakeNewPlan()">Create New Plan</button>
-				<button type="button" class="btn btn-primary btn-lg" onclick="showPlan()" id="viewPlanBtn">View Plan</button>
+				<button type="button" class="btn btn-primary btn-lg" onclick="showPlanWrapper()" id="viewPlanBtn">View Plan</button>
 				<button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#staffSignupModal" id="landingStaffSignupBtn" hidden="hidden">Staff Signup</button>
 				<button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#signupModal" id="landingSignupBtn">Signup</button>
 				<button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#loginModal" id="landingLoginBtn">Login</button>
