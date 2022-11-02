@@ -17,8 +17,8 @@ function callCoursePlan(coursePlan)
 
 function displayAdvancedStanding(coursePlan)
 {
-    $("#ASCreditPoints").children(".body").html("");
-    $("#ASCompletedUnits").children(".body").html("");
+    $("#ASCreditPoints").children(".body").val("");
+    $("#ASCompletedUnits").children(".body").val("");
 
     let creditPoints = "Year 1: " + coursePlan.advanced_standing.year1CP +
 		        "CP, Year 2: " + coursePlan.advanced_standing.year2CP +
@@ -416,6 +416,7 @@ function checkPlanRules(coursePlan)
         {
             semesterItem.units.forEach(function(unitItem)
             {
+                console.log("CHECK PLAN RULES UNIT ITEM" + unitItem);
                 // used to store rules message for a unit
                 let msgObj = {
                     code: unitItem.code,
@@ -434,6 +435,15 @@ function checkPlanRules(coursePlan)
                     message += '.<br>It is only available during <h4>Semester ' + unitItem.semester.substring(1) + '</h4>.</p>';    
 					message += '</div>';
 				}
+                if(!twelvePointsCompCheck(coursePlan, unitItem, semesterItem, yearItem))
+                {
+                    message += '<div id="message"><h3>' + unitItem.code + '</h3>';
+                    // grab the courseplan column id where the item is sitting on
+                    let parentOf_itemDOM_ID = itemDOM.parentNode.id;
+                    message += '<p>does not meet credit<br>point requirements';
+                    message += '.<br><h4>Units higher than<br>level 100<br>need at least<br>12 completed credit points</h4> before they can be studied.</p>';    
+					message += '</div>';
+                }
                 let preReqs;
                 if (!checkPrereqsMet(coursePlan, unitItem, semesterItem, yearItem, preReqs))
                 {
@@ -627,6 +637,20 @@ function checkPrereqsMet(coursePlan, unitItem, semesterItem, yearItem)
         
 	}
    // console.log("checkPrereqsMet: undecided elective has no prereqs");
+    return true;
+}
+
+function twelvePointsCompCheck(coursePlan, unitItem, semesterItem, yearItem)
+{
+    console.log("unit item is: " + unitItem.code);
+    if(unitItem.type.toUpperCase() != "UNDECIDED")
+    {
+        if(parseInt(unitItem.code.charAt(3)) > 1)
+        {
+            return creditReqMetByYearSem(coursePlan, yearItem.year, semesterItem.semester, 12);
+        }
+    }
+    
     return true;
 }
 
