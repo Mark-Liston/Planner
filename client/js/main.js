@@ -48,20 +48,24 @@ $(document).ready(function()
         $("#studentEmailInput").prop("readonly", false);
 
         //Check if login cookie persists
-        var login = CheckLogin()
+        var login = CheckLogin();
         if(login != null)
         {
             $("#username").html(login.username);
+	    $("#signupButton").hide();
             $("#loginButton").replaceWith('<a href="#" onclick="LogOut()" class="dropdown-item">Logout</a>');
             $("#studentEmailInput").prop("readonly", true);
             $("#studentEmailInput").val(login.email);
             $("#viewPlanBtn").show();
+	    $("#landingSignupBtn").hide();
             $("#landingLoginBtn").hide();
         }
         else
         {
             $("#viewPlanBtn").hide();
-            $("#landingLoginBtn").show();
+            $("#landingSignupBtn").show();
+            $("#landingLoginBtn").show();	
+	    $("#signupButton").hide();
         }
     }, 1000);
 });

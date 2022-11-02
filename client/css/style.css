@@ -60,6 +60,12 @@ nav{
 	color: white;
 }
 
+#signupHeader
+{
+    background-color: #e0242d;
+    color: white;
+}
+
 h1{
 	font-weight: bold;
 	font-family: Ginger;
