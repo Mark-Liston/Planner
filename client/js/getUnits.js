@@ -806,7 +806,39 @@ function displayYearSemCredits(coursePlan)
 
 }
 
+
+
 function displayTotalCredits(coursePlan)
 {
-    $("#totalcreditspoints").html("Total Credit Points: " + coursePlan.credit_points);
+    let advStandCred = getAdvancedStandingPoints(coursePlan);
+    let passedUnitCred = getPassedUnitCredPoints(coursePlan);
+    let plannedUnitCred = getPlannedUnitCredPoints(coursePlan);    
+
+    $("#totalcreditspoints").html("Credit Points Tally<br>" +
+    "<table>" +
+        "<thead>" +
+            "<tr>" +
+                "<th scope='col'>Source</th>" +
+                "<th scope='col'>&emsp;CP</th>"+
+            "</tr>" +
+        "</thead>" +
+        "<tr>" +
+            "<td>Advanced Standing:</td>" +
+            "<td>" + advStandCred + "</td>" +
+        "</tr>" +
+        "<tr>" +
+            "<td>Passed units:</td>" +
+            "<td>" + passedUnitCred + "</td>" +
+        "</tr>" +
+        "<tr>" + 
+            "<td>Planned units:</td>" +
+            "<td>" + plannedUnitCred +"</td>" +
+        "</tr>" +
+        "<tfoot>" +
+            "<tr>" +
+                "<td>Total credit points:</td>" +
+                "<td>" + (advStandCred + passedUnitCred + plannedUnitCred) + "</td>" +
+            "</tr>" + 
+        "</tfoot>" +
+    "</table>")
 }
