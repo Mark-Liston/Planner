@@ -129,7 +129,6 @@ h2{
 
 
 #cp-ylabel {
-	padding-right: 15px;
 	display: flex;
 	justify-content: center;
 	align-content: center;
@@ -224,20 +223,51 @@ h2{
 	margin-top: 20px;
 	border: solid red 1px;
 	border-radius: 50px;
-	padding-bottom: 30px;
 }
 
 #messages{
 	display: flex;
+	flex: 1;
 	justify-content: space-evenly;
     flex-wrap: wrap;
     align-content: space-around;
 }
 
 .message{
+	margin-right: 10px;
+	margin-bottom: 10px;
 	border: solid black 1px;
 	border-radius: 30px;
-	padding: 5px;
+	padding: 20px;
+	height: fit-content;
+	
+}
+
+.message p {
+	font-size: smaller;
+	white-space: nowrap;
+	padding:0px; 
+  	margin:0px;
+}
+
+.message h3 {
+	color: red;
+	font-size: large;
+	font-weight: bold;
+}
+
+.message h4 {
+	display: inline;
+	font-size: medium;
+	padding:0px; 
+	margin:0px;
+}
+
+.message h5 {
+	display: inline;
+	font-size: small;
+	padding:0px; 
+	margin:0px;
 }
 
 #totalcreditspoints table {

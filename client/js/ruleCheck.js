@@ -117,3 +117,45 @@ function prereqItemMet(prereqItem, plannedYearNum, plannedSemNum, coursePlan)
 		}
 	}
 }
+
+/**
+ * Checks if the plan has only 30 CP of level 100 units (ICT100, ICT159, etc). 
+ * Any others units must be higher level than 100 (ICT267, ICT374, etc.).
+ * Also to enrol units higher than level 100. Must have achieved 12CP.
+ * @param {*} coursePlan The course plan to check planned and completed units.
+ * @returns the number of credit points of level 100 units
+ */
+function unit100_30ptsRule(coursePlan)
+{
+	let totalCP = 0;
+
+	// Completed Units
+	coursePlan.completed_units.forEach(function(unitItem)
+	{
+		if(unitItem.code.charAt(3) == '1')
+		{
+			totalCP += parseInt(unitItem.credit_points);
+			console.log(unitItem.code + ' is a level 100 unit');
+
+		}
+	
+	});
+
+	// Planned Units
+	coursePlan.planned_units.forEach(function(unitItem)
+	{
+		if (unitItem.type.toUpperCase() == "DECIDED")
+		{
+			if(unitItem.code.charAt(3) == '1')
+			{
+				totalCP += parseInt(unitItem.credit_points);
+				console.log(unitItem.code + ' is a level 100 unit');
+			}
+	
+		}
+	});
+
+	console.log('total level 100 units CP: ' + totalCP);
+
+	return totalCP;
+}
