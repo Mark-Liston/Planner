@@ -21,8 +21,8 @@ function callCoursePlan(coursePlan)
 
 function displayAdvancedStanding(coursePlan)
 {
-    $("#ASCreditPoints").children(".body").html("");
-    $("#ASCompletedUnits").children(".body").html("");
+    $("#ASCreditPoints").children(".body").val("");
+    $("#ASCompletedUnits").children(".body").val("");
 
     let creditPoints = "Year 1: " + coursePlan.advanced_standing.year1CP +
 		        "CP, Year 2: " + coursePlan.advanced_standing.year2CP +
@@ -443,6 +443,7 @@ function checkPlanRules(coursePlan)
         {
             semesterItem.units.forEach(function(unitItem)
             {
+                console.log("CHECK PLAN RULES UNIT ITEM" + unitItem);
                 // used to store rules message for a unit
                 let msgObj = {
                     code: unitItem.code,
@@ -460,6 +461,15 @@ function checkPlanRules(coursePlan)
                     message += '<p> is not available for Year ' + parentOf_itemDOM_ID.substring(4, 8) + ' Semester ' + parentOf_itemDOM_ID.substring(11);
                     message += '.<br>It is only available during <h4>Semester ' + unitItem.semester.substring(1) + '</h4>.</p>';    
                     message += '</div>';
+                }
+                if(!twelvePointsCompCheck(coursePlan, unitItem, semesterItem, yearItem))
+                {
+                    message += '<div class="message"><h3>' + unitItem.code + '</h3>';
+                    // grab the courseplan column id where the item is sitting on
+                    let parentOf_itemDOM_ID = itemDOM.parentNode.id;
+                    message += '<p>does not meet credit point requirements</p>';
+                    message += '<h5>Units higher than level 100 need at least<br> 12 completed credit points</h5><br><p>before they can be studied.</p>';    
+					message += '</div>';
                 }
 
                 // ====== Pre Requisite Rule ====//
@@ -552,7 +562,18 @@ function checkPlanRules(coursePlan)
             });                                        
         });                   
     });
-     
+ 
+	let overloadedSems = studyOverloadCheck(coursePlan);
+	overloadedSems.forEach(sem => {
+		let message = "";
+		message += '<div class="message"><h3>Overload Warning</h3>';
+        message += `<h4>Year ${parseInt(coursePlan.startYear, 10) + sem.year}, Semester ${sem.sem+1}</h4>`;
+        message += 'is overloaded, please ensure you have spoken to your course coordinator</p>';    
+		message += '</div>';
+		$("#messages").append(message);
+	});
+
+    
     // check if messages exists. if they do. show the message box.
     if (coursePlan.message.length > 0)
     {
@@ -669,6 +690,20 @@ function checkPrereqsMet(coursePlan, unitItem, semesterItem, yearItem)
         
 	}
    // console.log("checkPrereqsMet: undecided elective has no prereqs");
+    return true;
+}
+
+function twelvePointsCompCheck(coursePlan, unitItem, semesterItem, yearItem)
+{
+    console.log("unit item is: " + unitItem.code);
+    if(unitItem.type.toUpperCase() != "UNDECIDED")
+    {
+        if(parseInt(unitItem.code.charAt(3)) > 1)
+        {
+            return creditReqMetByYearSem(coursePlan, yearItem.year, semesterItem.semester, 12);
+        }
+    }
+    
     return true;
 }
 
