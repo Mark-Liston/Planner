@@ -139,6 +139,21 @@ function creditReqMetByYearSem(coursePlan, yearNum, semNum, creditReq)
 	return false;
 }
 
+function studyOverloadCheck(coursePlan){
+	let overloadedSems = [];
+
+	for(let i = 0; i < coursePlan.schedule.length; i++)
+	{
+		for(let j = 0; j < coursePlan.schedule[i].semesters.length; j++)
+		{
+			if(coursePlan.schedule[i].semesters[j].units.length >= 5){
+				overloadedSems.push({year: i, sem:j});
+			}
+		}
+	}
+	return overloadedSems;
+}
+
 /* Needed these for testing:
 exports.creditReqMetByYearSem = creditReqMetByYearSem;
 exports.unitPassedBeforeYearSem = unitPassedBeforeYearSem;
