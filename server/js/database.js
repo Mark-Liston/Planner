@@ -67,6 +67,7 @@ function DatabaseConnect() {
 					// email: test@testmail.com
 					// pass: test1234567890
 					createAccount('test@testmail.com', 'tester0', 'student', 'test1234567890');
+					createAccount('murdochplanner@gmail.com', 'admin', 'admin', '4Horsesw@lken');
 				}
 			});
 		}		

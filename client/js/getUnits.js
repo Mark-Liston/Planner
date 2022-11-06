@@ -69,6 +69,7 @@ function updateStatus()
     if (coursePlan_Original?.draft_status.toUpperCase() == "DRAFT")
     {
         $("#planStatus").html("THIS PLAN IS A DRAFT AND MAY NOT SUIT YOUR INDIVIDUAL<br/>CIRCUMSTANCES. CONTACT A STAFF MEMBER FOR APPROVAL.");
+        alert("The generated plan is a draft and may not be optimised to the student's individual circumstances. Before it can be finalised it must be approved by a staff member.");
     }
     if (coursePlan_Original?.draft_status.toUpperCase() == "APPROVED" ||
     	coursePlan_Edited?.draft_status.toUpperCase() == "APPROVED")
