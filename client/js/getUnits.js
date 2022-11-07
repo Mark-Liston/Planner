@@ -5,25 +5,7 @@ function planSearch()
 {
     let inputID = $("#planSearchInput").val();
 
-    $.ajax(
-    {
-        type: "POST",
-        url: "/getEmail",
-        dataType: "text",
-        cache: false,
-        contentType: false,
-        processData: false,
-        data: '{"username": "' + inputID + '"}',
-        success: function(response)
-        {
-	    showPlan(response);
-        },
-        error: function(response)
-        {
-            alert("The input user either doesn't exist or doesn't have a course plan");
-        }
-    });
-    
+    showPlan(inputID);
 }
 
 function callCoursePlan(coursePlan)
@@ -257,12 +239,12 @@ function SubmitCourse()
 
 function showPlanWrapper()
 {
-    showPlan(CheckLogin().email);
+    studentIDFromEmail(CheckLogin().email, id => showPlan(id));
 }
 
-function showPlan(email)
+function showPlan(username)
 {
-    if(email != null)
+    if(username != null)
     {
         $.ajax(
         {
@@ -272,7 +254,7 @@ function showPlan(email)
             cache: false,
             contentType: false,
             processData: false,
-            data: '{"email": "' + email + '"}',
+            data: '{"username": "' + username + '"}',
             success: function(response)
             {
                 let savedPlan = JSON.parse(response);

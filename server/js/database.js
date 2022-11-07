@@ -554,7 +554,7 @@ function saveCoursePlan(email, changes, plan)
     });
 }
 
-function getCoursePlan(email)
+function getCoursePlan(username)
 {
     return new Promise(function(resolve, reject)
     {
@@ -568,9 +568,14 @@ function getCoursePlan(email)
         });
         
         // Gets all items of the given type containing the matchString.
-        let qry = "SELECT * FROM CoursePlan WHERE email = ?" +
-                    "ORDER BY timeChanged DESC";
-        db.all(qry, [email], function(error, rows)
+        let qry = "SELECT *" +
+                 " FROM CoursePlan" +
+                 " WHERE json_valid(CoursePlan.data) AND" +
+                 " (" +
+                 "     json_extract(CoursePlan.data, '$.student_id') = ?" + 
+                 " )" +
+                 " ORDER BY timeChanged DESC";
+        db.all(qry, [username], function(error, rows)
         {
             if (error)
             {
@@ -635,6 +640,46 @@ function getEmail(username)
     });
 }
 
+function getUsername(email)
+{
+    return new Promise(function(resolve, reject)
+    {
+        let username = null;
+        let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
+        {
+            if (error)
+            {
+                console.error(error.message);
+            }
+        });
+        
+        // Gets username of the user with a matching email.
+        let qry = "SELECT username FROM Users WHERE email = ?";
+        db.all(qry, [email], function(error, rows)
+        {
+            if (error)
+            {
+                console.error(error.message);
+            }
+
+            else
+            {
+                username = rows[0];
+            }
+
+            db.close(function(error)
+            {
+                if (error)
+                {
+                    console.error(error.message);
+                }
+            });
+
+            resolve(username);
+        });
+    });
+}
+
 exports.getSuggestions = getSuggestions;
 exports.getDegree = getDegree;
 exports.getUnit = getUnit;
@@ -646,3 +691,4 @@ exports.createAccount = createAccount;
 exports.saveCoursePlan = saveCoursePlan;
 exports.getCoursePlan = getCoursePlan;
 exports.getEmail = getEmail;
+exports.getUsername = getUsername;

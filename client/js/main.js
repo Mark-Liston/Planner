@@ -52,11 +52,12 @@ $(document).ready(function()
         if(login != null)
         {
             $("#username").html(login.username);
-	    $("#signupButton").hide();
+            $("#signupButton").hide();
             $("#loginButton").replaceWith('<a href="#" onclick="LogOut()" class="dropdown-item">Logout</a>');
             $("#studentEmailInput").val(login.email);
+            studentIDFromEmail(login.email, id => $("#studentIDInput").val(id));
             $("#viewPlanBtn").show();
-	    $("#landingSignupBtn").hide();
+            $("#landingSignupBtn").hide();
             $("#landingLoginBtn").hide();
         }
         else
@@ -70,6 +71,24 @@ $(document).ready(function()
 	checkPerm();
     }, 1000);
 });
+
+function studentIDFromEmail(email, callback)
+{
+    $.ajax(
+    {
+        type: "POST",
+        url: "/getUsername",
+        dataType: "text",
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: '{"email": "' + email + '"}',
+        success: function(response)
+        {
+            callback(response);
+        }
+    });
+}
 
 function SubmitCourseBtn(){
 	if (duplicateOptions())
