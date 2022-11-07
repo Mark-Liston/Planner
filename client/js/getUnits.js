@@ -417,7 +417,9 @@ function makeUnit(coursePlan, year, yearCount, semCount)
 
         if (units[unitCount].type == "undecided")
         {
-            code = "Elective";
+            code = "(Elective)";
+            for (let option of units[unitCount].units)
+                code += "&nbsp;&nbsp;&nbsp;" + option.code;
             title = "Undecided";
         }
 
@@ -425,9 +427,13 @@ function makeUnit(coursePlan, year, yearCount, semCount)
         html += "<div class='cp-unit'" + "id='" + code + "'" + ">" +
                     "<a class='cp-dragButton' style='display: none;'><img src='../images/drag icon.png' id='dragicon'></a>" +
                     "<div class='cp-info'>" +
-                        "<div class='cp-header'>" +
-                            "<h1>" + code + "</h1>" +
-                            "<div class='cp-credits'>" +
+                        "<div class='cp-header'>";
+                    // If unit is elective, header will scroll, displaying all elective options.
+                    if (units[unitCount].type == "undecided")
+                        html += "<marquee direction='left' style='max-width: 230px;'><h1>" + code + "</h1></marquee>";
+                    else
+                        html += "<h1>" + code + "</h1>";
+                    html += "<div class='cp-credits'>" +
                                 "<h1 >" + credit_points + " CP</h1>" +
                             "</div>" +
                         "</div>" +
@@ -908,13 +914,15 @@ function displayTotalCredits(coursePlan)
     let advStandCred = getAdvancedStandingPoints(coursePlan);
     let passedUnitCred = getPassedUnitCredPoints(coursePlan);
     let plannedUnitCred = getPlannedUnitCredPoints(coursePlan);    
+    let totalPlanned = advStandCred + passedUnitCred + plannedUnitCred;
+    let credLeft = coursePlan_Original.credit_points - totalPlanned;
 
-    $("#totalcreditspoints").html("Credit Points Tally<br>" +
+    let htmlStr = "Credit Points Tally<br>" +
     "<table>" +
         "<thead>" +
             "<tr>" +
-                "<th scope='col'>Source</th>" +
-                "<th scope='col'>&emsp;CP</th>"+
+                "<th scope='col' style='text-align: right;'>Source</th>" +
+                "<th scope='col' style='text-align: left;'>&emsp;CP</th>"+
             "</tr>" +
         "</thead>" +
         "<tr>" +
@@ -929,11 +937,27 @@ function displayTotalCredits(coursePlan)
             "<td>Planned units:</td>" +
             "<td>" + plannedUnitCred +"</td>" +
         "</tr>" +
+        "<tr>" +
+            "<td>Total planned and achieved credit points:</td>" +
+            "<td>" + totalPlanned + "</td>" +
+        "</tr>" + 
+        "<tr>" +
+            "<td>Remaining credit points needed to pass*:</td>" +
+            "<td>" + credLeft + "</td>" +
+        "</tr>" + 
         "<tfoot>" +
             "<tr>" +
-                "<td>Total credit points:</td>" +
-                "<td>" + (advStandCred + passedUnitCred + plannedUnitCred) + "</td>" +
-            "</tr>" + 
+                "<td>Total credit points needed for graduation:</td>" +
+                "<td>" + coursePlan_Original.credit_points + "</td>" +
+            "</tr>" +
         "</tfoot>" +
-    "</table>")
+    "</table>" +
+    "<br/>" +
+    "<p style='font-weight: normal; text-align: left;'>" +
+        "*You may be able to satisfy the remaining credit points with general electives." +
+        " Refer to the handbook for further information: " +
+        "<a href='https://handbook.murdoch.edu.au'>handbook.murdoch.edu.au</a>" +
+    "</p>";
+
+    $("#totalcreditspoints").html(htmlStr);
 }
