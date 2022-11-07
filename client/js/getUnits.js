@@ -1,6 +1,7 @@
 let coursePlan_Original;
 let coursePlan_Edited;
 
+
 function planSearch()
 {
     let inputID = $("#planSearchInput").val();
@@ -216,7 +217,28 @@ function SubmitCourse()
                                 data: JSON.stringify(data),
                                 success: function(response)
                                 {
-		                    coursePlan_Original = JSON.parse(response);
+		                            coursePlan_Original = JSON.parse(response);
+
+                                     //testing for level 100 units 30 pts rule
+                                    /*let testtest = ["ICT102","ICT103","ICT104","ICT105","ICT106","ICT107","ICT108","ICT109","ICT111","ICT112"];
+                                    for(let i = 0; i < 4; i++)
+                                    {
+                                        let copyUnitObj = new Object();
+                                        copyUnitObj = JSON.parse(JSON.stringify(coursePlan_Original.schedule[0].semesters[0].units[0]));
+                                        copyUnitObj.code = testtest[i];
+                                        copyUnitObj.title = "TEST TEST";
+                                        coursePlan_Original.schedule[0].semesters[0].units.push(copyUnitObj);
+                                        coursePlan_Original.planned_units.push(copyUnitObj);
+                                    }
+                                   for(let i = 5; i < 9; i++)
+                                    {
+                                        let copyUnitObj = new Object();
+                                        copyUnitObj = JSON.parse(JSON.stringify(coursePlan_Original.schedule[0].semesters[0].units[0]));
+                                        copyUnitObj.code = testtest[i];
+                                        copyUnitObj.title = "TEST TEST";
+                                        coursePlan_Original.completed_units.push(copyUnitObj);
+                                    }*/
+
                                     callCoursePlan(coursePlan_Original);
                                 },
                                 error: function(response)
@@ -476,7 +498,9 @@ function checkPlanRules(coursePlan)
 	//Reset Warnings
 	$("#messages").html('');
 
-	// loop for all the units inside the course plan
+    let totalCP = unit100_30ptsRule(coursePlan);
+
+    // loop for all the units inside the course plan
     coursePlan.schedule.forEach(function(yearItem)
     {
         yearItem.semesters.forEach(function(semesterItem)
@@ -490,31 +514,33 @@ function checkPlanRules(coursePlan)
                     msg: ""
                 };
                 let message = '';
-                // rules
-                let itemDOM = document.getElementById(unitItem.code);
-				
+
+                // ====== Semester Availability Rule ====//
+                let itemDOM = document.getElementById(unitItem.code);				
                 if (!checkSemAvailability(coursePlan, unitItem, semesterItem))
                 {
-                    message += '<div id="message"><h3>' + unitItem.code + '</h3>';
+                    message += '<div class="message"><h3>' + unitItem.code + '</h3>';
                     // grab the courseplan column id where the item is sitting on
                     let parentOf_itemDOM_ID = itemDOM.parentNode.id;
                     message += '<p> is not available for Year ' + parentOf_itemDOM_ID.substring(4, 8) + ' Semester ' + parentOf_itemDOM_ID.substring(11);
                     message += '.<br>It is only available during <h4>Semester ' + unitItem.semester.substring(1) + '</h4>.</p>';    
-					message += '</div>';
-				}
+                    message += '</div>';
+                }
                 if(!twelvePointsCompCheck(coursePlan, unitItem, semesterItem, yearItem))
                 {
-                    message += '<div id="message"><h3>' + unitItem.code + '</h3>';
+                    message += '<div class="message"><h3>' + unitItem.code + '</h3>';
                     // grab the courseplan column id where the item is sitting on
                     let parentOf_itemDOM_ID = itemDOM.parentNode.id;
-                    message += '<p>does not meet credit<br>point requirements';
-                    message += '.<br><h4>Units higher than<br>level 100<br>need at least<br>12 completed credit points</h4> before they can be studied.</p>';    
+                    message += '<p>does not meet credit point requirements</p>';
+                    message += '<h5>Units higher than level 100 need at least<br> 12 completed credit points</h5><br><p>before they can be studied.</p>';    
 					message += '</div>';
                 }
+
+                // ====== Pre Requisite Rule ====//
                 let preReqs;
                 if (!checkPrereqsMet(coursePlan, unitItem, semesterItem, yearItem, preReqs))
                 {
-					message += '<div class="message"><h3>' + unitItem.code + '</h3>';
+                    message += '<div class="message"><h3>' + unitItem.code + '</h3>';
                     message += "<p> needs prerequisite unit(s): <br>";
                     // grab prereq units and put it into the message
                     unitItem.prerequisites.forEach(function(operatorItem)
@@ -553,9 +579,22 @@ function checkPlanRules(coursePlan)
                             }
                         });
                     });
-					message += '</div>';
+                    message += '</div>';
                 }
                 
+                // ====== Level 100 30 points Rule ====//   
+                if (unitItem.type.toUpperCase() == "DECIDED")
+                {
+                    if (totalCP > 30 && unitItem.code.charAt(3) == '1')
+                    {
+                        message += '<div class="message"><h3>' + unitItem.code + '</h3>';
+                        message += '<p>exceeds 30 credit points for level 100 units.</p>';
+                        message += '<p>Please exchange this with a higher level.</p>';
+                        message += '</div>';
+    
+                    } 
+                }
+     
                 // there's a message (invalid unit)
                 if (message != '')
                 {
@@ -587,7 +626,7 @@ function checkPlanRules(coursePlan)
             });                                        
         });                   
     });
-
+ 
 	let overloadedSems = studyOverloadCheck(coursePlan);
 	overloadedSems.forEach(sem => {
 		let message = "";
@@ -599,7 +638,7 @@ function checkPlanRules(coursePlan)
 	});
 
     
-    // after loop. check if messages exists. if they do. show the message box.
+    // check if messages exists. if they do. show the message box.
     if (coursePlan.message.length > 0)
     {
         $("#messagesContainer").show();
@@ -858,7 +897,6 @@ function displayPlan(coursePlan)
     $("#messages").html('');
     $("#totalcreditspoints").html('');
 
-
     // make course coursePlan
     for (let i = 0; i < coursePlan.schedule.length; i++)
     {
@@ -882,9 +920,13 @@ function displayPlan(coursePlan)
     // debug
     console.log("course plan is displayed!");
 
+
     // make copy of courseplan for draft
     coursePlan_Edited = JSON.parse(JSON.stringify(coursePlan_Original));
     console.log(coursePlan_Edited);
+
+
+
 }
 
 function displayYearSemCredits(coursePlan)
@@ -961,3 +1003,5 @@ function displayTotalCredits(coursePlan)
 
     $("#totalcreditspoints").html(htmlStr);
 }
+
+
