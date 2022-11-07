@@ -3,8 +3,14 @@
 "use strict";
 
 const fetch = require("node-fetch");
+const https = require("https");
 
 const handbookUrl = "https://handbook.murdoch.edu.au";
+// Prevents request from being cancelled by expired/invalid certificate.
+const httpsAgent = new https.Agent(
+{
+    rejectUnauthorized: false
+});
 
 /**
  * 
@@ -20,6 +26,7 @@ async function searchHandbook(searchParam, year, contentType, size)
     let response = null;
     response = await fetch(handbookUrl + "/api/es/search",
     {
+        "agent": httpsAgent,
         // Request boilerplate.
         "headers":
         {
@@ -184,6 +191,7 @@ async function fetchItem(contentType, version, code)
     let response = null;
     response = await fetch(handbookUrl + "/api/content/render/false/query/+contentType:" + contentType + "%20+" + contentType + ".version:" + version + "%20+" + contentType + ".code:" + code + "%20+deleted:false%20+working:true%20+live:true%20+languageId:1%20/orderBy/modDate%20desc",
     {
+        "agent": httpsAgent,
         // Request boilerplate.
         "headers":
         {

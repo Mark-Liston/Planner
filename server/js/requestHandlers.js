@@ -184,7 +184,7 @@ function reqViewPlan(request, response)
     request.on("end", function()
     {
         let parsedData = JSON.parse(data);
-        database.getCoursePlan(parsedData.email)
+        database.getCoursePlan(parsedData.username)
         .then(function(coursePlan)
         {
             if (coursePlan != null)
@@ -224,6 +224,66 @@ function reqSavePlan(request, response){
 	});
 }
 
+function reqGetEmail(request, response)
+{
+    console.log("Request handler 'getEmail' was called.");
+
+    let data = "";
+    request.on("data", function(chunk)
+    {
+        data += chunk;
+    });
+    request.on("end", function()
+    {
+        let username = JSON.parse(data).username;
+	    
+	database.getEmail(username)
+	.then(function(result)
+	{
+            if (result != null)
+	    {
+                response.writeHead(200, {"Content-Type": "text/plan"})
+		response.end(result.email);
+            }
+	    else
+	    {
+                response.writeHead(404, {"Content-Type": "text/plan"});
+		response.end("An email corresponding to the input username could not be found");
+	    }
+	})
+    });
+}
+
+function reqGetUsername(request, response)
+{
+    console.log("Request handler 'getUsername' was called.");
+
+    let data = "";
+    request.on("data", function(chunk)
+    {
+        data += chunk;
+    });
+    request.on("end", function()
+    {
+        let email = JSON.parse(data).email;
+	    
+	database.getUsername(email)
+	.then(function(result)
+	{
+            if (result != null)
+	    {
+                response.writeHead(200, {"Content-Type": "text/plan"})
+		response.end(result.username);
+            }
+	    else
+	    {
+                response.writeHead(404, {"Content-Type": "text/plan"});
+		response.end("A username corresponding to the input email could not be found");
+	    }
+	})
+    });
+}
+
 exports.reqStart = reqStart;
 exports.reqFile = reqFile;
 exports.reqComplete = reqComplete;
@@ -232,3 +292,5 @@ exports.reqSubmit = reqSubmit;
 exports.reqRemoveDoneUnits = reqRemoveDoneUnits;
 exports.reqViewPlan = reqViewPlan;
 exports.reqSavePlan = reqSavePlan;
+exports.reqGetEmail = reqGetEmail;
+exports.reqGetUsername = reqGetUsername;

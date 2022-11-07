@@ -2,7 +2,12 @@ let coursePlan_Original;
 let coursePlan_Edited;
 
 
+function planSearch()
+{
+    let inputID = $("#planSearchInput").val();
 
+    showPlan(inputID);
+}
 
 function callCoursePlan(coursePlan)
 {
@@ -14,9 +19,54 @@ function callCoursePlan(coursePlan)
     displayAdvancedStanding(coursePlan);
 
     // hide not needed buttons
+    checkPerm();
     $("#cancelChangesPlan").hide();
     $("#applyChangesPlan").hide();
+    $("#approvePlan").hide();
+	
+    updateStatus();
+}
 
+// Checks permissions and displays what is available to the user.
+function checkPerm()
+{
+    var login = CheckLogin();
+    if (login?.type == "admin" || login?.type == "staff")
+    {
+	$(".planSearch").attr("hidden", false);
+        $("#editPlan").attr("hidden", false);
+    }
+    else
+    {
+	$(".planSearch").attr("hidden", true);
+        $("#editPlan").attr("hidden", true);
+    }
+    if (login?.type == "admin")
+        $("#landingStaffSignupBtn").attr("hidden", false);
+    else
+        $("#landingStaffSignupBtn").attr("hidden", true);
+}
+
+function updateStatus()
+{
+    if (coursePlan_Original?.draft_status.toUpperCase() == "DRAFT")
+    {
+        $("#planStatus").html("THIS PLAN IS A DRAFT AND MAY NOT SUIT YOUR INDIVIDUAL<br/>CIRCUMSTANCES. CONTACT A STAFF MEMBER FOR APPROVAL.");
+        alert("The generated plan is a draft and may not be optimised to the student's individual circumstances. Before it can be finalised it must be approved by a staff member.");
+    }
+    if (coursePlan_Original?.draft_status.toUpperCase() == "APPROVED" ||
+    	coursePlan_Edited?.draft_status.toUpperCase() == "APPROVED")
+    {
+	$("#planStatus").html("THIS PLAN HAS BEEN APPROVED BY A STAFF MEMBER.");
+	$("#planStatus").css("background", "lime");
+	$("#planStatus").css("color", "green");
+    }
+}
+
+function approvePlan()
+{
+    coursePlan_Edited.draft_status = "approved";    
+    updateStatus();
 }
 
 function displayAdvancedStanding(coursePlan)
@@ -209,10 +259,14 @@ function SubmitCourse()
     
 }
 
-function showPlan()
+function showPlanWrapper()
 {
-    var login = CheckLogin()
-    if(login != null)
+    studentIDFromEmail(CheckLogin().email, id => showPlan(id));
+}
+
+function showPlan(username)
+{
+    if(username != null)
     {
         $.ajax(
         {
@@ -222,7 +276,7 @@ function showPlan()
             cache: false,
             contentType: false,
             processData: false,
-            data: '{"email": "' + login.email + '"}',
+            data: '{"username": "' + username + '"}',
             success: function(response)
             {
                 let savedPlan = JSON.parse(response);
@@ -288,39 +342,43 @@ function SavePlan(){
 		//Get user to describe changes
 		let chg = prompt("Please describe your changes");
 
-		let data = {
-			email: login.email,
-			changes: changes = chg,
-			plan: coursePlan_Edited
-		};
+		if (chg != null)
+                {
+		    let data = {
+		    	email: login.email,
+		    	changes: changes = chg,
+		    	plan: coursePlan_Edited
+		    };
 
-		$.ajax(
-		{
-			type: "POST",
-			url: "/savePlan",
-			dataType: "text",
-			cache: false,
-			contentType: false,
-			processData: false,
-			data: JSON.stringify(data),
-			success: function(response)
-			{
-				alert("Your plan has been saved!");
-				coursePlan_Original = coursePlan_Edited;
-				// buttons
-				$("#editPlan").show();
-				$('.cp-dragButton').hide();
-				$("#cancelChangesPlan").hide();
-				$("#applyChangesPlan").hide();
-		
-				// revert plan to original form here
-				callCoursePlan(coursePlan_Original);
-			},
-			error: function(response)
-			{
-				alert(response.responseText);
-			}
-		});
+		    $.ajax(
+		    {
+		    	type: "POST",
+		    	url: "/savePlan",
+		    	dataType: "text",
+		    	cache: false,
+		    	contentType: false,
+		    	processData: false,
+		    	data: JSON.stringify(data),
+		    	success: function(response)
+		    	{
+		    		alert("Your plan has been saved!");
+		    		coursePlan_Original = coursePlan_Edited;
+		    		// buttons
+		    		$("#editPlan").show();
+		    		$('.cp-dragButton').hide();
+		    		$("#cancelChangesPlan").hide();
+		    		$("#applyChangesPlan").hide();
+				$("#approvePlan").hide();
+		    
+		    		// revert plan to original form here
+		    		callCoursePlan(coursePlan_Original);
+		    	},
+		    	error: function(response)
+		    	{
+		    		alert(response.responseText);
+		    	}
+		    });
+		}
 	} else{
 		alert("Please be logged in to save a plan");
 	}
@@ -381,7 +439,9 @@ function makeUnit(coursePlan, year, yearCount, semCount)
 
         if (units[unitCount].type == "undecided")
         {
-            code = "Elective";
+            code = "(Elective)";
+            for (let option of units[unitCount].units)
+                code += "&nbsp;&nbsp;&nbsp;" + option.code;
             title = "Undecided";
         }
 
@@ -389,9 +449,13 @@ function makeUnit(coursePlan, year, yearCount, semCount)
         html += "<div class='cp-unit'" + "id='" + code + "'" + ">" +
                     "<a class='cp-dragButton' style='display: none;'><img src='../images/drag icon.png' id='dragicon'></a>" +
                     "<div class='cp-info'>" +
-                        "<div class='cp-header'>" +
-                            "<h1>" + code + "</h1>" +
-                            "<div class='cp-credits'>" +
+                        "<div class='cp-header'>";
+                    // If unit is elective, header will scroll, displaying all elective options.
+                    if (units[unitCount].type == "undecided")
+                        html += "<marquee direction='left' style='max-width: 230px;'><h1>" + code + "</h1></marquee>";
+                    else
+                        html += "<h1>" + code + "</h1>";
+                    html += "<div class='cp-credits'>" +
                                 "<h1 >" + credit_points + " CP</h1>" +
                             "</div>" +
                         "</div>" +
@@ -892,13 +956,15 @@ function displayTotalCredits(coursePlan)
     let advStandCred = getAdvancedStandingPoints(coursePlan);
     let passedUnitCred = getPassedUnitCredPoints(coursePlan);
     let plannedUnitCred = getPlannedUnitCredPoints(coursePlan);    
+    let totalPlanned = advStandCred + passedUnitCred + plannedUnitCred;
+    let credLeft = coursePlan_Original.credit_points - totalPlanned;
 
-    $("#totalcreditspoints").html("Credit Points Tally<br>" +
+    let htmlStr = "Credit Points Tally<br>" +
     "<table>" +
         "<thead>" +
             "<tr>" +
-                "<th scope='col'>Source</th>" +
-                "<th scope='col'>&emsp;CP</th>"+
+                "<th scope='col' style='text-align: right;'>Source</th>" +
+                "<th scope='col' style='text-align: left;'>&emsp;CP</th>"+
             "</tr>" +
         "</thead>" +
         "<tr>" +
@@ -913,13 +979,29 @@ function displayTotalCredits(coursePlan)
             "<td>Planned units:</td>" +
             "<td>" + plannedUnitCred +"</td>" +
         "</tr>" +
+        "<tr>" +
+            "<td>Total planned and achieved credit points:</td>" +
+            "<td>" + totalPlanned + "</td>" +
+        "</tr>" + 
+        "<tr>" +
+            "<td>Remaining credit points needed to pass*:</td>" +
+            "<td>" + credLeft + "</td>" +
+        "</tr>" + 
         "<tfoot>" +
             "<tr>" +
-                "<td>Total credit points:</td>" +
-                "<td>" + (advStandCred + passedUnitCred + plannedUnitCred) + "</td>" +
-            "</tr>" + 
+                "<td>Total credit points needed for graduation:</td>" +
+                "<td>" + coursePlan_Original.credit_points + "</td>" +
+            "</tr>" +
         "</tfoot>" +
-    "</table>")
+    "</table>" +
+    "<br/>" +
+    "<p style='font-weight: normal; text-align: left;'>" +
+        "*You may be able to satisfy the remaining credit points with general electives." +
+        " Refer to the handbook for further information: " +
+        "<a href='https://handbook.murdoch.edu.au'>handbook.murdoch.edu.au</a>" +
+    "</p>";
+
+    $("#totalcreditspoints").html(htmlStr);
 }
 
 

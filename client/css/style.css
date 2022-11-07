@@ -55,9 +55,29 @@ nav{
 	border-color: black;
 }
 
+#planStatus
+{
+    background: pink;
+    color: red;
+    font-weight: bold;
+    font-size: 20pt;
+}
+
 #loginHeader{
 	background-color: #e0242d;
 	color: white;
+}
+
+#signupHeader
+{
+    background-color: #e0242d;
+    color: white;
+}
+
+#staffSignupHeader
+{
+    background-color: #e0242d;
+    color: white;
 }
 
 h1{

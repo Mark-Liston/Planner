@@ -38,6 +38,7 @@
 					<span id="caret"></span>
 				</button>
 				<ul class="dropdown-menu dropdown-menu-lg-end">
+					<li><a id="signupButton" href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#signupModal">Signup</a></li>
 					<li><a id="loginButton" href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#loginModal">Login</a></li>
 					<li><a href="#" class="dropdown-item">Help</a></li>
 				</ul>
@@ -53,9 +54,13 @@
 			<h1>Welcome to the Course Planner!</h1>
 			<h2>Please choose to generate a new plan <br/>or login to see your existing plan</h2>
 			<div class="container subcontent d-grid gap-2 mx-auto">
-
+				<input type="text" hidden="hidden" id="planSearchInput" name="planSearchInput" class="planSearch form-control" placeholder="Search for a course plan using student ID">
+				<span><button type="button" style="width: 70px;" hidden="hidden" id="planSearchBtn" name="planSearchBtn" class="planSearch btn btn-primary" onclick="planSearch()">Search</button></span>
+				
 				<button type="button" class="btn btn-primary btn-lg" onclick="MakeNewPlan()">Create New Plan</button>
-				<button type="button" class="btn btn-primary btn-lg" onclick="showPlan()" id="viewPlanBtn">View Plan</button>
+				<button type="button" class="btn btn-primary btn-lg" onclick="showPlanWrapper()" id="viewPlanBtn">View Plan</button>
+				<button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#staffSignupModal" id="landingStaffSignupBtn" hidden="hidden">Staff Signup</button>
+				<button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#signupModal" id="landingSignupBtn">Signup</button>
 				<button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#loginModal" id="landingLoginBtn">Login</button>
 
 			</div>
@@ -73,7 +78,7 @@
                     <input type="text" id="studentEmailInput" name="studentEmailInput" class="form-control" placeholder="e.g. 23858265@student.murdoch.edu.au" required>
 
                     <label for="studentIDInput">Student ID:</label>
-                    <input type="text" id="studentIDInput" name="studentIDInput" class="form-control" placeholder="e.g. 23858265">
+                    <input type="text" id="studentIDInput" name="studentIDInput" class="form-control" placeholder="e.g. 23858265" required="required">
 
 					<p>Enter the first year and semester of the course plan:</p>
 					<button type="button" id="setEarliestSem" class="btn btn-primary" onclick="calcEarliestStartSem()">Earliest possible year and semester</button>
@@ -89,6 +94,13 @@
 									
 					<label class="form-check-label" for="semester2">
 						<input type="radio" id="semester2" name="startSemester" class="form-check-input" value="2"> Semester 2
+					</label>
+					<br/>
+					<br/>
+					<br/>
+					<label>
+					    You may find the Murdoch Handbook helpful in familiarising you with your course
+					    <a href="https://handbook.murdoch.edu.au">handbook.murdoch.edu.au</a>
 					</label>
 
                     <label for="degreeInput">Course/Degree code:</label>
@@ -136,8 +148,8 @@
 	    <input type="text" id="year3CPInput" name="year3CPInput" placeholder="e.g. 9">
 	    <br/>
 	    <br/>
-            <h1>Completed Units</h1>
-            <p>Please enter any units (and number grade) you have completed, or received credit for (leave grade input empty for advanced standing)</p>
+            <h1>Previous and Completed Units</h1>
+            <p>Please enter any units (and number grade) you have completed/attempted, or received credit for (leave grade input empty for advanced standing)</p>
             <label for="doneUnitInput">Completed Unit:</label>
             <input type="text" id="doneUnitInput" name="doneUnitInput" class="form-control" placeholder="e.g. ICT283">
 	    <button id="addDoneUnitBtn" type="button" class="btn btn-primary">Add</button><br/>
@@ -149,6 +161,11 @@
         </article>
 		<!--Course Plan Results Page-->
 		<article id="results" class="page">
+			<p id="planStatus"></p>
+			<button type="button" id="approvePlan" class="btn btn-primary" onclick="approvePlan();">Approve Plan</button>
+			<br/>
+			<br/>
+
 	                <div id="advancedStanding" class="container subcontent" style="padding: 0;">
 			    <h1>Advanced Standing</h1>
 			    <div id="ASCreditPoints">
@@ -187,6 +204,86 @@
 		</article>
 	</div>
 
+	<div class="modal" id="staffSignupModal" tabindex="-1">
+		
+		<div class="modal-dialog modal-dialog-centered">
+		  <div class="modal-content">
+			<div class="modal-header" id="staffSignupHeader">
+			  <h5 class="modal-title">Staff Signup</h5>
+			  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<form enctype="multipart/form-data" id="staffSignupDetails" method="post">
+					<div class="row mb-3">
+						<div class="row mb-3">
+							<label class="col-sm-2 col-form-label" for="staffSignupIDInput">Staff&nbsp;ID:</label>
+							<div class="col-sm-10">
+								<input type="text" id="staffSignupIDInput" name="staffSignupIDInput" class="form-control" placeholder="12345678" required>
+							</div>
+						</div>
+						<div class="row mb-3">
+							<label class="col-sm-2 col-form-label" for="staffSignupEmailInput">Email:</label>
+							<div class="col-sm-10">
+								<input type="email" id="staffSignupEmailInput" name="staffSignupEmailInput" class="form-control" placeholder="12345678@student.murdoch.edu.au" required>
+							</div>
+						</div>
+						<div class="row mb-3">
+							<label class="col-sm-2 col-form-label"  for="staffSignupPasswordInput">Password:</label>
+							<div class="col-sm-10">
+								<input type="password" id="staffSignupPasswordInput" name="staffSignupPasswordInput" class="form-control" required>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+			  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+			  <button type="button" form="staffSignupDetails" class="btn btn-primary" onclick="StaffSignUpWrapper()">Signup Staff</button>
+			</div>
+		  </div>
+		</div>
+	  </div>
+
+	<div class="modal" id="signupModal" tabindex="-1">
+		
+		<div class="modal-dialog modal-dialog-centered">
+		  <div class="modal-content">
+			<div class="modal-header" id="signupHeader">
+			  <h5 class="modal-title">Signup</h5>
+			  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<form enctype="multipart/form-data" id="signupDetails" method="post">
+					<div class="row mb-3">
+						<div class="row mb-3">
+							<label class="col-sm-2 col-form-label" for="signupIDInput">Student&nbsp;ID:</label>
+							<div class="col-sm-10">
+								<input type="text" id="signupIDInput" name="signupIDInput" class="form-control" placeholder="12345678" required>
+							</div>
+						</div>
+						<div class="row mb-3">
+							<label class="col-sm-2 col-form-label" for="signupEmailInput">Email:</label>
+							<div class="col-sm-10">
+								<input type="email" id="signupEmailInput" name="signupEmailInput" class="form-control" placeholder="12345678@student.murdoch.edu.au" required>
+							</div>
+						</div>
+						<div class="row mb-3">
+							<label class="col-sm-2 col-form-label"  for="signupPasswordInput">Password:</label>
+							<div class="col-sm-10">
+								<input type="password" id="signupPasswordInput" name="signupPasswordInput" class="form-control" required>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+			  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+			  <button type="button" form="signupDetails" class="btn btn-primary" onclick="StudentSignUpWrapper()">Signup</button>
+			</div>
+		  </div>
+		</div>
+	  </div>
+
 	<div class="modal" id="loginModal" tabindex="-1">
 		<div class="modal-dialog modal-dialog-centered">
 		  <div class="modal-content">
@@ -200,7 +297,7 @@
 						<div class="row mb-3">
 							<label class="col-sm-2 col-form-label" for="emailInput">Email:</label>
 							<div class="col-sm-10">
-								<input type="email" id="emailInput" name="emailInput" class="form-control" placeholder="12345678@student.murdoch.edu.au" required> <!--pattern="^\d{7,8}@student\.murdoch\.edu\.au$" -->
+								<input type="email" id="emailInput" name="emailInput" class="form-control" placeholder="12345678@student.murdoch.edu.au" required>
 							</div>
 						</div>
 						<div class="row mb-3">
@@ -214,8 +311,7 @@
 			</div>
 			<div class="modal-footer">
 			  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-			  <!--<button type="button" form="loginDetails" class="btn btn-primary" onclick="SignUp()">Signup</button>-->
-			  <button type="button" form="loginDetails" class="btn btn-primary" onclick="LogIn()">Login</button>
+			  <button type="button" form="loginDetails" class="btn btn-primary" onclick="LogInWrapper()">Login</button>
 			</div>
 		  </div>
 		</div>

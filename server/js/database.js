@@ -41,6 +41,8 @@ function DatabaseConnect() {
 				db.run("BEGIN TRANSACTION;");
 				schemaArr.forEach(query => {
 					if (query) {
+						if (/\S/.test(query))
+						{
 						query += ");";
 						db.run(query, err => {
 							if (err){
@@ -48,6 +50,7 @@ function DatabaseConnect() {
 								throw err;
 							}
 					  	});
+						}
 					}
 				});
 				db.run("COMMIT;");
@@ -63,14 +66,15 @@ function DatabaseConnect() {
 					// For testing add test account
 					// email: test@testmail.com
 					// pass: test1234567890
-					createAccount('test@testmail.com', 'tester0', 'test1234567890');
+					createAccount('test@testmail.com', 'tester0', 'student', 'test1234567890');
+					createAccount('murdochplanner@gmail.com', 'admin', 'admin', '4Horsesw@lken');
 				}
 			});
 		}		
 	});
 }
 
-async function createAccount(email, username, password){
+async function createAccount(email, username, type, password){
     let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
         {
             if (error)
@@ -84,9 +88,9 @@ async function createAccount(email, username, password){
     // now we set user password to hashed password
     let hashPwd = bcrypt.hashSync(password, salt);
 
-    db.run(`INSERT OR IGNORE INTO Users(email, username, password)
-              VALUES(?, ?, ?)`,
-              [email, username, hashPwd],
+    db.run(`INSERT OR IGNORE INTO Users(email, username, type, password)
+              VALUES(?, ?, ?, ?)`,
+              [email, username, type, hashPwd],
         (err) => {
             if (err) {
                 console.error("Failed to create account: " + err);
@@ -550,7 +554,7 @@ function saveCoursePlan(email, changes, plan)
     });
 }
 
-function getCoursePlan(email)
+function getCoursePlan(username)
 {
     return new Promise(function(resolve, reject)
     {
@@ -564,9 +568,14 @@ function getCoursePlan(email)
         });
         
         // Gets all items of the given type containing the matchString.
-        let qry = "SELECT * FROM CoursePlan WHERE email = ?" +
-                    "ORDER BY timeChanged DESC";
-        db.all(qry, [email], function(error, rows)
+        let qry = "SELECT *" +
+                 " FROM CoursePlan" +
+                 " WHERE json_valid(CoursePlan.data) AND" +
+                 " (" +
+                 "     json_extract(CoursePlan.data, '$.student_id') = ?" + 
+                 " )" +
+                 " ORDER BY timeChanged DESC";
+        db.all(qry, [username], function(error, rows)
         {
             if (error)
             {
@@ -591,6 +600,86 @@ function getCoursePlan(email)
     });
 }
 
+function getEmail(username)
+{
+    return new Promise(function(resolve, reject)
+    {
+        let email = null;
+        let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
+        {
+            if (error)
+            {
+                console.error(error.message);
+            }
+        });
+        
+        // Gets email of the user with a matching username.
+        let qry = "SELECT email FROM Users WHERE username = ?";
+        db.all(qry, [username], function(error, rows)
+        {
+            if (error)
+            {
+                console.error(error.message);
+            }
+
+            else
+            {
+                email = rows[0];
+            }
+
+            db.close(function(error)
+            {
+                if (error)
+                {
+                    console.error(error.message);
+                }
+            });
+
+            resolve(email);
+        });
+    });
+}
+
+function getUsername(email)
+{
+    return new Promise(function(resolve, reject)
+    {
+        let username = null;
+        let db = new sqlite.Database(dbPath, sqlite.OPEN_READWRITE, function(error)
+        {
+            if (error)
+            {
+                console.error(error.message);
+            }
+        });
+        
+        // Gets username of the user with a matching email.
+        let qry = "SELECT username FROM Users WHERE email = ?";
+        db.all(qry, [email], function(error, rows)
+        {
+            if (error)
+            {
+                console.error(error.message);
+            }
+
+            else
+            {
+                username = rows[0];
+            }
+
+            db.close(function(error)
+            {
+                if (error)
+                {
+                    console.error(error.message);
+                }
+            });
+
+            resolve(username);
+        });
+    });
+}
+
 exports.getSuggestions = getSuggestions;
 exports.getDegree = getDegree;
 exports.getUnit = getUnit;
@@ -601,3 +690,5 @@ exports.getAccount = getAccount;
 exports.createAccount = createAccount;
 exports.saveCoursePlan = saveCoursePlan;
 exports.getCoursePlan = getCoursePlan;
+exports.getEmail = getEmail;
+exports.getUsername = getUsername;
