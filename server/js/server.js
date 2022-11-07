@@ -1,15 +1,7 @@
 // server.js
 
-var https = require('https');
+var http = require('http');
 var url = require("url");
-var fs = require('fs');
-
-
-const options = {
-    key: fs.readFileSync('key.pem'),
-    cert: fs.readFileSync('cert.pem')
-  };
-  
 
 function startServer(route, handle)
 {
@@ -20,7 +12,7 @@ function startServer(route, handle)
         route(pathname, handle, request, response);
     }
 
-    https.createServer(options,onRequest).listen(40018);
+    http.createServer(onRequest).listen(40018);
 	console.log("===================");
     console.log("Server has started.");
 	console.log('Current directory: ' + process.cwd());
