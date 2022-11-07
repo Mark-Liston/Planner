@@ -33,9 +33,10 @@ CREATE TABLE IF NOT EXISTS "Rating" (
 	"rating"	int NOT NULL
 );
 CREATE TABLE IF NOT EXISTS "Users" (
-	"email"	TEXT,
-	"username"	TEXT,
-	"password"	VARCHAR(60),
+	"email"	TEXT NOT NULL,
+	"username"	TEXT NOT NULL,
+	"type" VARCHAR(10) NOT NULL,
+	"password"	VARCHAR(60) NOT NULL,
 	PRIMARY KEY("email")
 );
 CREATE TABLE IF NOT EXISTS "CoursePlan" (

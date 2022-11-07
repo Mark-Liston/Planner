@@ -7,38 +7,92 @@ function CheckLogin(key)
 	return cookies.login != undefined ? JSON.parse(cookies.login) : undefined;
 }
 
-function LogIn(){
-	$.post('/login',  //URL to send data to
-		//Data being sent
+function StaffSignUpWrapper()
+{
+    SignUp($("#staffSignupIDInput").val(), $("#staffSignupEmailInput").val(), "staff", $("#staffSignupPasswordInput").val(), false);
+}
+
+function StudentSignUpWrapper()
+{
+    SignUp($("#signupIDInput").val(), $("#signupEmailInput").val(), "student", $("#signupPasswordInput").val(), true)
+}
+
+function SignUp(IDInput, emailInput, typeInput, passwordInput, loginFlag)
+{
+    if (IDInput == "" &&
+        emailInput == "" &&
+        passwordInput == "")
+    {
+        alert("Please populate all signup input fields");
+    }
+    else
+    {
+        $.post("/register",
+            {
+                username: IDInput,
+                email: emailInput,
+                type: typeInput,
+                password: passwordInput
+            },
+            function(data, status, xhr)
+            {
+		if (loginFlag == false)
 		{
-			email: $("#emailInput").val(),
-			password: $("#passwordInput").val()
-		},
-		function(data, status, xhr) {
-			if (status == "success") {
-				let account = {};
-				account.username = data.username;
-                account.email = data.email;
-				// TODO - implement type and cookie storing
-				json_str = JSON.stringify(account);
-				createCookie("login", json_str, 1);
-				createCookie("sessionID", data.sessionID, 1);
-
-
-				location.reload();
-			}
-
-		}).fail(function(jqxhr, settings, ex) {
-			//Check if unauthorised response
-			if (jqxhr.status == 401){
-				// Print reason for login failure
-				alert(jqxhr.responseJSON.reason);
-			} else {
-				console.log('failure to connect to login system')
-			}
-
+                    alert("Staff account created for " + emailInput);
 		}
-	);
+		else if (status == "success")
+                {
+            	    LogIn(emailInput, passwordInput);
+                }
+            }).fail(function(jqxhr, settings, ex)
+            {
+            	alert(jqxhr.responseJSON.reason);
+            });
+    }
+}
+
+function LogInWrapper()
+{
+    LogIn($("#emailInput").val(), $("#passwordInput").val());
+}
+
+function LogIn(emailInput, passwordInput)
+{
+    $.post('/login',  //URL to send data to
+    	//Data being sent
+    	{
+	    email: emailInput,
+	    password: passwordInput
+    	},
+    	function(data, status, xhr)
+	{
+    	    if (status == "success")
+	    {
+	        let account = {};
+	        account.username = data.username;
+	        account.email = data.email;
+		account.type = data.type;
+	        // TODO - implement type and cookie storing
+	        json_str = JSON.stringify(account);
+	        createCookie("login", json_str, 1);
+	        createCookie("sessionID", data.sessionID, 1);
+
+	        location.reload();
+	    }
+    	}).fail(function(jqxhr, settings, ex)
+        {
+	    //Check if unauthorised response
+	    if (jqxhr.status == 401)
+	    {
+	    	// Print reason for login failure
+	    	alert(jqxhr.responseJSON.reason);
+	    }
+	    else
+	    {
+	    	console.log('failure to connect to login system')
+	    }
+    	}
+    );
 }
 
 

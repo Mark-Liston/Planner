@@ -2,9 +2,9 @@ let minors = 1;
 
 $(document).ready(function()
 {
-	// Hides all non immediate articles.
-	$(".page").hide();
-	$("#landing").show();
+    // Hides all non immediate articles.
+    $(".page").hide();
+    $("#landing").show();
     $("#viewPlanBtn").hide();
 
     //$("#unitCodeInput").on("input", function()
@@ -48,21 +48,26 @@ $(document).ready(function()
         $("#studentEmailInput").prop("readonly", false);
 
         //Check if login cookie persists
-        var login = CheckLogin()
+        var login = CheckLogin();
         if(login != null)
         {
             $("#username").html(login.username);
+	    $("#signupButton").hide();
             $("#loginButton").replaceWith('<a href="#" onclick="LogOut()" class="dropdown-item">Logout</a>');
-            $("#studentEmailInput").prop("readonly", true);
             $("#studentEmailInput").val(login.email);
             $("#viewPlanBtn").show();
+	    $("#landingSignupBtn").hide();
             $("#landingLoginBtn").hide();
         }
         else
         {
             $("#viewPlanBtn").hide();
-            $("#landingLoginBtn").show();
+            $("#landingSignupBtn").show();
+            $("#landingLoginBtn").show();	
+	    $("#signupButton").hide();
         }
+
+	checkPerm();
     }, 1000);
 });
 
@@ -153,6 +158,7 @@ function editPlan()
     $('.cp-dragButton').show();
     $("#cancelChangesPlan").show();
     $("#applyChangesPlan").show();
+    $("#approvePlan").show();
 }
 
 function cancelChangesPlan()
@@ -165,6 +171,7 @@ function cancelChangesPlan()
         $('.cp-dragButton').hide();
         $("#cancelChangesPlan").hide();
         $("#applyChangesPlan").hide();
+	$("#approvePlan").hide();
 
         // revert plan to original form here
         callCoursePlan(coursePlan_Original);

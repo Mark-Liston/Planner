@@ -90,6 +90,7 @@ async function login(req, res) {
 
         // Parse form data into usable format
         let {email, password} = parseForm(data);
+	email = email.toLowerCase();
     
         // Get user account
         let userInfo = await db.getAccount(email);
@@ -112,6 +113,7 @@ async function login(req, res) {
                 sessions[sessionID] = {
                     'username': userInfo.username,
                     'email': userInfo.email,
+		    'type': userInfo.type,
                     'sessionID': sessionID,
                     'expires': new Date((new Date).getTime() + 60 * 60000) // Expires in 1 hour
                 }
@@ -122,6 +124,7 @@ async function login(req, res) {
                 res.write(JSON.stringify({
                     username: userInfo.username,
                     email: userInfo.email,
+		    type: userInfo.type,
                     sessionID: sessionID
                 }));
                 res.end();
@@ -149,12 +152,13 @@ async function register(req,res) {
         const data = await getRequestData(req);
 
         // Parse form data into usable format
-        let {email, password, username} = parseForm(data);
+        let {email, password, username, type} = parseForm(data);
+	email = email.toLowerCase();
 
         // Check if user already exists
         let userInfo = await db.getAccount(email);
         if (userInfo == undefined) {
-            db.createAccount(email, username, password);
+            db.createAccount(email, username, type, password);
 
             res.writeHead(200, { "Content-Type": "text/json"});
             res.write('{"success": true}');
