@@ -5,6 +5,7 @@
 const scrape = require("./scrape.js");
 const planDef = require("./planDef.js"); 
 const database = require("./database.js");
+const { twelvePointsCompCheck, checkPrereqsMet, isAvailableInSemester, prereqsViable } = require("./rules.js");
 
 // For debugging.
 //const util = require("util");
@@ -473,13 +474,6 @@ function aggregateCP(units)
     return creditPoints;
 }
 
-function fillSemester(semester, units, itr)
-{
-    semester.units.push(units[itr]);
-    semester.credit_points += units[itr].credit_points;
-    return units[itr].credit_points;
-}
-
 function addDoneUnit(doneUnit, doneUnits)
 {
     return new Promise(function(resolve, reject)
@@ -557,6 +551,26 @@ function removeDoneUnits(input)
     });
 }
 
+function meetsRules(unitItem, semesterItem, yearItem, plan)
+{
+    if(isAvailableInSemester(unitItem, semesterItem.semester) &&
+    twelvePointsCompCheck(plan, unitItem, semesterItem, yearItem))       
+    {
+        //Checks if any set of prerequisites for the unit can be accomplished. If not, the unit
+        //is considred valid for the semester and year (to avoid endless loops).
+        if(prereqsViable(unitItem, plan))
+        {
+            if(checkPrereqsMet(plan, unitItem, semesterItem, yearItem))
+            {
+                return true;
+            }
+            return false;
+        }
+        return true;
+    }   
+    return false;
+}
+
 function generateSchedule(plan)
 {
     plan.schedule = [];
@@ -567,27 +581,33 @@ function generateSchedule(plan)
         return a.level - b.level;
     });
 
-    // Arrays for storing units available in semester 1, semester 2, and
-    // both semesters.
-    let s1Units = [], s2Units = [], bothUnits = [];
-    // Iterators for above arrays.
-    let s1Itr = 0, s2Itr = 0, bothItr = 0;
-    // Sorts units into appropriate semester array.
-    for (let unit of plan.planned_units)
+
+    let unscheduledUnits = [];
+    
+    for(let unit of plan.planned_units)
     {
-        switch(unit.semester)
+        if(unit.semester == "S1")
         {
-            case "S1":
-                s1Units.push(unit);
-                break;
-            case "S2":
-                s2Units.push(unit);
-                break;
-            case "BOTH":
-                bothUnits.push(unit);
-                break;
+            unscheduledUnits.push(unit);
         }
     }
+
+    for(let unit of plan.planned_units)
+    {
+        if(unit.semester == "S2")
+        {
+            unscheduledUnits.push(unit);
+        }
+    }
+
+    for(let unit of plan.planned_units)
+    {
+        if(unit.semester == "BOTH")
+        {
+            unscheduledUnits.push(unit);
+        }
+    }
+
 
     let skipS1 = false;
   
@@ -598,78 +618,49 @@ function generateSchedule(plan)
         skipS1 = true;
     }
 
-    let count = plan.planned_units.length;
     // Loops until there are no units left to schedule or schedule reaches
     // 10 years. It is assumed a student won't study for more than 10 years
     // at a time.
-    while (count > 0 && currentYear < plan.startYear + 10)
+    while (unscheduledUnits.length > 0 && currentYear < plan.startYear + 10)
     {
         let year = new planDef.Year();
         year.year = currentYear;
-        // Semester 1.
-        let semester1 = new planDef.Semester();
-        semester1.semester = 1;
-        if (count > 0 && !skipS1)
-        {
-            //let semester1 = new planDef.Semester();
-            //semester1.semester = 1;
 
-            let semCP = plan.study_load;
-            // Adds units available in semester 1 until study load is reached.
-            while (s1Itr < s1Units.length &&
-                semCP - s1Units[s1Itr].credit_points >= 0 &&
-                count > 0)
-            {
-                semCP -= fillSemester(semester1, s1Units, s1Itr);
-                ++s1Itr;
-                --count;
-            }
-            // Adds units available in both semesters until study load is reached.
-            while (bothItr < bothUnits.length &&
-                semCP - bothUnits[bothItr].credit_points >= 0 &&
-                count > 0)
-            {
-                semCP -= fillSemester(semester1, bothUnits, bothItr);
-                ++bothItr;
-                --count;
-            }
-            //year.semesters.push(semester1);
+        if(!skipS1)
+        {
+            let semester1 = new planDef.Semester();
+            semester1.semester = 1;
+            year.semesters.push(semester1);
+            skipS1 = false;
         }
-        year.semesters.push(semester1);
         
-        // Semester 2.
+
         let semester2 = new planDef.Semester();
         semester2.semester = 2;
-        if (count > 0)
-        {
-            skipS1 = false;
-            //let semester2 = new planDef.Semester();
-            //semester2.semester = 2;
-
-            let semCP = plan.study_load;
-            // Adds units available in semester 2 until study load is reached.
-            while (s2Itr < s2Units.length &&
-                semCP - s2Units[s2Itr].credit_points >= 0 &&
-                count > 0)
-            {
-                semCP -= fillSemester(semester2, s2Units, s2Itr);
-                ++s2Itr;
-                --count;
-            }
-            // Adds units available in both semesters until study load is reached.
-            while (bothItr < bothUnits.length &&
-                semCP - bothUnits[bothItr].credit_points >= 0 &&
-                count > 0)
-            {
-                semCP -= fillSemester(semester2, bothUnits, bothItr);
-                ++bothItr;
-                --count;
-            }
-            //year.semesters.push(semester2);
-        }
         year.semesters.push(semester2);
+
         plan.schedule.push(year);
-        ++currentYear;
+
+        for(let sem of year.semesters)
+        {
+            let semPoints = plan.study_load;
+
+            for(let i = 0; i < unscheduledUnits.length; i++)
+            {
+                //console.log("Year: " + year.year);
+                //console.log("Semester: " + sem.semester);
+                //console.log("items left: " + unscheduledUnits.length);
+                if(semPoints - unscheduledUnits[i].credit_points >= 0 && meetsRules(unscheduledUnits[i], sem, year, plan))
+                {
+                    sem.units.push(unscheduledUnits[i]);
+                    sem.credit_points += unscheduledUnits[i].credit_points;
+                    semPoints -= unscheduledUnits[i].credit_points;
+                    unscheduledUnits.splice(i, 1);
+                    i -= 1;
+                }
+            }
+        }
+        currentYear++;
     }
 }
 
