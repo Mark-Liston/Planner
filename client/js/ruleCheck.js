@@ -44,7 +44,7 @@ function unitPassedBeforeYearSem(unitCode, yearNum, semNum, coursePlan)
 {
 	//Check if unit is in completed units and has been passed.
 	let unit = coursePlan.completed_units.find(({code}) => code == unitCode);
-	if(unit != undefined && unit.grade >= 50){ return true; }
+	if(unit != undefined && (unit.grade == "AS" || (!isNaN(unit.grade) && unit.grade >= 50))){ return true; }
 	
 	//Check if unit is planned for a semester before the one of interest
 	let yearSem = getPlannedUnitYearSem(unitCode, coursePlan.schedule);
