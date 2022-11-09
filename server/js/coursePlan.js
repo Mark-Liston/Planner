@@ -10,6 +10,13 @@ const { twelvePointsCompCheck, checkPrereqsMet, isAvailableInSemester, prereqsVi
 // For debugging.
 //const util = require("util");
 
+/**
+ * Extracts code from beginning of handbook item string,
+ * e.g., "MJ-CMSC - Computer Science" => "MJ-CMSC".
+ * @param {String} text Handbook item string to extract code from.
+ * @return Non-whitespace text from beginning of text until the first space;
+ * the code of the handbook item.
+ */
 function extractCode(text)
 {
     return text.trim().split(" ")[0];
@@ -36,6 +43,13 @@ function isArrayConsistent(arr)
     return returnVal;
 }
 
+/**
+ * Collates all elective options into one entry.
+ * @param {Array} units Array storing all units in a set.
+ * @param {Object} entry Individual elective unit.
+ * @param {Array} electives Elective options to choose from for unit.
+ * @param {Array} creditPoints Array storing credit points of all elective options.
+ */
 function generateElectives(units, entry, electives, creditPoints)
 {
     let elective = new planDef.UnitSelection();
@@ -54,7 +68,9 @@ function generateElectives(units, entry, electives, creditPoints)
         // Determines whether there may be more or fewer elective units
         // available for the container.
         // An example of where this would apply is if most of the options for
-        // the elective
+        // the elective (including the first in the array) are worth 3 points,
+        // but one or more options are worth 6 points. By default, the number
+        // of electives generated will equal
         let adverb = "more";
         if (inconsistency > elective.credit_points)
         {
@@ -71,10 +87,16 @@ function generateElectives(units, entry, electives, creditPoints)
     // Clones elective for as many electives in the current entry.
     for (let i = 0; i < numOfUnits; ++i)
     {
+        // Serialises and deserialises to copy object instead of assigning reference.
         units.push(JSON.parse(JSON.stringify(elective)));
     }
 }
 
+/**
+ * Gets formatted units from given array that can be put into course plan.
+ * @param {Array} arr Array containing units to be extracted.
+ * @return Array of units in the correct format for course plan.
+ */
 function extractUnits(arr)
 {
     let units = [];
@@ -126,6 +148,11 @@ function extractUnits(arr)
     return units;
 }
 
+/**
+ * Gets units contained in degree.
+ * @param {Object} degree Degree in course plan.
+ * @return Units contained in degree.
+ */
 function getDegreeUnits(degree)
 {
     let units = null;
@@ -162,6 +189,12 @@ function getDegreeUnits(degree)
     return units;
 }
 
+/**
+ * Gets units in the given option.
+ * @param {Object} option Option to extract units from.
+ * @param {Object} type Type of option (Major, Minor, Co-Major).
+ * @return Units in given option.
+ */
 function getOptionUnits(option, type)
 {
     let units = null;
@@ -169,16 +202,16 @@ function getOptionUnits(option, type)
     // Checks if degree has a curriculum structure.
     if (option["CurriculumStructure"])
     {
-        let degreeStructure = JSON.parse(option.CurriculumStructure).container;
+        let structure = JSON.parse(option.CurriculumStructure).container;
         units = {};
 
-        let index = scrape.searchJSONArr(degreeStructure, function(entry)
+        let index = scrape.searchJSONArr(structure, function(entry)
         {
             return entry.title.toUpperCase() == type.toUpperCase();
         });
         if (index != -1)
         {
-            let optionData = degreeStructure[index].container;
+            let optionData = structure[index].container;
             units = extractUnits(optionData);
         }
     }
@@ -186,6 +219,12 @@ function getOptionUnits(option, type)
     return units;
 }
 
+/**
+ * Adds all elements of arr2 into arr1.
+ * @param {Array} arr1 Resulting array to be combined with arr2.
+ * @param {Array} arr2 Array to be added to arr1.
+ * @return Result of combining given arrays.
+ */
 function concatArray(arr1, arr2)
 {
     for (let entry of arr2)
@@ -195,6 +234,14 @@ function concatArray(arr1, arr2)
     return arr1;
 }
 
+/**
+ * Adds formatted option based on user's input into course plan.
+ * @param {Object} input User's input regarding option.
+ * @param {Object} type Type of option (Major, Minor, Co-Major).
+ * @param {Object} plan Course plan.
+ * @param {Object} degree Degree in course plan.
+ * @return Promise resolve or error message.
+ */
 function addOption(input, type, plan, degree)
 {
     return new Promise(function(resolve, reject)
@@ -245,6 +292,14 @@ function addOption(input, type, plan, degree)
     });
 }
 
+/**
+ * Gets formatted data of user's input options (extra major, minor, co-major, etc.)
+ * and inserts it in given course plan.
+ * @param {Object} input User's input regarding their course information.
+ * @param {Object} plan Course plan.
+ * @param {Object} degree Degree in course plan.
+ * @return Promise response or error message.
+ */
 function getOptions(input, plan, degree)
 {
     return new Promise(function(resolve, reject)
@@ -314,6 +369,14 @@ function getOptions(input, plan, degree)
     });
 }
 
+/**
+ * Gets string representing semester/s during which a unit is available. Offerings
+ * for a unit are stored in the given parameter.
+ * @param {Object} offerings Scraped JSON data regarding unit's offerings
+ * (campus, mode (internal/external), and semester).
+ * @return 'S1' if offerings indicate unit is available in semester 1, 'S2' if
+ * available in semester 2, 'BOTH' if available in both semesters.
+ */
 function getSemesters(offerings)
 {
     let arr = [];
@@ -348,6 +411,14 @@ function getSemesters(offerings)
     return semester;
 }
 
+/**
+ * Somewhat of a constructor for a shallow unit in a course plan, as it pertains
+ * to requisite units. Requisites are not required to store all the information
+ * of a typical unit, therefore they are stored as shallow units, storing only
+ * essential data. This is to reduce clutter in course plan objects.
+ * @parm {Object} requisiteData Scraped JSON data of requisite.
+ * @return Shallow unit populated with details in JSON data of requisite.
+ */
 function generateRequisite(requisiteData)
 {
     let requisiteUnit = new planDef.ShallowUnit();
@@ -358,7 +429,13 @@ function generateRequisite(requisiteData)
     return requisiteUnit;
 }
 
-// Gets prerequisites, including 1 level of nested prerequisites.
+/**
+ * Gets prerequisites from scraped prerequisite data, including 1 level of
+ * nested prerequisites (this refers to groups of optional prerequisites,
+ * e.g., prerequisites: (ART100 OR MSP100) AND MSP200).
+ * @param {Object} requisite Scraped JSON data of prerequisite.
+ * @return Object with prerequisite data as it pertains to course plans.
+ */
 function getPrerequisite(requisite)
 {
     let prereqNodes = requisite.containers[0];
@@ -388,6 +465,12 @@ function getPrerequisite(requisite)
     return prereq;
 }
 
+/**
+ * Populates given unit with prerequisites and exclusions.
+ * @param {Object} unit Unit to populate with requisites.
+ * @param {Object} unitData Scraped JSON data of given unit.
+ * @return Prerequisites and exclusions of given unit.
+ */
 function getRequisites(unit, unitData)
 {
     let requisites = JSON.parse(unitData.data).requisites;
@@ -416,6 +499,12 @@ function getRequisites(unit, unitData)
     return requisites;
 }
 
+/**
+ * Populates details of units in given array. Details such as semester the unit
+ * is available, unit level, and text-based enrolment rules.
+ * @param {Array} units Array of units to populate with details.
+ * @return Promise response or error message.
+ */
 function fillUnits(units)
 {
     return new Promise(function(resolve, reject)
@@ -464,6 +553,11 @@ function fillUnits(units)
     });
 }
 
+/**
+ * Aggregates the credit points of all units in given array.
+ * @param {Array} units Array of units to sum the credit points of.
+ * @return Sum of credit points of all units in given array.
+ */
 function aggregateCP(units)
 {
     let creditPoints = 0;
@@ -474,6 +568,12 @@ function aggregateCP(units)
     return creditPoints;
 }
 
+/**
+ * Retrieves details of given unit and adds it to given array of completed
+ * units.
+ * @param {Object} doneUnit Unit to be added to array of completed units.
+ * @param {Array} doneUnits Array of completed units.
+ */
 function addDoneUnit(doneUnit, doneUnits)
 {
     return new Promise(function(resolve, reject)
@@ -497,9 +597,15 @@ function addDoneUnit(doneUnit, doneUnits)
     });
 }
 
+/**
+ * Removes passed units from units in course plan.
+ * @param {Array} arr1 Array of units in course plan.
+ * @param {Array} arr2 Array of completed units.
+ * @return Array containing all units after completed units have been removed.
+ */
 function subtractDoneUnits(arr1, arr2)
 {
-    let returnArr;
+    let returnArr = [];
     let j = 0;
     let arr1Length = arr1.length;
     let found = false;
@@ -511,9 +617,11 @@ function subtractDoneUnits(arr1, arr2)
             for (j = 0; j < arr2.length && !found; ++j)
             {
                 // If units match and unit has been successfully completed
-		// (either advanced standing or a grade >= 50%)
+                // (either advanced standing or a grade >= 50%)
                 if (arr1[i].code == arr2[j].code &&
-		    (arr2[j].grade == "AS" || (!isNaN(arr2[j].grade) && arr2[j].grade >= 50)))
+		            (arr2[j].grade == "AS" ||
+                    (!isNaN(arr2[j].grade) &&
+                    arr2[j].grade >= 50)))
                 {
                     found = true;
                     arr1Length = arr1.length;
@@ -530,6 +638,10 @@ function subtractDoneUnits(arr1, arr2)
     return returnArr;
 }
 
+/**
+ * Handles the removal of completed units from course plan.
+ * @param {Object} input User's input regarding their completed units
+ */
 function removeDoneUnits(input)
 {
     return new Promise(function(resolve, reject)
@@ -551,6 +663,14 @@ function removeDoneUnits(input)
     });
 }
 
+/**
+ * Checks whether given unit is valid against enrolment rules.
+ * @param {Object} unitItem Unit to validate against enrolment rules.
+ * @param {Object} semesterItem Semester unit takes place in.
+ * @param {Object} yearItem Year unit takes place in.
+ * @param {Object} plan Course plan holding unit.
+ * @return Whether unit meets enrolment rules.
+ */
 function meetsRules(unitItem, semesterItem, yearItem, plan)
 {
     if(isAvailableInSemester(unitItem, semesterItem.semester) &&
@@ -571,6 +691,10 @@ function meetsRules(unitItem, semesterItem, yearItem, plan)
     return false;
 }
 
+/**
+ * Generates schedule from details in course plan.
+ * @param {Object} plan Course plan to generate schedule from.
+ */
 function generateSchedule(plan)
 {
     plan.schedule = [];
@@ -664,6 +788,12 @@ function generateSchedule(plan)
     }
 }
 
+/**
+ * Populates advanced standing credit points in user's course plan based on
+ * their input.
+ * @param {Object} input User's input regarding their advanced standing credit
+ * points.
+ */
 function assignAdvancedStanding(input)
 {
     let advancedStanding = new planDef.AdvancedStanding();
@@ -676,6 +806,11 @@ function assignAdvancedStanding(input)
     input.course_plan.advanced_standing = advancedStanding;
 }
 
+/**
+ * Generates course plan based on user input.
+ * @param {Object} input User's input regarding their course information.
+ * @return Promise containing course plan or error message.
+ */
 function generatePlan(input)
 {
     return new Promise(function(resolve, reject)
@@ -719,7 +854,7 @@ function generatePlan(input)
                 // Schedules all units into years and semesters based on when
                 // units are available.
                 generateSchedule(plan);
-		// For dubugging; to view the entire JSON of the plan.
+                // For dubugging; to view the entire JSON of the plan.
                 //console.log(util.inspect(plan.schedule, false, null, true));
                 resolve(plan);
             })

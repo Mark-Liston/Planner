@@ -13,7 +13,8 @@ const httpsAgent = new https.Agent(
 });
 
 /**
- * 
+ * Performs a search on handbook using given search parameter, year, and type
+ * of item. Number of items returned by search is indicated by size.
  * @param {String} searchParam String normally in search box that is searched for.
  * @param {Date} year Year that items must be available.
  * @param {Array} contentType Type of items to search for. Any combination of:
@@ -248,6 +249,15 @@ function searchJSONArr(arr, checkMatch)
     return targetIndex;
 }
 
+/**
+ * Performs a search on handbook using given parameter and searches those results,
+ * returning an exact match on the given search parameter.
+ * @param {String} searchParam String normally in search box that is searched for.
+ * @param {Number} year Year that items must be available.
+ * @param {Array} contentType Type of items to search for. Any combination of:
+ * "murdoch_psubject", "murdoch_pcourse", "murdoch_paos".
+ * @returns Entry for item retrieved from handbook.
+ */
 async function singleSearch(searchParam, year, contentType)
 {
     let item = null;
@@ -263,7 +273,7 @@ async function singleSearch(searchParam, year, contentType)
     {
         item = data[index];
     }
-    
+
     return item;
 }
 
