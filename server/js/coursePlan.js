@@ -185,12 +185,6 @@ function getDegreeUnits(degree)
             units = concatArray(units, extractUnits(courseCore));
         }
     }
-
-    console.log("\n" + degree.code);
-    for (let unit of units)
-    {
-        console.log(unit.code);
-    }
     return units;
 }
 
@@ -219,12 +213,6 @@ function getOptionUnits(option, type)
             let optionData = structure[index].container;
             units = extractUnits(optionData);
         }
-    }
-
-    console.log("\n" + option.code);
-    for (let unit of units)
-    {
-        console.log(unit.code);
     }
     return units;
 }
@@ -354,24 +342,26 @@ function getOptions(input, plan, degree)
 
         Promise.all(func).then(function()
         {
+            // Removes duplicate units after all options have been compiled.
             plan.planned_units = plan.planned_units.filter(function(value, index, arr)
             {
                 if (value.type.toUpperCase() != "UNDECIDED")
                 {
+                    // Checks all units after current unit to see if there is
+                    // a match. As units are checked sequentially, all units
+                    // before current unit are valid and only those after must
+                    // be checked.
                     let found = false;
-                    for (let i = 0; i < arr.length && !found; ++i)
+                    for (let i = index + 1; i < arr.length && !found; ++i)
                     {
-                        if (i != index && value.code.toUpperCase() == arr[i].code.toUpperCase())
-                        {
+                        if (arr[i].type.toUpperCase() != "UNDECIDED" &&
+                            value.code.toUpperCase() == arr[i].code.toUpperCase())
                             found = true;
-                        }
                     }
                     return !found;
                 }
                 else
-                {
                     return true;
-                }
             });
             resolve();
         })
