@@ -17,8 +17,8 @@
                  {
                      if(unit.code.toUpperCase() == unitCode.toUpperCase())
                      {
-                         console.log("getFullUnit for " + unitCode + " returns " + unit.code);
-                         console.log(unit);
+                         //console.log("getFullUnit for " + unitCode + " returns " + unit.code);
+                         //console.log(unit);
                          return unit;
                      }
                  }
@@ -26,7 +26,7 @@
          }
      }
      
-     console.log(unitCode + " not found in coursePlan");
+     //console.log(unitCode + " not found in coursePlan");
      return null;
  }
  
@@ -67,7 +67,7 @@
                  {
                      if(unit.code.toUpperCase() == unitCode.toUpperCase())
                      {
-                         console.log("year: " + schedule[i].year + " sem: " + schedule[i].semesters[j].semester);
+                         //console.log("year: " + schedule[i].year + " sem: " + schedule[i].semesters[j].semester);
                          return {
                              year: schedule[i].year,
                              semester: schedule[i].semesters[j].semester
@@ -90,7 +90,7 @@
  function getAdvancedStandingPoints(coursePlan)
  {
      let points = coursePlan.advanced_standing.year1CP + coursePlan.advanced_standing.year2CP + coursePlan.advanced_standing.year3CP;
-     console.log(points);
+     //console.log(points);
      return points;
  }
  
@@ -193,7 +193,7 @@
          available = true;
      }
      
-     console.log("unit.code: " + unit.code + "; unit.semester: " + unit.semester + "; returns: " + available + " for semesterNum: " + semesterNum);
+     //console.log("unit.code: " + unit.code + "; unit.semester: " + unit.semester + "; returns: " + available + " for semesterNum: " + semesterNum);
      return available;
  }
  
@@ -324,18 +324,18 @@ function prereqsViable(unitItem, coursePlan)
   */
  function prereqItemMet(prereqItem, plannedYearNum, plannedSemNum, coursePlan)
  {
-     console.log("prereqItemMet checking:");
-     console.log(prereqItem);
+     //console.log("prereqItemMet checking:");
+     //console.log(prereqItem);
      //Check if prereqItem is a unit
      if(hasUnitCode(prereqItem))
      {        
         if(unitPassedBeforeYearSem(prereqItem.code, plannedYearNum, plannedSemNum, coursePlan))
         {
-            console.log("prereqItem " + prereqItem.code + " satisfied");
+            //console.log("prereqItem " + prereqItem.code + " satisfied");
             return true;
         }
          
-         console.log("prereqItem " + prereqItem.code + " not satisfied");
+         //console.log("prereqItem " + prereqItem.code + " not satisfied");
          return false;
      }
      else //prereqItem is a prereqNode
@@ -347,12 +347,12 @@ function prereqsViable(unitItem, coursePlan)
              {
                  if(!prereqItemMet(prereqItem.items[item], plannedYearNum, plannedSemNum, coursePlan))
                  {
-                     console.log("AND prereq not satisfied; prereqItemMet returns false");
+                     //console.log("AND prereq not satisfied; prereqItemMet returns false");
                      return false;
                  }
              }
              
-             console.log("AND prereq satisfied; prereqItemMet returns true");
+             //console.log("AND prereq satisfied; prereqItemMet returns true");
              return true;
          }
          else //operator is OR, so only one prereq item need be satisfied
@@ -361,12 +361,12 @@ function prereqsViable(unitItem, coursePlan)
              {
                  if(prereqItemMet(prereqItem.items[item], plannedYearNum, plannedSemNum, coursePlan))
                  {
-                     console.log("OR prereq satisfied; prereqItemMet returns true");
+                     //console.log("OR prereq satisfied; prereqItemMet returns true");
                      return true;
                  }
              }
              
-             console.log("OR prereq not satisfied; prereqItemMet returns false");
+             //console.log("OR prereq not satisfied; prereqItemMet returns false");
              return false;
          }
      }
@@ -425,7 +425,7 @@ function checkSemAvailability(coursePlan, unitItem, semesterItem)
 		}
 	}
 	
-	//console.log("checkSemAvailability for "+ unit_code + " in sem " + plannedSem + " returns: " + available);
+	////console.log("checkSemAvailability for "+ unit_code + " in sem " + plannedSem + " returns: " + available);
 	return available;
 }
 
@@ -456,24 +456,24 @@ function checkPrereqsMet(coursePlan, unitItem, semesterItem, yearItem)
             {
                 if(prereqItemMet(preReqs[prereq], toYear, toSem, coursePlan))
                 {
-                    //console.log("checkPrereqsMet for" + unit_code + " returns true");
+                    ////console.log("checkPrereqsMet for" + unit_code + " returns true");
                     return true;
                 }
             }
-            //console.log("checkPrereqsMet for " + unit_code + " returns false");
+            ////console.log("checkPrereqsMet for " + unit_code + " returns false");
             return false;
         }
-        //console.log("checkPrereqsMet: " + unit_code + " has no prereqs; checkPrereqsMet returns true");
+        ////console.log("checkPrereqsMet: " + unit_code + " has no prereqs; checkPrereqsMet returns true");
         return true;
         
 	}
-   // console.log("checkPrereqsMet: undecided elective has no prereqs");
+    // //console.log("checkPrereqsMet: undecided elective has no prereqs");
     return true;
 }
 
 function twelvePointsCompCheck(coursePlan, unitItem, semesterItem, yearItem)
 {
-    console.log("unit item is: " + unitItem.code);
+    //console.log("unit item is: " + unitItem.code);
     if(unitItem.type.toUpperCase() != "UNDECIDED")
     {
         if(parseInt(unitItem.code.charAt(3)) > 1)

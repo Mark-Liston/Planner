@@ -186,6 +186,11 @@ function getDegreeUnits(degree)
         }
     }
 
+    console.log("\n" + degree.code);
+    for (let unit of units)
+    {
+        console.log(unit.code);
+    }
     return units;
 }
 
@@ -216,6 +221,11 @@ function getOptionUnits(option, type)
         }
     }
 
+    console.log("\n" + option.code);
+    for (let unit of units)
+    {
+        console.log(unit.code);
+    }
     return units;
 }
 
@@ -347,21 +357,21 @@ function getOptions(input, plan, degree)
             plan.planned_units = plan.planned_units.filter(function(value, index, arr)
             {
                 if (value.type.toUpperCase() != "UNDECIDED")
-		{
-		    let found = false;
-		    for (let i = 0; i < arr.length && !found; ++i)
-		    {
-	                if (i != index && value.code.toUpperCase() == arr[i].code.toUpperCase())
-			{
-			    found = true;
-			}
-		    }
-		    return !found;
-		}
-		else
-		{
-	            return true;
-		}
+                {
+                    let found = false;
+                    for (let i = 0; i < arr.length && !found; ++i)
+                    {
+                        if (i != index && value.code.toUpperCase() == arr[i].code.toUpperCase())
+                        {
+                            found = true;
+                        }
+                    }
+                    return !found;
+                }
+                else
+                {
+                    return true;
+                }
             });
             resolve();
         })
@@ -515,7 +525,7 @@ function fillUnits(units)
         {
             // If unit position has been assigned a definite unit,
             // i.e., is not an undecided elective.
-            if (unit.type.toUpperCase() != "UNDECIDED")
+            if (unit?.type.toUpperCase() != "UNDECIDED")
             {
                 func.push(new Promise(function(resolve, reject)
                 {
@@ -600,12 +610,11 @@ function addDoneUnit(doneUnit, doneUnits)
 /**
  * Removes passed units from units in course plan.
  * @param {Array} arr1 Array of units in course plan.
- * @param {Array} arr2 Array of completed units.
- * @return Array containing all units after completed units have been removed.
+ * @param {Array} arr2 Array of completed units. If it contains units with
+ * duplicate codes, only the first occurance will be seen.
  */
 function subtractDoneUnits(arr1, arr2)
 {
-    let returnArr = [];
     let j = 0;
     let arr1Length = arr1.length;
     let found = false;
@@ -614,18 +623,23 @@ function subtractDoneUnits(arr1, arr2)
         for (let i = 0; i < arr1Length; ++i)
         {
             found = false;
-            for (j = 0; j < arr2.length && !found; ++j)
+            // Doesn't check undecided units.
+            if (arr1[i]?.type?.toUpperCase() != "UNDECIDED")
             {
-                // If units match and unit has been successfully completed
-                // (either advanced standing or a grade >= 50%)
-                if (arr1[i].code == arr2[j].code &&
-		            (arr2[j].grade == "AS" ||
-                    (!isNaN(arr2[j].grade) &&
-                    arr2[j].grade >= 50)))
+                // Compares every unit in arr2 with the current arr1 unit
+                // until a match is found.
+                for (j = 0; j < arr2.length && !found; ++j)
                 {
-                    found = true;
-                    arr1Length = arr1.length;
-                    returnArr = arr1.splice(i, 1);
+                    // If units match and unit has been successfully completed
+                    // (either advanced standing or a grade >= 50%)
+                    if(arr1[i].code == arr2[j].code &&
+		                (arr2[j].grade == "AS" ||
+                        (!isNaN(arr2[j].grade) && arr2[j].grade >= 50)))
+                    {
+                        found = true;
+                        arr1.splice(i, 1);
+                        arr1Length = arr1.length;
+                    }
                 }
             }
         }
@@ -633,9 +647,7 @@ function subtractDoneUnits(arr1, arr2)
     catch(error)
     {
         console.log(error);
-        returnArr = arr1;
     }
-    return returnArr;
 }
 
 /**
