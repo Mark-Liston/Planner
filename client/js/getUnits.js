@@ -77,7 +77,7 @@ function displayAdvancedStanding(coursePlan)
     let creditPoints = "Year 1: " + coursePlan.advanced_standing.year1CP +
 		        "CP, Year 2: " + coursePlan.advanced_standing.year2CP +
 		        "CP, Year 3: " + coursePlan.advanced_standing.year3CP + "CP";
-    $("#ASCreditPoints").children(".body").append(creditPoints);
+    $("#ASCreditPoints").children(".body").html(creditPoints);
 
     let completedUnits = "";
     let units = coursePlan.completed_units;
@@ -94,7 +94,7 @@ function displayAdvancedStanding(coursePlan)
     }
     if (completedUnits == "")
         completedUnits = "None"
-    $("#ASCompletedUnits").children(".body").append(completedUnits);
+    $("#ASCompletedUnits").children(".body").html(completedUnits);
 }
 
 function autoComplete(type, inputField)
@@ -929,79 +929,6 @@ function displayPlan(coursePlan)
 
 }
 
-function displayYearSemCredits(coursePlan)
-{
-    for(let schedYear of coursePlan.schedule)
-    {
-        let yearCred = 0;
 
-        for(let schedSem of schedYear.semesters)
-        {
-            let col_id = "year" + schedYear.year + "sem" + schedSem.semester;
-            let unitsHTML = $("#" + col_id).children();
-            $("#" + col_id).text("Semester credits: " + schedSem.credit_points).append(unitsHTML);
-            
-            yearCred += schedSem.credit_points;
-        }
-
-        $("#" + schedYear.year + "Cred").html("Credits: " + yearCred);
-    }
-
-}
-
-
-
-function displayTotalCredits(coursePlan)
-{
-    let advStandCred = getAdvancedStandingPoints(coursePlan);
-    let passedUnitCred = getPassedUnitCredPoints(coursePlan);
-    let plannedUnitCred = getPlannedUnitCredPoints(coursePlan);    
-    let totalPlanned = advStandCred + passedUnitCred + plannedUnitCred;
-    let credLeft = coursePlan_Original.credit_points - totalPlanned;
-
-    let htmlStr = "Credit Points Tally<br>" +
-    "<table>" +
-        "<thead>" +
-            "<tr>" +
-                "<th scope='col' style='text-align: right;'>Source</th>" +
-                "<th scope='col' style='text-align: left;'>&emsp;CP</th>"+
-            "</tr>" +
-        "</thead>" +
-        "<tr>" +
-            "<td>Advanced Standing:</td>" +
-            "<td>" + advStandCred + "</td>" +
-        "</tr>" +
-        "<tr>" +
-            "<td>Passed units:</td>" +
-            "<td>" + passedUnitCred + "</td>" +
-        "</tr>" +
-        "<tr>" + 
-            "<td>Planned units:</td>" +
-            "<td>" + plannedUnitCred +"</td>" +
-        "</tr>" +
-        "<tr>" +
-            "<td>Total planned and achieved credit points:</td>" +
-            "<td>" + totalPlanned + "</td>" +
-        "</tr>" + 
-        "<tr>" +
-            "<td>Remaining credit points needed to pass*:</td>" +
-            "<td>" + credLeft + "</td>" +
-        "</tr>" + 
-        "<tfoot>" +
-            "<tr>" +
-                "<td>Total credit points needed for graduation:</td>" +
-                "<td>" + coursePlan_Original.credit_points + "</td>" +
-            "</tr>" +
-        "</tfoot>" +
-    "</table>" +
-    "<br/>" +
-    "<p style='font-weight: normal; text-align: left;'>" +
-        "*You may be able to satisfy the remaining credit points with general electives." +
-        " Refer to the handbook for further information: " +
-        "<a href='https://handbook.murdoch.edu.au'>handbook.murdoch.edu.au</a>" +
-    "</p>";
-
-    $("#totalcreditspoints").html(htmlStr);
-}
 
 
