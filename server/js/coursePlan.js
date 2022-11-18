@@ -628,6 +628,7 @@ function subtractDoneUnits(arr1, arr2)
                     {
                         found = true;
                         arr1.splice(i, 1);
+                        i -= 1;
                         arr1Length = arr1.length;
                     }
                 }
