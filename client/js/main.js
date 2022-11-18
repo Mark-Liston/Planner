@@ -178,6 +178,7 @@ function editPlan()
     $("#cancelChangesPlan").show();
     $("#applyChangesPlan").show();
     $("#approvePlan").show();
+    $("#addUnitToPlan").attr("hidden", false);
 }
 
 function cancelChangesPlan()
@@ -190,7 +191,8 @@ function cancelChangesPlan()
         $('.cp-dragButton').hide();
         $("#cancelChangesPlan").hide();
         $("#applyChangesPlan").hide();
-	$("#approvePlan").hide();
+	    $("#approvePlan").hide();
+        $("#addUnitToPlan").attr("hidden", true);
 
         // revert plan to original form here
         callCoursePlan(coursePlan_Original);

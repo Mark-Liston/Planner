@@ -2,6 +2,11 @@ let coursePlan_Original;
 let coursePlan_Edited;
 
 
+$(document).ready(function()
+{
+    $("#addUnitToPlan").submit(AddUnit);
+});
+
 function planSearch()
 {
     let inputID = $("#planSearchInput").val();
@@ -23,6 +28,7 @@ function callCoursePlan(coursePlan)
     $("#cancelChangesPlan").hide();
     $("#applyChangesPlan").hide();
     $("#approvePlan").hide();
+    $("#addUnitToPlan").attr("hidden", true);
 	
     updateStatus();
 }
@@ -97,6 +103,46 @@ function displayAdvancedStanding(coursePlan)
     if (completedUnits == "")
         completedUnits = "None"
     $("#ASCompletedUnits").children(".body").append(completedUnits);
+}
+
+function AddUnit(e)
+{
+    e.preventDefault();
+    $.ajax(
+    {
+        type: "POST",
+        url: "/getUnit",
+        dataType: "text",
+        data: JSON.stringify({"code": $("#unitCodeInput").val()}),
+        success: function(unitResponse)
+        {
+            let code = JSON.parse(unitResponse).code;
+            let data = {
+                "unit": code,
+                "course_plan": coursePlan_Edited
+            };
+            //$.ajax(
+            //{
+            //    type: "POST",
+            //    url: "/addUnit",
+            //    dataType: "text",
+            //    data: JSON.stringify(data),
+            //    success: function(response)
+            //    {
+            //        coursePlan_Edited = JSON.parse(response);
+            //        callCoursePlan(coursePlan_Edited);
+            //    },
+            //    error: function(response)
+            //    {
+            //        alert(response.responseText);
+            //    }
+            //});
+        },
+        error: function(response)
+        {
+            alert(response.responseText);
+        }
+    });
 }
 
 function autoComplete(type, inputField)
@@ -175,42 +221,44 @@ function SubmitCourse()
                     event.preventDefault();
 
                     let doneUnits = [];
-		    let validInput = true;
+		            let validInput = true;
                     // Puts all input grade data into JSON arr.
                     $(".unitGradeInput").each(function(i, obj)
                     {
                         // Extracts unit code from obj's id.
                         let code = $(obj).attr("id").split("_")[0];
-			let grade = "AS";
-			let numGrade = Number($(obj).val());
-			if (!isNaN($(obj).val()) && $(obj).val() != "" && numGrade >= 0 && numGrade <= 100)
-			    grade = numGrade;
-			else if ($(obj).val() != "")
-			    validInput = false;
-		        doneUnits.push({"code": code, "grade": grade});
+                        let grade = "AS";
+                        let numGrade = Number($(obj).val());
+                        if (!isNaN($(obj).val()) && $(obj).val() != "" && numGrade >= 0 && numGrade <= 100)
+                            grade = numGrade;
+                        else if ($(obj).val() != "")
+                            validInput = false;
+                        doneUnits.push({"code": code, "grade": grade});
                     });
-		    if (!validInput)
-		    {
-	                alert("Grade input must be 0-100 or blank");
+                    if (!validInput)
+                    {
+                        alert("Grade input must be 0-100 or blank");
                     }
-		    else
-		    {
-		        if (isNaN($("#year1CPInput").val()) ||
-		            isNaN($("#year2CPInput").val()) ||
-		            isNaN($("#year3CPInput").val()))
-		        {
+                    else
+                    {
+                        if (isNaN($("#year1CPInput").val()) ||
+                            isNaN($("#year2CPInput").val()) ||
+                            isNaN($("#year3CPInput").val()))
+                        {
                             alert("Advanced standing input must be of type integer");
-		        }
-	                else
-		        {
-		            let data = {"email": $("#studentEmailInput").val(),
-		                "CP_input": {
-		                    year1: $("#year1CPInput").val(),
-		                    year2: $("#year2CPInput").val(),
-		                    year3: $("#year3CPInput").val()
-		                },
-		                "done_units": doneUnits,
-		                "course_plan": coursePlan_Original};
+                        }
+                        else
+                        {
+                            let data = {"email": $("#studentEmailInput").val(),
+                                "CP_input":
+                                {
+                                    year1: $("#year1CPInput").val(),
+                                    year2: $("#year2CPInput").val(),
+                                    year3: $("#year3CPInput").val()
+                                },
+                                "done_units": doneUnits,
+                                "course_plan": coursePlan_Original
+                            };
                             $.ajax(
                             {
                                 type: "POST",
@@ -219,7 +267,7 @@ function SubmitCourse()
                                 data: JSON.stringify(data),
                                 success: function(response)
                                 {
-		                            coursePlan_Original = JSON.parse(response);
+                                    coursePlan_Original = JSON.parse(response);
 
                                      //testing for level 100 units 30 pts rule
                                     /*let testtest = ["ICT102","ICT103","ICT104","ICT105","ICT106","ICT107","ICT108","ICT109","ICT111","ICT112"];
@@ -248,8 +296,8 @@ function SubmitCourse()
                                     alert(response.responseText);
                                 }
                             });
-	                }
-		    }
+                        }
+                    }
                 });
             }
         },
@@ -370,7 +418,8 @@ function SavePlan(){
 		    		$('.cp-dragButton').hide();
 		    		$("#cancelChangesPlan").hide();
 		    		$("#applyChangesPlan").hide();
-				$("#approvePlan").hide();
+				    $("#approvePlan").hide();
+                    $("#addUnitToPlan").attr("hidden", true);
 		    
 		    		// revert plan to original form here
 		    		callCoursePlan(coursePlan_Original);
