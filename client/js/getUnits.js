@@ -33,12 +33,14 @@ function checkPerm()
     var login = CheckLogin();
     if (login?.type == "admin" || login?.type == "staff")
     {
-	$(".planSearch").attr("hidden", false);
+        $(".planSearch").attr("hidden", false);
+        $("#addUnitToPlan").attr("hidden", false);
         $("#editPlan").attr("hidden", false);
     }
     else
     {
-	$(".planSearch").attr("hidden", true);
+        $(".planSearch").attr("hidden", true);
+        $("#addUnitToPlan").attr("hidden", true);
         $("#editPlan").attr("hidden", true);
     }
     if (login?.type == "admin")

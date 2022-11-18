@@ -7,13 +7,13 @@ $(document).ready(function()
     $("#landing").show();
     $("#viewPlanBtn").hide();
 
-    //$("#unitCodeInput").on("input", function()
-    //{
-    //    if ($("#unitCodeInput").val() != "")
-    //    {
-    //        autoComplete("Unit", $("#unitCodeInput"));
-    //    }
-    //});
+    $("#unitCodeInput").on("input", function()
+    {
+        if ($(this).val() != "")
+        {
+            autoComplete(["Unit"], $(this));
+        }
+    });
     $("#degreeInput").on("input", function()
     {
         if ($("#degreeInput").val() != "")
@@ -65,7 +65,7 @@ $(document).ready(function()
             $("#viewPlanBtn").hide();
             $("#landingSignupBtn").show();
             $("#landingLoginBtn").show();	
-	    $("#signupButton").hide();
+            $("#signupButton").hide();
         }
 
 	checkPerm();
