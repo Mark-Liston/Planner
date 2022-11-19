@@ -926,5 +926,6 @@ function addUnit(code, plan)
 
 exports.removeDoneUnits = removeDoneUnits;
 exports.assignAdvancedStanding = assignAdvancedStanding;
+exports.generateSchedule = generateSchedule;
 exports.generatePlan = generatePlan;
 exports.addUnit = addUnit;

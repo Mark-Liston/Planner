@@ -300,11 +300,6 @@ function reqAddUnit(request, response)
         coursePlan.addUnit(parsedData.unit, parsedData.course_plan)
         .then(function()
         {
-            /*for (let item of parsedData.course_plan.planned_units)
-            {
-                console.log(item.code);
-            }*/
-
             response.writeHead(200, {"Content-Type": "text/plan"})
             response.end(JSON.stringify(parsedData.course_plan));
         })
@@ -313,6 +308,25 @@ function reqAddUnit(request, response)
             response.writeHead(404, {"Content-Type": "text/plan"});
             response.end(errorMsg.toString());
         });
+    });
+}
+
+function reqRegenPlan(request, response)
+{
+    console.log("Request handler 'regenPlan' was called.");
+
+    let data = "";
+    request.on("data", function(chunk)
+    {
+        data += chunk;
+    });
+    request.on("end", function()
+    {
+        let plan = JSON.parse(data).course_plan;
+
+        coursePlan.generateSchedule(plan);
+        response.writeHead(200, {"Content-Type": "text/plan"})
+        response.end(JSON.stringify(plan));
     });
 }
 
@@ -327,3 +341,4 @@ exports.reqSavePlan = reqSavePlan;
 exports.reqGetEmail = reqGetEmail;
 exports.reqGetUsername = reqGetUsername;
 exports.reqAddUnit = reqAddUnit;
+exports.reqRegenPlan = reqRegenPlan;
