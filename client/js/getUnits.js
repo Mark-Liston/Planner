@@ -10,7 +10,6 @@ $(document).ready(function()
 function planSearch()
 {
     let inputID = $("#planSearchInput").val();
-
     showPlan(inputID);
 }
 
@@ -102,6 +101,31 @@ function displayAdvancedStanding(coursePlan)
     $("#ASCompletedUnits").children(".body").html(completedUnits);
 }
 
+function saveAndRefresh(coursePlan, changeStr)
+{
+    let login = CheckLogin();
+    let data = {
+        email: login.email,
+        changes: changes = changeStr,
+        plan: coursePlan
+    };
+    $.ajax(
+    {
+        type: "POST",
+        url: "/savePlan",
+        dataType: "text",
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: JSON.stringify(data),
+        success: function(response)
+        {
+            showPlan(coursePlan.student_id);
+            $("#editPlan").show();
+        }
+    });
+}
+
 function AddUnit(e)
 {
     e.preventDefault();
@@ -128,7 +152,6 @@ function AddUnit(e)
                 success: function(response)
                 {
                     coursePlan_Edited = JSON.parse(response);
-                    let login = CheckLogin();
                     // Saves plan after adding unit. The plan is saved and
                     // reloaded after adding a unit due to the course plan
                     // variables being saved as global variables. With the
@@ -138,32 +161,45 @@ function AddUnit(e)
                     // and then reloaded to retain the new unit. In the future,
                     // it would be better to refactor the system to not use
                     // global variables, to prevent this kind of situation.
-                    let data = {
-                        email: login.email,
-                        changes: changes = "Added unit " + code,
-                        plan: coursePlan_Edited
-                    };
-                    $.ajax(
-                    {
-                        type: "POST",
-                        url: "/savePlan",
-                        dataType: "text",
-                        cache: false,
-                        contentType: false,
-                        processData: false,
-                        data: JSON.stringify(data),
-                        success: function(response)
-                        {
-                            showPlan(coursePlan_Edited.student_id);
-                            $("#editPlan").show();
-                        }
-                    });
+                    saveAndRefresh(coursePlan_Edited, "Added unit " + code);
                 },
                 error: function(response)
                 {
                     alert(response.responseText);
                 }
             });
+        },
+        error: function(response)
+        {
+            alert(response.responseText);
+        }
+    });
+}
+
+function RegenPlan()
+{
+    let data = {
+        "course_plan": coursePlan_Edited
+    };
+    $.ajax(
+    {
+        type: "POST",
+        url: "/regenPlan",
+        dataType: "text",
+        data: JSON.stringify(data),
+        success: function(response)
+        {
+            coursePlan_Edited = JSON.parse(response);
+            // Saves plan after regenerating schedule. The plan is saved and
+            // reloaded after rescheduling due to the course plan
+            // variables being saved as global variables. With the
+            // current design of the system, the edit plan cannot be
+            // rescheduled because it occurs within an async
+            // call. Therefore, the plan must be saved to the database
+            // and then reloaded to retain the new schedule. In the future,
+            // it would be better to refactor the system to not use
+            // global variables, to prevent this kind of situation.
+            saveAndRefresh(coursePlan_Edited, "Regenerated schedule of course plan");
         },
         error: function(response)
         {
