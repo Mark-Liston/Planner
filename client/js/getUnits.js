@@ -16,6 +16,7 @@ function planSearch()
 
 function callCoursePlan(coursePlan)
 {
+    coursePlan_Edited = coursePlan;
     // coursePlan
     displayPlan(coursePlan);
     displayTotalCredits(coursePlan);
@@ -40,13 +41,11 @@ function checkPerm()
     if (login?.type == "admin" || login?.type == "staff")
     {
         $(".planSearch").attr("hidden", false);
-        $("#addUnitToPlan").attr("hidden", false);
         $("#editPlan").attr("hidden", false);
     }
     else
     {
         $(".planSearch").attr("hidden", true);
-        $("#addUnitToPlan").attr("hidden", true);
         $("#editPlan").attr("hidden", true);
     }
     if (login?.type == "admin")
@@ -115,6 +114,7 @@ function AddUnit(e)
         success: function(unitResponse)
         {
             let code = JSON.parse(unitResponse).code;
+            // Adds unit with given code to edited plan.
             let data = {
                 "unit": code,
                 "course_plan": coursePlan_Edited
@@ -128,7 +128,36 @@ function AddUnit(e)
                 success: function(response)
                 {
                     coursePlan_Edited = JSON.parse(response);
-                    callCoursePlan(coursePlan_Edited);
+                    let login = CheckLogin();
+                    // Saves plan after adding unit. The plan is saved and
+                    // reloaded after adding a unit due to the course plan
+                    // variables being saved as global variables. With the
+                    // current design of the system, a unit cannot be added
+                    // to the edited plan because it occurs within an async
+                    // call. Therefore, the plan must be saved to the database
+                    // and then reloaded to retain the new unit. In the future,
+                    // it would be better to refactor the system to not use
+                    // global variables, to prevent this kind of situation.
+                    let data = {
+                        email: login.email,
+                        changes: changes = "Added unit " + code,
+                        plan: coursePlan_Edited
+                    };
+                    $.ajax(
+                    {
+                        type: "POST",
+                        url: "/savePlan",
+                        dataType: "text",
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        data: JSON.stringify(data),
+                        success: function(response)
+                        {
+                            showPlan(coursePlan_Edited.student_id);
+                            $("#editPlan").show();
+                        }
+                    });
                 },
                 error: function(response)
                 {

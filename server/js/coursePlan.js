@@ -896,14 +896,26 @@ function addUnit(code, plan)
             unitItem.code = unit.code;
             unitItem.title = unit.title;
 
-            fillOneUnit(unitItem)
-            .then(function()
+            let index = scrape.searchJSONArr(plan.planned_units, function(entry)
             {
-                console.log(plan.schedule);
-                plan.planned_units.push(unitItem);
-                plan.planned_credit_points += unitItem.credit_points;
-                resolve();
+                return entry.code == unitItem.code;
             });
+            if (index != -1)
+            {
+                reject("Unit is already in course plan.");
+            }
+            else
+            {
+                fillOneUnit(unitItem)
+                .then(function()
+                {
+                    plan.planned_units.push(unitItem);
+                    plan.planned_credit_points += unitItem.credit_points;
+
+                    plan.schedule[0].semesters[0].units.push(unitItem);
+                    resolve();
+                });
+            }
         })
         .catch(errorMsg =>
         {
