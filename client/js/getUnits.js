@@ -79,30 +79,28 @@ function approvePlan()
 
 function displayAdvancedStanding(coursePlan)
 {
-    $("#ASCreditPoints").children(".body").val("");
-    $("#ASCompletedUnits").children(".body").val("");
 
     let creditPoints = "Year 1: " + coursePlan.advanced_standing.year1CP +
 		        "CP, Year 2: " + coursePlan.advanced_standing.year2CP +
 		        "CP, Year 3: " + coursePlan.advanced_standing.year3CP + "CP";
-    $("#ASCreditPoints").children(".body").append(creditPoints);
+    $("#ASCreditPoints").children(".body").html(creditPoints);
 
     let completedUnits = "";
     let units = coursePlan.completed_units;
     for (let i = 0; i < units.length; ++i)
     {
-	let grade = units[i].grade;
-	if (grade != "AS")
-	    grade += "%";
+        let grade = units[i].grade;
+        if (grade != "AS")
+            grade += "%";
         if (i != 0)
-	    completedUnits += ", ";
-	completedUnits += "<b>" + units[i].code + "</b> - " +
-	                units[i].name +
-	                ": <span style='color: red;'>" + grade + "</span>";
+            completedUnits += ", ";
+        completedUnits += "<b>" + units[i].code + "</b> - " +
+                        units[i].name +
+                        ": <span style='color: red;'>" + grade + "</span>";
     }
     if (completedUnits == "")
         completedUnits = "None"
-    $("#ASCompletedUnits").children(".body").append(completedUnits);
+    $("#ASCompletedUnits").children(".body").html(completedUnits);
 }
 
 function AddUnit(e)
@@ -121,22 +119,22 @@ function AddUnit(e)
                 "unit": code,
                 "course_plan": coursePlan_Edited
             };
-            //$.ajax(
-            //{
-            //    type: "POST",
-            //    url: "/addUnit",
-            //    dataType: "text",
-            //    data: JSON.stringify(data),
-            //    success: function(response)
-            //    {
-            //        coursePlan_Edited = JSON.parse(response);
-            //        callCoursePlan(coursePlan_Edited);
-            //    },
-            //    error: function(response)
-            //    {
-            //        alert(response.responseText);
-            //    }
-            //});
+            $.ajax(
+            {
+                type: "POST",
+                url: "/addUnit",
+                dataType: "text",
+                data: JSON.stringify(data),
+                success: function(response)
+                {
+                    coursePlan_Edited = JSON.parse(response);
+                    callCoursePlan(coursePlan_Edited);
+                },
+                error: function(response)
+                {
+                    alert(response.responseText);
+                }
+            });
         },
         error: function(response)
         {

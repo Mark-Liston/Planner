@@ -500,8 +500,44 @@ function getRequisites(unit, unitData)
 }
 
 /**
- * Populates details of units in given array. Details such as semester the unit
+ * Populates details of given unit. Details such as semester the unit
  * is available, unit level, and text-based enrolment rules.
+ * @param {Object} unit Unit to populate with details.
+ * @return Promise response.
+ */
+function fillOneUnit(unit)
+{
+    return new Promise(function(resolve, reject)
+    {
+        database.getUnit(unit.code)
+        .then(function(unitData)
+        {
+            if (unitData != null)
+            {
+                let offerings = JSON.parse(unitData.data).unit_offering;
+                // Gets semester when unit is available:
+                // S1, S2, or BOTH.
+                unit.semester = getSemesters(offerings);
+                // Gets level of unit as it appears in handbook JSON
+                // e.g., ICT159 = 2, ICT283 = 3, ICT302 = 4.
+                unit.level = Number(unitData.level);
+
+                // Adds all enrolment rules to the unit's 'notes' field.
+                for (let rule of JSON.parse(unitData.data).enrolment_rules)
+                {
+                    unit.notes.push(rule.description);
+                }
+
+                getRequisites(unit, unitData);
+
+                resolve();
+            }
+        });
+    })
+}
+
+/**
+ * Populates details of units in given array.
  * @param {Array} units Array of units to populate with details.
  * @return Promise response or error message.
  */
@@ -517,33 +553,7 @@ function fillUnits(units)
             // i.e., is not an undecided elective.
             if (unit?.type.toUpperCase() != "UNDECIDED")
             {
-                func.push(new Promise(function(resolve, reject)
-                {
-                    database.getUnit(unit.code)
-                    .then(function(unitData)
-                    {
-                        if (unitData != null)
-                        {
-                            let offerings = JSON.parse(unitData.data).unit_offering;
-                            // Gets semester when unit is available:
-                            // S1, S2, or BOTH.
-                            unit.semester = getSemesters(offerings);
-                            // Gets level of unit
-                            // e.g., ICT159 = 2, ICT283 = 3, ICT302 = 4.
-                            unit.level = Number(unitData.level);
-
-                            // Adds all enrolment rules to the unit's 'notes' field.
-                            for (let rule of JSON.parse(unitData.data).enrolment_rules)
-                            {
-                                unit.notes.push(rule.description);
-                            }
-
-                            getRequisites(unit, unitData);
-
-                            resolve();
-                        }
-                    });
-                }));
+                func.push(fillOneUnit(unit));
             }
         }
         Promise.all(func).then(function()
@@ -825,7 +835,7 @@ function generatePlan(input)
         plan.advanced_standing = new planDef.AdvancedStanding();
         plan.completed_units = [];
         plan.completed_credit_points = aggregateCP(plan.completed_units);
-        plan.startYear = input.startYear;
+        plan.startYear = Number(input.startYear);
         plan.startSemester = input.startSemester;        
         
         database.getDegree(extractCode(input.degreeInput))
@@ -866,6 +876,43 @@ function generatePlan(input)
     });
 }
 
+/**
+ * Adds unit with given code to given course plan.
+ * @param {String} code Code of unit to add to plan.
+ * @param {Object} plan Course plan to add unit to.
+ * @return Promise response or error message.
+ */
+function addUnit(code, plan)
+{
+    return new Promise(function(resolve, reject)
+    {
+        database.getUnit(code)
+        .then(function(unit)
+        {
+            let unitItem = new planDef.Unit();
+            unitItem.type = "decided";
+            unitItem.necessity = "mandatory";
+            unitItem.credit_points = Number(unit.creditPoints);
+            unitItem.code = unit.code;
+            unitItem.title = unit.title;
+
+            fillOneUnit(unitItem)
+            .then(function()
+            {
+                console.log(plan.schedule);
+                plan.planned_units.push(unitItem);
+                plan.planned_credit_points += unitItem.credit_points;
+                resolve();
+            });
+        })
+        .catch(errorMsg =>
+        {
+            reject(errorMsg);
+        });
+    });
+}
+
 exports.removeDoneUnits = removeDoneUnits;
 exports.assignAdvancedStanding = assignAdvancedStanding;
 exports.generatePlan = generatePlan;
+exports.addUnit = addUnit;
