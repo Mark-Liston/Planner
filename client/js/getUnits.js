@@ -173,42 +173,43 @@ function SubmitCourse()
                     event.preventDefault();
 
                     let doneUnits = [];
-		    let validInput = true;
+		            let validInput = true;
                     // Puts all input grade data into JSON arr.
                     $(".unitGradeInput").each(function(i, obj)
                     {
                         // Extracts unit code from obj's id.
                         let code = $(obj).attr("id").split("_")[0];
-			let grade = "AS";
-			let numGrade = Number($(obj).val());
-			if (!isNaN($(obj).val()) && $(obj).val() != "" && numGrade >= 0 && numGrade <= 100)
-			    grade = numGrade;
-			else if ($(obj).val() != "")
-			    validInput = false;
-		        doneUnits.push({"code": code, "grade": grade});
+                        let grade = "AS";
+                        let numGrade = Number($(obj).val());
+                        if (!isNaN($(obj).val()) && $(obj).val() != "" && numGrade >= 0 && numGrade <= 100)
+                            grade = numGrade;
+                        else if ($(obj).val() != "")
+                            validInput = false;
+                            doneUnits.push({"code": code, "grade": grade});
                     });
-		    if (!validInput)
-		    {
-	                alert("Grade input must be 0-100 or blank");
+                    if (!validInput)
+                    {
+                        alert("Grade input must be 0-100 or blank");
                     }
-		    else
-		    {
-		        if (isNaN($("#year1CPInput").val()) ||
-		            isNaN($("#year2CPInput").val()) ||
-		            isNaN($("#year3CPInput").val()))
-		        {
+                    else
+                    {
+                        if (isNaN($("#year1CPInput").val()) ||
+                            isNaN($("#year2CPInput").val()) ||
+                            isNaN($("#year3CPInput").val()))
+                        {
                             alert("Advanced standing input must be of type integer");
-		        }
-	                else
-		        {
-		            let data = {"email": $("#studentEmailInput").val(),
-		                "CP_input": {
-		                    year1: $("#year1CPInput").val(),
-		                    year2: $("#year2CPInput").val(),
-		                    year3: $("#year3CPInput").val()
-		                },
-		                "done_units": doneUnits,
-		                "course_plan": coursePlan_Original};
+                        }
+                        else
+                        {
+                            let data = {"email": $("#studentEmailInput").val(),
+                            "CP_input": 
+                            {
+                                year1: $("#year1CPInput").val(),
+                                year2: $("#year2CPInput").val(),
+                                year3: $("#year3CPInput").val()
+                            },
+                            "done_units": doneUnits,
+                            "course_plan": coursePlan_Original};
                             $.ajax(
                             {
                                 type: "POST",
@@ -217,28 +218,7 @@ function SubmitCourse()
                                 data: JSON.stringify(data),
                                 success: function(response)
                                 {
-		                            coursePlan_Original = JSON.parse(response);
-
-                                     //testing for level 100 units 30 pts rule
-                                    /*let testtest = ["ICT102","ICT103","ICT104","ICT105","ICT106","ICT107","ICT108","ICT109","ICT111","ICT112"];
-                                    for(let i = 0; i < 4; i++)
-                                    {
-                                        let copyUnitObj = new Object();
-                                        copyUnitObj = JSON.parse(JSON.stringify(coursePlan_Original.schedule[0].semesters[0].units[0]));
-                                        copyUnitObj.code = testtest[i];
-                                        copyUnitObj.title = "TEST TEST";
-                                        coursePlan_Original.schedule[0].semesters[0].units.push(copyUnitObj);
-                                        coursePlan_Original.planned_units.push(copyUnitObj);
-                                    }
-                                   for(let i = 5; i < 9; i++)
-                                    {
-                                        let copyUnitObj = new Object();
-                                        copyUnitObj = JSON.parse(JSON.stringify(coursePlan_Original.schedule[0].semesters[0].units[0]));
-                                        copyUnitObj.code = testtest[i];
-                                        copyUnitObj.title = "TEST TEST";
-                                        coursePlan_Original.completed_units.push(copyUnitObj);
-                                    }*/
-
+                                    coursePlan_Original = JSON.parse(response);
                                     callCoursePlan(coursePlan_Original);
                                 },
                                 error: function(response)
@@ -246,8 +226,8 @@ function SubmitCourse()
                                     alert(response.responseText);
                                 }
                             });
-	                }
-		    }
+                        }
+                    }
                 });
             }
         },
@@ -631,8 +611,8 @@ function checkPlanRules(coursePlan)
 	overloadedSems.forEach(sem => {
 		let message = "";
 		message += '<div class="message"><h3>Overload Warning</h3>';
-        message += `<h4>Year ${parseInt(coursePlan.startYear, 10) + sem.year}, Semester ${sem.sem+1}</h4>`;
-        message += 'is overloaded, please ensure you have spoken to your course coordinator</p>';    
+        message += `<h4 style='font-size: medium;'>Year ${parseInt(coursePlan.startYear, 10) + sem.year}, Semester ${sem.sem+1}</h4>`;
+        message += ' is overloaded, please ensure you have spoken to your course coordinator</p>';    
 		message += '</div>';
 		$("#messages").append(message);
 	});
