@@ -30,6 +30,16 @@
 		<div class="container-fluid">
 			<a href="/"><img src="../images/logo.png" class="img-fluid logo" width="250"></img></a>
 
+			<!-- Navigation -->
+			<ul class="navbar-nav ms-auto">
+				<li class="nav-item">
+					<a href="/" class="nav-link">Home</a>
+				</li>
+				<li class="nav-item">
+					<a href="#" id="aboutLink" onclick="ShowAbout()" class="nav-link">About</a>
+				</li>
+			</ul>
+
 			<!--Account Drop down-->
 			<div id="profile-dropdown" class="dropdown">
 				<button class="btn btn-secondary dropdown-toggle" type="button" id="profile-button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -211,6 +221,41 @@
 				<button type="button" id="applyChangesPlan" class="btn btn-primary" onclick="BtnSavePlan()">Apply Changes</button>
 			</div>
 		</article>
+
+		<article id="about" class="page">
+			<div class="container-fluid">
+				<div class="about">
+					<h1>Blayde Anthony Dietsch</h1>
+					<img src="/images/BlaydeD.jpg" class="img-fluid">
+					<h2>Role: Team Lead</h2>
+					<h3>Contact: <a href="mailto: blaydedietsch@outlook.com">blaydedietsch@outlook.com</a></h3>
+				</div>
+				<div class="about">
+					<h1>Mark Liston</h1>
+					<img src="/images/MarkL.png" class="img-fluid">
+					<h2>Role: Back End Developer</h2>
+					<h3>Contact: <a href="mailto: mark.liston2002@gmail.com">mark.liston2002@gmail.com</a></h3>
+				</div>
+				<div class="about">
+					<h1>Orlando Molina Santos</h1>
+					<img src="/images/OrlandoMS.jpg" class="img-fluid">
+					<h2>Role: Databasing and Documentation</h2>
+					<h3>Contact: <a href="mailto: OMolinaSantos@gmail.com">OMolinaSantos@gmail.com</a></h3>
+				</div>
+				<div class="about">
+					<h1>Jonathan Lau</h1>
+					<img src="/images/JonathanL.png" class="img-fluid">
+					<h2>Role: Testing and Security</h2>
+					<h3>Contact: <a href="mailto: jonathanlau1999@hotmail.com">jonathanlau1999@hotmail.com</a></h3>
+				</div>
+				<div class="about">
+					<h1>Kyle Trijo</h1>
+					<img src="/images/KyleT.jpg" class="img-fluid">
+					<h2>Role: Front End Development</h2>
+					<h3>Contact: <a href="mailto: kyle.trijo@gmail.com">kyle.trijo@gmail.com</a></h3>
+				</div>
+			</div>
+		</article>
 	</div>
 
 	<div class="modal" id="staffSignupModal" tabindex="-1">
@@ -324,7 +369,7 @@
 			</div>
 		  </div>
 		</div>
-	  </div>
+	</div>
 
 </body>
 </html>
