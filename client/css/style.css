@@ -3,6 +3,14 @@ nav{
 	background-color: #FCFBDF;
 }
 
+.nav-item{
+	padding: 0px 20px;
+}
+
+.nav-link{
+	font-size:xx-large;
+}
+
 #profile-button{
 	width: 100px;
 	height: 100px;
@@ -19,6 +27,15 @@ nav{
 #icon{
 	border: solid gray 1px;
 	border-radius: 100%;
+}
+
+/* About page */
+.about{
+	width: 50%;
+	border-bottom: solid grey 1px;
+	margin: auto;
+	margin-top: 30px;
+	padding: 0px 5%;
 }
 
 /* Main content */
@@ -39,6 +56,7 @@ nav{
 .entry{
 	padding: 5px;
 }
+
 
 .btn-primary{
 	background-color: #e0242d;
@@ -93,6 +111,18 @@ h2{
 	text-align: center;
 }
 
+form input {
+	text-align: center;
+}
+
+form .btn {
+	width: fit-content; 
+	padding-left: 15px; 
+	padding-right: 15px; 
+	margin-left: auto; 
+	margin-right: auto;
+}
+
 .ui-autocomplete
 {
     max-height: 200px;
@@ -130,6 +160,7 @@ h2{
 	border-style: solid;
 	border-width: 2px;
 	border-color: lightgrey;
+	
 
 
 }
@@ -153,6 +184,7 @@ h2{
 	justify-content: center;
 	align-content: center;
 	flex-direction: column;
+	padding-right: 10px;
 }
 
 .cp-unit {

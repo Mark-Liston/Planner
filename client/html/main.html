@@ -22,6 +22,7 @@
 	<script src="../js/account.js"></script>
     <script src="../js/coursePlanHelper.js"></script>
     <script src="../js/ruleCheck.js"></script>
+	<script src="../js/displayCreditPoints.js"></script>
 	<link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
@@ -29,6 +30,16 @@
 	<nav class="navbar navbar-expand-md">
 		<div class="container-fluid">
 			<a href="/"><img src="../images/logo.png" class="img-fluid logo" width="250"></img></a>
+
+			<!-- Navigation -->
+			<ul class="navbar-nav ms-auto">
+				<li class="nav-item">
+					<a href="/" class="nav-link">Home</a>
+				</li>
+				<li class="nav-item">
+					<a href="#" id="aboutLink" onclick="ShowAbout()" class="nav-link">About</a>
+				</li>
+			</ul>
 
 			<!--Account Drop down-->
 			<div id="profile-dropdown" class="dropdown">
@@ -80,13 +91,13 @@
                     <label for="studentIDInput">Student ID:</label>
                     <input type="text" id="studentIDInput" name="studentIDInput" class="form-control" placeholder="e.g. 23858265" required="required">
 
-					<p>Enter the first year and semester of the course plan:</p>
+					<label>Enter the first year and semester of the course plan:</label>
 					<button type="button" id="setEarliestSem" class="btn btn-primary" onclick="calcEarliestStartSem()">Earliest possible year and semester</button>
 
 					<label for="startYear">First year of the course plan:</label>
 					<input type="number" id="startYear" name="startYear" class="form-control" placeholder="e.g. 2023" min="1973" max="9999" required>
 
-					<p>First semester of the course plan:</p>
+					<label>First semester of the course plan:</label>
 					
 					<label class="form-check-label" for="semester1">
 						<input type="radio" id="semester1" name="startSemester" class="form-check-input" value="1" checked> Semester 1
@@ -95,10 +106,13 @@
 					<label class="form-check-label" for="semester2">
 						<input type="radio" id="semester2" name="startSemester" class="form-check-input" value="2"> Semester 2
 					</label>
+
+					<label for="studyLoad">Study Load (credit points per semester):</label>
+					<input type="number" id="studyLoad" name="studyLoad" class="form-control" value="12" min="3" max="12" required>
+
 					<br/>
 					<br/>
-					<br/>
-					<label>
+					<label style="font-weight: bold;">
 					    You may find the Murdoch Handbook helpful in familiarising you with your course
 					    <a href="https://handbook.murdoch.edu.au">handbook.murdoch.edu.au</a>
 					    <br/>
@@ -134,25 +148,28 @@
 							</div>
 						</div>
 					</div>
-
-					<button type="submit" id="submitCourse" class="btn btn-primary">Go!</button>
+					<br>
+					<br>
+					<div class="row" style="margin-top: 10px;">
+						<button type="submit" id="submitCourse" class="btn btn-primary" style="width: 10%; margin: auto;" >Go!</button>
+					</div>
 				</form>
 			</div>
 		</article>
         <!-- For inserting completed units and their grades -->
         <article id="completedUnits" class="page">
-	        <h1>Advanced Standing</h1>
-	        <p>Please enter any credit points of advanced standing for each year</p>
-	        <label for="year1CPInput">1st Year:</label>
-	        <input type="text" id="year1CPInput" name="year1CPInput" placeholder="e.g. 3">
-	        <label for="year2CPInput">2nd Year:</label>
-	        <input type="text" id="year2CPInput" name="year2CPInput" placeholder="e.g. 6">
-	        <label for="year3CPInput">3rd Year:</label>
-	        <input type="text" id="year3CPInput" name="year3CPInput" placeholder="e.g. 9">
-	        <br/>
-	        <br/>
+          <h1>Advanced Standing</h1>
+          <p>Please enter any credit points of advanced standing for each year</p>
+          <label for="year1CPInput">1st Year:</label>
+          <input type="number" id="year1CPInput" name="year1CPInput" placeholder="e.g. 3" value="0">
+          <label for="year2CPInput">2nd Year:</label>
+          <input type="number" id="year2CPInput" name="year2CPInput" placeholder="e.g. 6" value="0">
+          <label for="year3CPInput">3rd Year:</label>
+          <input type="number" id="year3CPInput" name="year3CPInput" placeholder="e.g. 9" value="0">
+          <br/>
+          <br/>
             <h1>Previous and Completed Units</h1>
-            <p>Please enter any units (and number grade) you have completed/attempted, or received credit for (leave grade input empty for advanced standing)</p>
+            <p>Please enter any units (and number mark) you have completed/attempted, or received credit for (leave mark input empty for advanced standing)</p>
             <label for="doneUnitInput">Completed Unit:</label>
             <input type="text" id="doneUnitInput" name="doneUnitInput" class="form-control" placeholder="e.g. ICT283">
 	        <button id="addDoneUnitBtn" type="button" class="btn btn-primary">Add</button><br/>
@@ -177,7 +194,7 @@
 		            </div>
 			    <div id="ASCompletedUnits">
 			        <h2>Completed Units</h2>
-				<p>Grades appear in <span style="color: red;">red</span>. 'AS' stands for Advanced Standing.</p>
+				<p>Marks appear in <span style="color: red;">red</span>. 'AS' stands for Advanced Standing.</p>
 				<p class="body"></p>
 		            </div>
 			</div>
@@ -205,6 +222,41 @@
 				<button type="button" id="editPlan" class="btn btn-primary" onclick="editPlan();">Edit Plan</button>
 				<button type="button" id="cancelChangesPlan" class="btn btn-primary" onclick="cancelChangesPlan();">Cancel</button>
 				<button type="button" id="applyChangesPlan" class="btn btn-primary" onclick="BtnSavePlan()">Apply Changes</button>
+			</div>
+		</article>
+
+		<article id="about" class="page">
+			<div class="container-fluid">
+				<div class="about">
+					<h1>Blayde Anthony Dietsch</h1>
+					<img src="/images/BlaydeD.jpg" class="img-fluid">
+					<h2>Role: Team Lead</h2>
+					<h3>Contact: <a href="mailto: blaydedietsch@outlook.com">blaydedietsch@outlook.com</a></h3>
+				</div>
+				<div class="about">
+					<h1>Mark Liston</h1>
+					<img src="/images/MarkL.png" class="img-fluid">
+					<h2>Role: Back End Developer</h2>
+					<h3>Contact: <a href="mailto: mark.liston2002@gmail.com">mark.liston2002@gmail.com</a></h3>
+				</div>
+				<div class="about">
+					<h1>Orlando Molina Santos</h1>
+					<img src="/images/OrlandoMS.jpg" class="img-fluid">
+					<h2>Role: Databasing and Documentation</h2>
+					<h3>Contact: <a href="mailto: OMolinaSantos@gmail.com">OMolinaSantos@gmail.com</a></h3>
+				</div>
+				<div class="about">
+					<h1>Jonathan Lau</h1>
+					<img src="/images/JonathanL.png" class="img-fluid">
+					<h2>Role: Testing and Security</h2>
+					<h3>Contact: <a href="mailto: jonathanlau1999@hotmail.com">jonathanlau1999@hotmail.com</a></h3>
+				</div>
+				<div class="about">
+					<h1>Kyle Trijo</h1>
+					<img src="/images/KyleT.jpg" class="img-fluid">
+					<h2>Role: Front End Development</h2>
+					<h3>Contact: <a href="mailto: kyle.trijo@gmail.com">kyle.trijo@gmail.com</a></h3>
+				</div>
 			</div>
 		</article>
 	</div>
@@ -320,7 +372,7 @@
 			</div>
 		  </div>
 		</div>
-	  </div>
+	</div>
 
 </body>
 </html>

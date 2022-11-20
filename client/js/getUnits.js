@@ -296,6 +296,7 @@ function SubmitCourse()
                             grade = numGrade;
                         else if ($(obj).val() != "")
                             validInput = false;
+
                         doneUnits.push({"code": code, "grade": grade});
                     });
                     if (!validInput)
@@ -307,21 +308,22 @@ function SubmitCourse()
                         if (isNaN($("#year1CPInput").val()) ||
                             isNaN($("#year2CPInput").val()) ||
                             isNaN($("#year3CPInput").val()))
-                        {
                             alert("Advanced standing input must be of type integer");
-                        }
+                        else if (($("#year1CPInput").val() < 0 || $("#year1CPInput").val() > 72) ||
+                            ($("#year2CPInput").val() < 0 || $("#year2CPInput").val() > 72) ||
+                            ($("#year3CPInput").val() < 0 || $("#year3CPInput").val() > 72))
+                            alert("Advanced standing input may only be 0-72");
                         else
                         {
                             let data = {"email": $("#studentEmailInput").val(),
-                                "CP_input":
-                                {
-                                    year1: $("#year1CPInput").val(),
-                                    year2: $("#year2CPInput").val(),
-                                    year3: $("#year3CPInput").val()
-                                },
-                                "done_units": doneUnits,
-                                "course_plan": coursePlan_Original
-                            };
+                            "CP_input": 
+                            {
+                                year1: $("#year1CPInput").val(),
+                                year2: $("#year2CPInput").val(),
+                                year3: $("#year3CPInput").val()
+                            },
+                            "done_units": doneUnits,
+                            "course_plan": coursePlan_Original};
                             $.ajax(
                             {
                                 type: "POST",
@@ -331,27 +333,6 @@ function SubmitCourse()
                                 success: function(response)
                                 {
                                     coursePlan_Original = JSON.parse(response);
-
-                                     //testing for level 100 units 30 pts rule
-                                    /*let testtest = ["ICT102","ICT103","ICT104","ICT105","ICT106","ICT107","ICT108","ICT109","ICT111","ICT112"];
-                                    for(let i = 0; i < 4; i++)
-                                    {
-                                        let copyUnitObj = new Object();
-                                        copyUnitObj = JSON.parse(JSON.stringify(coursePlan_Original.schedule[0].semesters[0].units[0]));
-                                        copyUnitObj.code = testtest[i];
-                                        copyUnitObj.title = "TEST TEST";
-                                        coursePlan_Original.schedule[0].semesters[0].units.push(copyUnitObj);
-                                        coursePlan_Original.planned_units.push(copyUnitObj);
-                                    }
-                                   for(let i = 5; i < 9; i++)
-                                    {
-                                        let copyUnitObj = new Object();
-                                        copyUnitObj = JSON.parse(JSON.stringify(coursePlan_Original.schedule[0].semesters[0].units[0]));
-                                        copyUnitObj.code = testtest[i];
-                                        copyUnitObj.title = "TEST TEST";
-                                        coursePlan_Original.completed_units.push(copyUnitObj);
-                                    }*/
-
                                     callCoursePlan(coursePlan_Original);
                                 },
                                 error: function(response)
@@ -422,7 +403,7 @@ function getGrades()
             success: function(response)
             {
                 response = JSON.parse(response);
-                let unitElement = "<label for='" + response.code + "_grade'>Grade for " + response.code + ":&nbsp;</label>" +
+                let unitElement = "<label for='" + response.code + "_grade'>Mark for " + response.code + ":&nbsp;</label>" +
                     "<input type='text' id='" + response.code + "_grade' class='unitGradeInput' placeholder='e.g. 67'><br/>";
                 $("#doneUnits").append(unitElement);
             },
@@ -745,8 +726,8 @@ function checkPlanRules(coursePlan)
 	overloadedSems.forEach(sem => {
 		let message = "";
 		message += '<div class="message"><h3>Overload Warning</h3>';
-        message += `<h4>Year ${parseInt(coursePlan.startYear, 10) + sem.year}, Semester ${sem.sem+1}</h4>`;
-        message += 'is overloaded, please ensure you have spoken to your course coordinator</p>';    
+        message += `<h4 style='font-size: medium;'>Year ${parseInt(coursePlan.startYear, 10) + sem.year}, Semester ${sem.sem+1}</h4>`;
+        message += ' is overloaded, please ensure you have spoken to your course coordinator</p>';    
 		message += '</div>';
 		$("#messages").append(message);
 	});
@@ -1043,79 +1024,6 @@ function displayPlan(coursePlan)
 
 }
 
-function displayYearSemCredits(coursePlan)
-{
-    for(let schedYear of coursePlan.schedule)
-    {
-        let yearCred = 0;
 
-        for(let schedSem of schedYear.semesters)
-        {
-            let col_id = "year" + schedYear.year + "sem" + schedSem.semester;
-            let unitsHTML = $("#" + col_id).children();
-            $("#" + col_id).text("Semester credits: " + schedSem.credit_points).append(unitsHTML);
-            
-            yearCred += schedSem.credit_points;
-        }
-
-        $("#" + schedYear.year + "Cred").html("Credits: " + yearCred);
-    }
-
-}
-
-
-
-function displayTotalCredits(coursePlan)
-{
-    let advStandCred = getAdvancedStandingPoints(coursePlan);
-    let passedUnitCred = getPassedUnitCredPoints(coursePlan);
-    let plannedUnitCred = getPlannedUnitCredPoints(coursePlan);    
-    let totalPlanned = advStandCred + passedUnitCred + plannedUnitCred;
-    let credLeft = coursePlan_Original.credit_points - totalPlanned;
-
-    let htmlStr = "Credit Points Tally<br>" +
-    "<table>" +
-        "<thead>" +
-            "<tr>" +
-                "<th scope='col' style='text-align: right;'>Source</th>" +
-                "<th scope='col' style='text-align: left;'>&emsp;CP</th>"+
-            "</tr>" +
-        "</thead>" +
-        "<tr>" +
-            "<td>Advanced Standing:</td>" +
-            "<td>" + advStandCred + "</td>" +
-        "</tr>" +
-        "<tr>" +
-            "<td>Passed units:</td>" +
-            "<td>" + passedUnitCred + "</td>" +
-        "</tr>" +
-        "<tr>" + 
-            "<td>Planned units:</td>" +
-            "<td>" + plannedUnitCred +"</td>" +
-        "</tr>" +
-        "<tr>" +
-            "<td>Total planned and achieved credit points:</td>" +
-            "<td>" + totalPlanned + "</td>" +
-        "</tr>" + 
-        "<tr>" +
-            "<td>Remaining credit points needed to pass*:</td>" +
-            "<td>" + credLeft + "</td>" +
-        "</tr>" + 
-        "<tfoot>" +
-            "<tr>" +
-                "<td>Total credit points needed for graduation:</td>" +
-                "<td>" + coursePlan_Original.credit_points + "</td>" +
-            "</tr>" +
-        "</tfoot>" +
-    "</table>" +
-    "<br/>" +
-    "<p style='font-weight: normal; text-align: left;'>" +
-        "*You may be able to satisfy the remaining credit points with general electives." +
-        " Refer to the handbook for further information: " +
-        "<a href='https://handbook.murdoch.edu.au'>handbook.murdoch.edu.au</a>" +
-    "</p>";
-
-    $("#totalcreditspoints").html(htmlStr);
-}
 
 

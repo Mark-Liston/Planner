@@ -638,6 +638,7 @@ function subtractDoneUnits(arr1, arr2)
                     {
                         found = true;
                         arr1.splice(i, 1);
+                        i -= 1;
                         arr1Length = arr1.length;
                     }
                 }
@@ -830,7 +831,7 @@ function generatePlan(input)
         let plan = new planDef.Plan();
         plan.student_id = input.studentIDInput;
         plan.student_name = "placeholdername"; // Add field for student name.
-        plan.study_load = 12; // Add field for study load.
+        plan.study_load = input.studyLoad; // Add field for study load.
         plan.completed_credit_points = 0;
         plan.advanced_standing = new planDef.AdvancedStanding();
         plan.completed_units = [];

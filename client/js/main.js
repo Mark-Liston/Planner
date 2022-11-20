@@ -42,6 +42,7 @@ $(document).ready(function()
             autoComplete(["Unit"], $(this));
         }
     });
+
     // Checks login every second.
     setTimeout(function()
     {
@@ -71,6 +72,11 @@ $(document).ready(function()
 	checkPerm();
     }, 1000);
 });
+
+function ShowAbout(){
+	$(".page").hide();
+    $("#about").show();
+}
 
 function studentIDFromEmail(email, callback)
 {
