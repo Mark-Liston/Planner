@@ -897,10 +897,12 @@ function addUnit(code, plan)
             unitItem.code = unit.code;
             unitItem.title = unit.title;
 
+            // Checks that new unit isn't already in plan.
             let index = scrape.searchJSONArr(plan.planned_units, function(entry)
             {
                 return entry.code == unitItem.code;
             });
+            // Checks that new unit hasn't already been completed.
             let index2 = scrape.searchJSONArr(plan.completed_units, function(entry)
             {
                 return entry.code == unitItem.code;
