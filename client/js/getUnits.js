@@ -189,16 +189,18 @@ function SubmitCourse()
                     });
                     if (!validInput)
                     {
-                        alert("Grade input must be 0-100 or blank");
+                        alert("Mark input must be 0-100 or blank");
                     }
                     else
                     {
                         if (isNaN($("#year1CPInput").val()) ||
                             isNaN($("#year2CPInput").val()) ||
                             isNaN($("#year3CPInput").val()))
-                        {
                             alert("Advanced standing input must be of type integer");
-                        }
+                        else if (($("#year1CPInput").val() < 0 || $("#year1CPInput").val() > 72) ||
+                            ($("#year2CPInput").val() < 0 || $("#year2CPInput").val() > 72) ||
+                            ($("#year3CPInput").val() < 0 || $("#year3CPInput").val() > 72))
+                            alert("Advanced standing input may only be 0-72");
                         else
                         {
                             let data = {"email": $("#studentEmailInput").val(),
@@ -289,7 +291,7 @@ function getGrades()
             success: function(response)
             {
                 response = JSON.parse(response);
-                let unitElement = "<label for='" + response.code + "_grade'>Grade for " + response.code + ":&nbsp;</label>" +
+                let unitElement = "<label for='" + response.code + "_grade'>Mark for " + response.code + ":&nbsp;</label>" +
                     "<input type='text' id='" + response.code + "_grade' class='unitGradeInput' placeholder='e.g. 67'><br/>";
                 $("#doneUnits").append(unitElement);
             },

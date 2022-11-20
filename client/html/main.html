@@ -150,15 +150,15 @@
 	    <h1>Advanced Standing</h1>
 	    <p>Please enter any credit points of advanced standing for each year</p>
 	    <label for="year1CPInput">1st Year:</label>
-	    <input type="text" id="year1CPInput" name="year1CPInput" placeholder="e.g. 3">
+	    <input type="number" id="year1CPInput" name="year1CPInput" placeholder="e.g. 3" value="0">
 	    <label for="year2CPInput">2nd Year:</label>
-	    <input type="text" id="year2CPInput" name="year2CPInput" placeholder="e.g. 6">
+	    <input type="number" id="year2CPInput" name="year2CPInput" placeholder="e.g. 6" value="0">
 	    <label for="year3CPInput">3rd Year:</label>
-	    <input type="text" id="year3CPInput" name="year3CPInput" placeholder="e.g. 9">
+	    <input type="number" id="year3CPInput" name="year3CPInput" placeholder="e.g. 9" value="0">
 	    <br/>
 	    <br/>
             <h1>Previous and Completed Units</h1>
-            <p>Please enter any units (and number grade) you have completed/attempted, or received credit for (leave grade input empty for advanced standing)</p>
+            <p>Please enter any units (and number mark) you have completed/attempted, or received credit for (leave mark input empty for advanced standing)</p>
             <label for="doneUnitInput">Completed Unit:</label>
             <input type="text" id="doneUnitInput" name="doneUnitInput" class="form-control" placeholder="e.g. ICT283">
 	    <button id="addDoneUnitBtn" type="button" class="btn btn-primary">Add</button><br/>
@@ -183,7 +183,7 @@
 		            </div>
 			    <div id="ASCompletedUnits">
 			        <h2>Completed Units</h2>
-				<p>Grades appear in <span style="color: red;">red</span>. 'AS' stands for Advanced Standing.</p>
+				<p>Marks appear in <span style="color: red;">red</span>. 'AS' stands for Advanced Standing.</p>
 				<p class="body"></p>
 		            </div>
 			</div>
