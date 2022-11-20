@@ -21,6 +21,24 @@ function displayYearSemCredits(coursePlan)
 }
 
 /**
+ * Increases the credit point count for a particular unit level.
+ * @param {*} levelsObj Object holding the credit point counts for unit levels.
+ * @param {*} level Level for which to increase credit point count.
+ * @param {*} creditPoints Amount of points to increase credit point count by.
+ */
+function addCreditsToUnitLevel(levelsObj, level, creditPoints)
+{
+    if(Object.hasOwn(levelsObj, level))
+    {
+        levelsObj[level] += creditPoints;
+    }
+    else
+    {
+        levelsObj[level] = creditPoints;
+    }
+}
+
+/**
  * Gets the number of credit points for each level of completed units.
  * @param {*} levelsObj Object to store credit point counts for each level.
  * @param {*} coursePlan The course plan to retrieve credit point counts from.
@@ -31,17 +49,11 @@ function getCompletedUnitCreditsByLevel(levelsObj, coursePlan)
     {
         if(unit.grade == "AS" || (!isNaN(unit.grade) && unit.grade >= 50))
         {
-            let level = unit.code.charAt(3) + "00";
+            let level = unit.code[unit.code.search(/[0-9]/)] + "00";
+            //let level = unit.code.charAt(3) + "00";
             console.log("level: " + level);
 
-            if(Object.hasOwn(levelsObj, level))
-            {
-                levelsObj[level] += unit.credit_points;
-            }
-            else
-            {
-                levelsObj[level] = unit.credit_points;
-            }
+            addCreditsToUnitLevel(levelsObj, level, unit.credit_points);
         }
     }
 }
@@ -57,19 +69,24 @@ function getPlannedUnitCreditsByLevel(levelsObj, coursePlan)
     {
         if(hasUnitCode(unit))
         {
-            let level = unit.code.charAt(3) + "00";
+            let level = unit.code[unit.code.search(/[0-9]/)] + "00";
             console.log("level: " + level);
 
-            if(Object.hasOwn(levelsObj, level))
-            {
-                levelsObj[level] += unit.credit_points;
-            }
-            else
-            {
-                levelsObj[level] = unit.credit_points;
-            }
+            addCreditsToUnitLevel(levelsObj, level, unit.credit_points);
         }
     }
+}
+
+/**
+ * Adds advanced standing credit points at each unit level to an object holding credit points by unit level.
+ * @param {*} levelsObj The object holding credit points by unit level.
+ * @param {*} coursePlan Course plan with advanced standing credit points.
+ */
+function getAdvStandCredByLevel(levelsObj, coursePlan)
+{
+    addCreditsToUnitLevel(levelsObj, 100, coursePlan.advanced_standing.year1CP);
+    addCreditsToUnitLevel(levelsObj, 200, coursePlan.advanced_standing.year2CP);
+    addCreditsToUnitLevel(levelsObj, 300, coursePlan.advanced_standing.year3CP);
 }
 
 /**
@@ -81,6 +98,7 @@ function getCreditsByLevel(coursePlan)
 {
     let levels = {};
 
+    getAdvStandCredByLevel(levels, coursePlan);
     getCompletedUnitCreditsByLevel(levels, coursePlan);
     getPlannedUnitCreditsByLevel(levels, coursePlan);
 
