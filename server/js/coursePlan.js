@@ -901,9 +901,17 @@ function addUnit(code, plan)
             {
                 return entry.code == unitItem.code;
             });
+            let index2 = scrape.searchJSONArr(plan.completed_units, function(entry)
+            {
+                return entry.code == unitItem.code;
+            });
             if (index != -1)
             {
                 reject("Unit is already in course plan.");
+            }
+            else if (index2 != -1)
+            {
+                reject("Unit has already been completed.");
             }
             else
             {
