@@ -2,15 +2,20 @@ let coursePlan_Original;
 let coursePlan_Edited;
 
 
+$(document).ready(function()
+{
+    $("#addUnitToPlan").submit(AddUnit);
+});
+
 function planSearch()
 {
     let inputID = $("#planSearchInput").val();
-
     showPlan(inputID);
 }
 
 function callCoursePlan(coursePlan)
 {
+    coursePlan_Edited = coursePlan;
     // coursePlan
     displayPlan(coursePlan);
     displayTotalCredits(coursePlan);
@@ -23,6 +28,7 @@ function callCoursePlan(coursePlan)
     $("#cancelChangesPlan").hide();
     $("#applyChangesPlan").hide();
     $("#approvePlan").hide();
+    $("#addUnitToPlan").attr("hidden", true);
 	
     updateStatus();
 }
@@ -33,12 +39,12 @@ function checkPerm()
     var login = CheckLogin();
     if (login?.type == "admin" || login?.type == "staff")
     {
-	$(".planSearch").attr("hidden", false);
+        $(".planSearch").attr("hidden", false);
         $("#editPlan").attr("hidden", false);
     }
     else
     {
-	$(".planSearch").attr("hidden", true);
+        $(".planSearch").attr("hidden", true);
         $("#editPlan").attr("hidden", true);
     }
     if (login?.type == "admin")
@@ -71,8 +77,6 @@ function approvePlan()
 
 function displayAdvancedStanding(coursePlan)
 {
-    $("#ASCreditPoints").children(".body").val("");
-    $("#ASCompletedUnits").children(".body").val("");
 
     let creditPoints = "Year 1: " + coursePlan.advanced_standing.year1CP +
 		        "CP, Year 2: " + coursePlan.advanced_standing.year2CP +
@@ -83,18 +87,125 @@ function displayAdvancedStanding(coursePlan)
     let units = coursePlan.completed_units;
     for (let i = 0; i < units.length; ++i)
     {
-	let grade = units[i].grade;
-	if (grade != "AS")
-	    grade += "%";
+        let grade = units[i].grade;
+        if (grade != "AS")
+            grade += "%";
         if (i != 0)
-	    completedUnits += ", ";
-	completedUnits += "<b>" + units[i].code + "</b> - " +
-	                units[i].name +
-	                ": <span style='color: red;'>" + grade + "</span>";
+            completedUnits += ", ";
+        completedUnits += "<b>" + units[i].code + "</b> - " +
+                        units[i].name +
+                        ": <span style='color: red;'>" + grade + "</span>";
     }
     if (completedUnits == "")
         completedUnits = "None"
     $("#ASCompletedUnits").children(".body").html(completedUnits);
+}
+
+function saveAndRefresh(coursePlan, changeStr)
+{
+    let login = CheckLogin();
+    let data = {
+        email: login.email,
+        changes: changes = changeStr,
+        plan: coursePlan
+    };
+    $.ajax(
+    {
+        type: "POST",
+        url: "/savePlan",
+        dataType: "text",
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: JSON.stringify(data),
+        success: function(response)
+        {
+            showPlan(coursePlan.student_id);
+            $("#editPlan").show();
+        }
+    });
+}
+
+function AddUnit(e)
+{
+    e.preventDefault();
+    $.ajax(
+    {
+        type: "POST",
+        url: "/getUnit",
+        dataType: "text",
+        data: JSON.stringify({"code": extractCode($("#unitCodeInput").val())}),
+        success: function(unitResponse)
+        {
+            let code = JSON.parse(unitResponse).code;
+            // Adds unit with given code to edited plan.
+            let data = {
+                "unit": code,
+                "course_plan": coursePlan_Edited
+            };
+            $.ajax(
+            {
+                type: "POST",
+                url: "/addUnit",
+                dataType: "text",
+                data: JSON.stringify(data),
+                success: function(response)
+                {
+                    coursePlan_Edited = JSON.parse(response);
+                    // Saves plan after adding unit. The plan is saved and
+                    // reloaded after adding a unit due to the course plan
+                    // variables being saved as global variables. With the
+                    // current design of the system, a unit cannot be added
+                    // to the edited plan because it occurs within an async
+                    // call. Therefore, the plan must be saved to the database
+                    // and then reloaded to retain the new unit. In the future,
+                    // it would be better to refactor the system to not use
+                    // global variables, to prevent this kind of situation.
+                    saveAndRefresh(coursePlan_Edited, "Added unit " + code);
+                },
+                error: function(response)
+                {
+                    alert(response.responseText);
+                }
+            });
+        },
+        error: function(response)
+        {
+            alert(response.responseText);
+        }
+    });
+}
+
+function RegenPlan()
+{
+    let data = {
+        "course_plan": coursePlan_Edited
+    };
+    $.ajax(
+    {
+        type: "POST",
+        url: "/regenPlan",
+        dataType: "text",
+        data: JSON.stringify(data),
+        success: function(response)
+        {
+            coursePlan_Edited = JSON.parse(response);
+            // Saves plan after regenerating schedule. The plan is saved and
+            // reloaded after rescheduling due to the course plan
+            // variables being saved as global variables. With the
+            // current design of the system, the edit plan cannot be
+            // rescheduled because it occurs within an async
+            // call. Therefore, the plan must be saved to the database
+            // and then reloaded to retain the new schedule. In the future,
+            // it would be better to refactor the system to not use
+            // global variables, to prevent this kind of situation.
+            saveAndRefresh(coursePlan_Edited, "Regenerated schedule of course plan");
+        },
+        error: function(response)
+        {
+            alert(response.responseText);
+        }
+    });
 }
 
 function autoComplete(type, inputField)
@@ -185,11 +296,12 @@ function SubmitCourse()
                             grade = numGrade;
                         else if ($(obj).val() != "")
                             validInput = false;
-                            doneUnits.push({"code": code, "grade": grade});
+
+                        doneUnits.push({"code": code, "grade": grade});
                     });
                     if (!validInput)
                     {
-                        alert("Mark input must be 0-100 or blank");
+                        alert("Grade input must be 0-100 or blank");
                     }
                     else
                     {
@@ -350,7 +462,8 @@ function SavePlan(){
 		    		$('.cp-dragButton').hide();
 		    		$("#cancelChangesPlan").hide();
 		    		$("#applyChangesPlan").hide();
-				$("#approvePlan").hide();
+				    $("#approvePlan").hide();
+                    $("#addUnitToPlan").attr("hidden", true);
 		    
 		    		// revert plan to original form here
 		    		callCoursePlan(coursePlan_Original);
@@ -621,7 +734,7 @@ function checkPlanRules(coursePlan)
 
     
     // check if messages exists. if they do. show the message box.
-    if (coursePlan.message.length > 0)
+    if (coursePlan.message.length > 0 || overloadedSems.length > 0)
     {
         $("#messagesContainer").show();
         coursePlan.message.forEach(function(messageItem)

@@ -158,7 +158,7 @@ function reqRemoveDoneUnits(request, response)
     request.on("end", function()
     {
         let parsedData = JSON.parse(data);
-	coursePlan.assignAdvancedStanding(parsedData);
+	    coursePlan.assignAdvancedStanding(parsedData);
         coursePlan.removeDoneUnits(parsedData)
         .then(function(plan)
         {
@@ -267,20 +267,66 @@ function reqGetUsername(request, response)
     {
         let email = JSON.parse(data).email;
 	    
-	database.getUsername(email)
-	.then(function(result)
-	{
+        database.getUsername(email)
+        .then(function(result)
+        {
             if (result != null)
-	    {
+            {
                 response.writeHead(200, {"Content-Type": "text/plan"})
-		response.end(result.username);
+                response.end(result.username);
             }
-	    else
-	    {
+            else
+            {
                 response.writeHead(404, {"Content-Type": "text/plan"});
-		response.end("A username corresponding to the input email could not be found");
-	    }
-	})
+                response.end("A username corresponding to the input email could not be found");
+            }
+        })
+    });
+}
+
+function reqAddUnit(request, response)
+{
+    console.log("Request handler 'addUnit' was called.");
+
+    let data = "";
+    request.on("data", function(chunk)
+    {
+        data += chunk;
+    });
+    request.on("end", function()
+    {
+        let parsedData = JSON.parse(data);
+
+        coursePlan.addUnit(parsedData.unit, parsedData.course_plan)
+        .then(function()
+        {
+            response.writeHead(200, {"Content-Type": "text/plan"})
+            response.end(JSON.stringify(parsedData.course_plan));
+        })
+        .catch(function(errorMsg)
+        {
+            response.writeHead(404, {"Content-Type": "text/plan"});
+            response.end(errorMsg.toString());
+        });
+    });
+}
+
+function reqRegenPlan(request, response)
+{
+    console.log("Request handler 'regenPlan' was called.");
+
+    let data = "";
+    request.on("data", function(chunk)
+    {
+        data += chunk;
+    });
+    request.on("end", function()
+    {
+        let plan = JSON.parse(data).course_plan;
+
+        coursePlan.generateSchedule(plan);
+        response.writeHead(200, {"Content-Type": "text/plan"})
+        response.end(JSON.stringify(plan));
     });
 }
 
@@ -294,3 +340,5 @@ exports.reqViewPlan = reqViewPlan;
 exports.reqSavePlan = reqSavePlan;
 exports.reqGetEmail = reqGetEmail;
 exports.reqGetUsername = reqGetUsername;
+exports.reqAddUnit = reqAddUnit;
+exports.reqRegenPlan = reqRegenPlan;

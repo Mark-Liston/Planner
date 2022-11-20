@@ -29,6 +29,8 @@ handle["/viewPlan"] = requestHandlers.reqViewPlan;
 handle["/savePlan"] = requestHandlers.reqSavePlan;
 handle["/getEmail"] = requestHandlers.reqGetEmail;
 handle["/getUsername"] = requestHandlers.reqGetUsername;
+handle["/addUnit"] = requestHandlers.reqAddUnit;
+handle["/regenPlan"] = requestHandlers.reqRegenPlan;
 
 // pass handle object (and route function) to server
 server.startServer(router.route, handle);

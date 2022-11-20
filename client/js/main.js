@@ -7,13 +7,13 @@ $(document).ready(function()
     $("#landing").show();
     $("#viewPlanBtn").hide();
 
-    //$("#unitCodeInput").on("input", function()
-    //{
-    //    if ($("#unitCodeInput").val() != "")
-    //    {
-    //        autoComplete("Unit", $("#unitCodeInput"));
-    //    }
-    //});
+    $("#unitCodeInput").on("input", function()
+    {
+        if ($(this).val() != "")
+        {
+            autoComplete(["Unit"], $(this));
+        }
+    });
     $("#degreeInput").on("input", function()
     {
         if ($("#degreeInput").val() != "")
@@ -66,7 +66,7 @@ $(document).ready(function()
             $("#viewPlanBtn").hide();
             $("#landingSignupBtn").show();
             $("#landingLoginBtn").show();	
-	    $("#signupButton").hide();
+            $("#signupButton").hide();
         }
 
 	checkPerm();
@@ -184,6 +184,7 @@ function editPlan()
     $("#cancelChangesPlan").show();
     $("#applyChangesPlan").show();
     $("#approvePlan").show();
+    $("#addUnitToPlan").attr("hidden", false);
 }
 
 function cancelChangesPlan()
@@ -196,7 +197,8 @@ function cancelChangesPlan()
         $('.cp-dragButton').hide();
         $("#cancelChangesPlan").hide();
         $("#applyChangesPlan").hide();
-	$("#approvePlan").hide();
+	    $("#approvePlan").hide();
+        $("#addUnitToPlan").attr("hidden", true);
 
         // revert plan to original form here
         callCoursePlan(coursePlan_Original);
