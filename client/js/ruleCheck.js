@@ -154,10 +154,7 @@ function studyOverloadCheck(coursePlan){
 	return overloadedSems;
 }
 
-/* Needed these for testing:
-exports.creditReqMetByYearSem = creditReqMetByYearSem;
-exports.unitPassedBeforeYearSem = unitPassedBeforeYearSem;
-*/
+
 
 /**
  * Checks if the plan has only 30 CP of level 100 units (ICT100, ICT159, etc). 
@@ -200,3 +197,8 @@ function unit100_30ptsRule(coursePlan)
 
 	return totalCP;
 }
+
+/* Needed these for testing:
+exports.creditReqMetByYearSem = creditReqMetByYearSem;
+exports.unitPassedBeforeYearSem = unitPassedBeforeYearSem;
+*/
