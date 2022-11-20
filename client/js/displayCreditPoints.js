@@ -1,5 +1,16 @@
 //var coursePlanHelper = require('./coursePlanHelper.js');
 
+function countCredits(units)
+{
+    let credits = 0;
+    for(let unit of units)
+    {
+        credits += unit.credit_points;
+    }
+
+    return credits;
+}
+
 function displayYearSemCredits(coursePlan)
 {
     for(let schedYear of coursePlan.schedule)
@@ -8,11 +19,12 @@ function displayYearSemCredits(coursePlan)
 
         for(let schedSem of schedYear.semesters)
         {
+            let credits = countCredits(schedSem.units);
             let col_id = "year" + schedYear.year + "sem" + schedSem.semester;
             let unitsHTML = $("#" + col_id).children();
-            $("#" + col_id).text("Semester credits: " + schedSem.credit_points).append(unitsHTML);
+            $("#" + col_id).text("Semester credits: " + credits).append(unitsHTML);
             
-            yearCred += schedSem.credit_points;
+            yearCred += credits;
         }
 
         $("#" + schedYear.year + "Cred").html("Credits: " + yearCred);

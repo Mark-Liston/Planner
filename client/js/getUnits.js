@@ -734,7 +734,7 @@ function checkPlanRules(coursePlan)
 
     
     // check if messages exists. if they do. show the message box.
-    if (coursePlan.message.length > 0)
+    if (coursePlan.message.length > 0 || overloadedSems.length > 0)
     {
         $("#messagesContainer").show();
         coursePlan.message.forEach(function(messageItem)
