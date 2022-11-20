@@ -611,8 +611,8 @@ function checkPlanRules(coursePlan)
 	overloadedSems.forEach(sem => {
 		let message = "";
 		message += '<div class="message"><h3>Overload Warning</h3>';
-        message += `<h4>Year ${parseInt(coursePlan.startYear, 10) + sem.year}, Semester ${sem.sem+1}</h4>`;
-        message += 'is overloaded, please ensure you have spoken to your course coordinator</p>';    
+        message += `<h4 style='font-size: medium;'>Year ${parseInt(coursePlan.startYear, 10) + sem.year}, Semester ${sem.sem+1}</h4>`;
+        message += ' is overloaded, please ensure you have spoken to your course coordinator</p>';    
 		message += '</div>';
 		$("#messages").append(message);
 	});
