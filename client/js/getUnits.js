@@ -134,7 +134,7 @@ function AddUnit(e)
         type: "POST",
         url: "/getUnit",
         dataType: "text",
-        data: JSON.stringify({"code": $("#unitCodeInput").val()}),
+        data: JSON.stringify({"code": extractCode($("#unitCodeInput").val())}),
         success: function(unitResponse)
         {
             let code = JSON.parse(unitResponse).code;
