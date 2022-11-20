@@ -80,13 +80,13 @@
                     <label for="studentIDInput">Student ID:</label>
                     <input type="text" id="studentIDInput" name="studentIDInput" class="form-control" placeholder="e.g. 23858265" required="required">
 
-					<p>Enter the first year and semester of the course plan:</p>
+					<label>Enter the first year and semester of the course plan:</label>
 					<button type="button" id="setEarliestSem" class="btn btn-primary" onclick="calcEarliestStartSem()">Earliest possible year and semester</button>
 
 					<label for="startYear">First year of the course plan:</label>
 					<input type="number" id="startYear" name="startYear" class="form-control" placeholder="e.g. 2023" min="1973" max="9999" required>
 
-					<p>First semester of the course plan:</p>
+					<label>First semester of the course plan:</label>
 					
 					<label class="form-check-label" for="semester1">
 						<input type="radio" id="semester1" name="startSemester" class="form-check-input" value="1" checked> Semester 1
@@ -95,10 +95,13 @@
 					<label class="form-check-label" for="semester2">
 						<input type="radio" id="semester2" name="startSemester" class="form-check-input" value="2"> Semester 2
 					</label>
+
+					<label for="studyLoad">Study Load (credit points per semester):</label>
+					<input type="number" id="studyLoad" name="studyLoad" class="form-control" value="12" min="1" max="9999" required>
+
 					<br/>
 					<br/>
-					<br/>
-					<label>
+					<label style="font-weight: bold;">
 					    You may find the Murdoch Handbook helpful in familiarising you with your course
 					    <a href="https://handbook.murdoch.edu.au">handbook.murdoch.edu.au</a>
 					    <br/>
@@ -134,8 +137,11 @@
 							</div>
 						</div>
 					</div>
-
-					<button type="submit" id="submitCourse" class="btn btn-primary">Go!</button>
+					<br>
+					<br>
+					<div class="row" style="margin-top: 10px;">
+						<button type="submit" id="submitCourse" class="btn btn-primary" style="width: 10%; margin: auto;" >Go!</button>
+					</div>
 				</form>
 			</div>
 		</article>
