@@ -170,7 +170,7 @@ function unit100_30ptsRule(coursePlan)
 	// Completed Units
 	coursePlan.completed_units.forEach(function(unitItem)
 	{
-		if(unitItem.code.charAt(3) == '1')
+		if(parseInt(unitItem.code[unitItem.code.search(/[0-9]/)]) == 1)
 		{
 			totalCP += parseInt(unitItem.credit_points);
 			console.log(unitItem.code + ' is a level 100 unit');
@@ -184,7 +184,7 @@ function unit100_30ptsRule(coursePlan)
 	{
 		if (unitItem.type.toUpperCase() == "DECIDED")
 		{
-			if(unitItem.code.charAt(3) == '1')
+			if(parseInt(unitItem.code[unitItem.code.search(/[0-9]/)]) == 1)
 			{
 				totalCP += parseInt(unitItem.credit_points);
 				console.log(unitItem.code + ' is a level 100 unit');

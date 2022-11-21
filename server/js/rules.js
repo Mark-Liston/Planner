@@ -476,7 +476,7 @@ function twelvePointsCompCheck(coursePlan, unitItem, semesterItem, yearItem)
     //console.log("unit item is: " + unitItem.code);
     if(unitItem.type.toUpperCase() != "UNDECIDED")
     {
-        if(parseInt(unitItem.code.charAt(3)) > 1)
+        if(parseInt(unitItem.code[unitItem.code.search(/[0-9]/)]) > 1)
         {
             return creditReqMetByYearSem(coursePlan, yearItem.year, semesterItem.semester, 12);
         }
