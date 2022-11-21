@@ -88,7 +88,7 @@ function displayAdvancedStanding(coursePlan)
     for (let i = 0; i < units.length; ++i)
     {
         let grade = units[i].grade;
-        if (grade != "AS")
+        if (grade != "AdvStnd")
             grade += "%";
         if (i != 0)
             completedUnits += ", ";
@@ -290,18 +290,26 @@ function SubmitCourse()
                     {
                         // Extracts unit code from obj's id.
                         let code = $(obj).attr("id").split("_")[0];
-                        let grade = "AS";
+                        let grade = "AdvStnd";
                         let numGrade = Number($(obj).val());
-                        if (!isNaN($(obj).val()) && $(obj).val() != "" && numGrade >= 0 && numGrade <= 100)
+                        // If advanced standing is checked.
+                        let checkID = "#" + code + "_advstnd";
+                        if ($(checkID).is(":checked"))
+                        {}
+                        // If number grade is valid.
+                        else if (!isNaN($(obj).val()) &&
+                            $(obj).val() != "" &&
+                            numGrade >= 0 &&
+                            numGrade <= 100)
                             grade = numGrade;
-                        else if ($(obj).val() != "")
+                        else
                             validInput = false;
 
                         doneUnits.push({"code": code, "grade": grade});
                     });
                     if (!validInput)
                     {
-                        alert("Grade input must be 0-100 or blank");
+                        alert("Mark input must be 0-100 or check for advanced standing");
                     }
                     else
                     {
@@ -389,6 +397,19 @@ function showPlan(username)
     }
 }
 
+// If checkbox next to textbox for completed unit's mark is checked, hide textbox.
+function toggleMarkInput(checkObj)
+{
+    let markInputID = "#" + $(checkObj).attr("id").split("_")[0] + "_grade";
+    if (checkObj.checked)
+    {
+        $(markInputID).hide();
+        $(markInputID).val("");
+    }
+    else
+        $(markInputID).show();
+}
+
 function getGrades()
 {
     let code = extractCode($("#doneUnitInput").val());
@@ -404,7 +425,9 @@ function getGrades()
             {
                 response = JSON.parse(response);
                 let unitElement = "<label for='" + response.code + "_grade'>Mark for " + response.code + ":&nbsp;</label>" +
-                    "<input type='text' id='" + response.code + "_grade' class='unitGradeInput' placeholder='e.g. 67'><br/>";
+                    "<input type='text' id='" + response.code + "_grade' class='unitGradeInput' placeholder='e.g. 67'>" +
+                    "<input type='checkbox' id='" + response.code + "_advstnd' class='unitAdvStnd' onchange='toggleMarkInput(this)'>" +
+                    "<label for='" + response.code + "_advstnd'>Check for advanced standing</label><br/>";
                 $("#doneUnits").append(unitElement);
             },
             error: function(response)

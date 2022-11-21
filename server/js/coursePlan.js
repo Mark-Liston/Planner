@@ -633,7 +633,7 @@ function subtractDoneUnits(arr1, arr2)
                     // If units match and unit has been successfully completed
                     // (either advanced standing or a grade >= 50%)
                     if(arr1[i].code == arr2[j].code &&
-		                (arr2[j].grade == "AS" ||
+		                (arr2[j].grade == "AdvStnd" ||
                         (!isNaN(arr2[j].grade) && arr2[j].grade >= 50)))
                     {
                         found = true;

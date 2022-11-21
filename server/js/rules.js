@@ -104,7 +104,7 @@
      let passedCred = 0;
      for(let unit of coursePlan.completed_units)
      {
-         if(unit.grade == "AS" || (!isNaN(unit.grade) && unit.grade >= 50))
+         if(unit.grade == "AdvStnd" || (!isNaN(unit.grade) && unit.grade >= 50))
          {
              passedCred += unit.credit_points;
          }
@@ -209,7 +209,7 @@
  {
      //Check if unit is in completed units and has been passed.
      let unit = coursePlan.completed_units.find(({code}) => code == unitCode);
-     if(unit != undefined && (unit.grade == "AS" || (!isNaN(unit.grade) && unit.grade >= 50))){ return true; }
+     if(unit != undefined && (unit.grade == "AdvStnd" || (!isNaN(unit.grade) && unit.grade >= 50))){ return true; }
      
      //Check if unit is planned for a semester before the one of interest
      let yearSem = getPlannedUnitYearSem(unitCode, coursePlan.schedule);
@@ -250,7 +250,7 @@ function prereqIsViable(prereq, coursePlan)
     {
         //Check if unit is in completed units
         let unit = coursePlan.completed_units.find(({code}) => code == prereq.code);
-        if(unit != undefined && (unit.grade == "AS" || (!isNaN(unit.grade) && unit.grade >= 50))){ return true; }
+        if(unit != undefined && (unit.grade == "AdvStnd" || (!isNaN(unit.grade) && unit.grade >= 50))){ return true; }
 
         for(let plannedUnit of coursePlan.planned_units)
         {

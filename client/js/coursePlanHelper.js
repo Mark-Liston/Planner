@@ -104,7 +104,7 @@ function getPassedUnitCredPoints(coursePlan)
 	let passedCred = 0;
 	for(let unit of coursePlan.completed_units)
 	{
-		if(unit.grade == "AS" || (!isNaN(unit.grade) && unit.grade >= 50))
+		if(unit.grade == "AdvStnd" || (!isNaN(unit.grade) && unit.grade >= 50))
 		{
 			passedCred += unit.credit_points;
 		}
