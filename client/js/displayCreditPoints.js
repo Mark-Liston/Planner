@@ -59,7 +59,7 @@ function getCompletedUnitCreditsByLevel(levelsObj, coursePlan)
 {
     for(let unit of coursePlan.completed_units)
     {
-        if(unit.grade == "AS" || (!isNaN(unit.grade) && unit.grade >= 50))
+        if(unit.grade == "AdvStnd" || (!isNaN(unit.grade) && unit.grade >= 50))
         {
             let level = unit.code[unit.code.search(/[0-9]/)] + "00";
             //let level = unit.code.charAt(3) + "00";
